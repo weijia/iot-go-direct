@@ -3,6 +3,7 @@ module iot_go
 go 1.20
 
 require (
+	github.com/coreos/go-systemd v0.0.0-20230601205942-d843340ab4bd // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -23,3 +24,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.1.0

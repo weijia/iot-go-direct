@@ -1,4 +1,4 @@
-package main
+package msg
 
 import (
 	"encoding/json"
@@ -15,5 +15,4 @@ func TestInitMsg(t *testing.T) {
 	}
 	init_json_bytes, _ := json.Marshal(init)
 	msg.HandleMsg(init_json_bytes)
-
 }
