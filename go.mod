@@ -25,4 +25,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.1.0
+replace github.com/coreos/go-systemd => github.com/coreos/go-systemd/v22 v22.1.0
