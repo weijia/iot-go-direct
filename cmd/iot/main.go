@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"iot_go/pkg/util"
 	"os"
 	"os/signal"
 	"strconv"
@@ -11,12 +12,12 @@ import (
 )
 
 func main() {
-	broker := "tcp://broker.hivemq.com:1883"
-	topic := "test_topic"
+	config := util.FixedIotConfig{Broker: "tcp://115.159.53.168:1883", ClientId: "mqtt_golang_example"}
+	var topic = "test_topic"
 
 	// MQTT 连接设置
-	opts := mqtt.NewClientOptions().AddBroker(broker)
-	opts.SetClientID("mqtt_golang_example")
+	opts := mqtt.NewClientOptions().AddBroker(config.GetBroker())
+	opts.SetClientID(config.GetClientId())
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
