@@ -1,9 +1,5 @@
 package msg
 
-import (
-	"fmt"
-)
-
 type Init struct {
 	MsgType       string  `json:"msg_type"`
 	GatewayNodeID string  `json:"gateway_node_id"`
@@ -33,8 +29,4 @@ type Module2 struct {
 	Freq   int `json:"freq"`
 	Band   int `json:"band"`
 	Factor int `json:"factor"`
-}
-
-func (init Init) handle() {
-	fmt.Println(init.MsgType)
 }

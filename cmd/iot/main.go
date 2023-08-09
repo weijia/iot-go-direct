@@ -1,19 +1,24 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"iot_go/pkg/msg"
 	"iot_go/pkg/util"
 	"os"
 	"os/signal"
-	"strconv"
 	"time"
+
+	"iot_go/pkg/msg"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func main() {
 	config := util.FixedIotConfig{Broker: "tcp://115.159.53.168:1883", ClientId: "mqtt_golang_example"}
-	var topic = "test_topic"
+	deviceId := "test"
+	var topic = "device/" + deviceId + "/in"
+	var publishTopic = "device/" + deviceId + "/out"
 
 	// MQTT 连接设置
 	opts := mqtt.NewClientOptions().AddBroker(config.GetBroker())
@@ -37,13 +42,7 @@ func main() {
 	}
 
 	// 发布消息
-	for i := 0; i < 5; i++ {
-		payload := "Test message " + strconv.Itoa(i)
-		token := client.Publish(topic, 0, false, payload)
-		token.Wait()
-		fmt.Println("Published message:", payload)
-		time.Sleep(1 * time.Second)
-	}
+	publishInitMsg(client, publishTopic)
 
 	// 捕捉退出信号，断开连接并退出程序
 	c := make(chan os.Signal, 1)
@@ -52,4 +51,16 @@ func main() {
 
 	client.Disconnect(250)
 	fmt.Println("Disconnected")
+}
+
+func publishInitMsg(client mqtt.Client, publishTopic string) {
+	init := &msg.Init{
+		MsgType:       "init",
+		GatewayNodeID: "testing",
+	}
+	payload, _ := json.Marshal(init)
+	token := client.Publish(publishTopic, 0, false, payload)
+	token.Wait()
+	fmt.Println("Published message:", payload)
+	time.Sleep(1 * time.Second)
 }
