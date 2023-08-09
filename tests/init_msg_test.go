@@ -1,4 +1,4 @@
-package msg
+package iot_go_test
 
 import (
 	"encoding/json"
