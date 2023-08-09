@@ -3,6 +3,7 @@ module iot_go
 go 1.20
 
 require (
+	github.com/carlmjohnson/versioninfo v0.22.5
 	github.com/coreos/go-systemd v0.0.0-20230601205942-d843340ab4bd // indirect
 	github.com/eclipse/paho.mqtt.golang v1.4.3 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

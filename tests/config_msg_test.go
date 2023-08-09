@@ -12,7 +12,7 @@ func TestConfigMsg(t *testing.T) {
 		Project: "test",
 	}
 
-	config := &msg.Config{
+	config := &msg.ConfigRequest{
 		Method: "config",
 		Params: params,
 	}

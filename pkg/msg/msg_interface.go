@@ -6,10 +6,6 @@ import (
 	"iot_go/pkg/util"
 )
 
-type BaseMsg struct {
-	Method string `json:"method"`
-}
-
 type MsgHandler interface {
 	handle()
 }
@@ -19,16 +15,16 @@ type MsgFactory interface {
 }
 
 func HandleMsg(body []byte) {
-	var base_msg BaseMsg
-	if err := json.Unmarshal(body, &base_msg); err != nil {
+	var baseRequest BaseRequest
+	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLog(err)
 	}
-	switch base_msg.Method {
+	switch baseRequest.Method {
 	case "config":
-		var config Config
-		if err := json.Unmarshal(body, &config); err != nil {
+		var configRequest ConfigRequest
+		if err := json.Unmarshal(body, &configRequest); err != nil {
 			util.IotLog(err)
 		}
-		config.handle()
+		configRequest.handle()
 	}
 }

@@ -17,7 +17,7 @@ func TestJsonUnmarshal(t *testing.T) {
 	init_json_str, _ := json.Marshal(init)
 	fmt.Println(string(init_json_str))
 	b := []byte(init_json_str)
-	var dat msg.BaseMsg
+	var dat msg.Init
 	if err := json.Unmarshal(b, &dat); err != nil {
 		panic(err)
 	}

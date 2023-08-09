@@ -9,12 +9,13 @@ import (
 	"os/signal"
 	"time"
 
-	"iot_go/pkg/msg"
-
+	"github.com/carlmjohnson/versioninfo"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 func main() {
+	fmt.Println("Version:", versioninfo.Version)
+	fmt.Println("Revision:", versioninfo.Revision)
 	config := util.FixedIotConfig{Broker: "tcp://115.159.53.168:1883", ClientId: "mqtt_golang_example"}
 	deviceId := "test"
 	var topic = "device/" + deviceId + "/in"
