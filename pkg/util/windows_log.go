@@ -4,7 +4,7 @@ package util
 
 import "log"
 
-func IotLog(err error) {
+func IotLogFatal(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}

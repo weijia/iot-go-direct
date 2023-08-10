@@ -8,7 +8,7 @@ import (
 	"github.com/coreos/go-systemd/journal"
 )
 
-func IotLog(err error) {
+func IotLogFatal(err error) {
 	err = journal.Print(journal.PriErr, "unmarshal error", err)
 	if err != nil {
 		log.Fatal(err)

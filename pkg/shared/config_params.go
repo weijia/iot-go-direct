@@ -1,0 +1,13 @@
+package shared
+
+type ConfigParams struct {
+	NodeList1      []string `json:"node_list_1"`
+	NodeList2      []string `json:"node_list_2"`
+	TouchNodeList1 []string `json:"touch_node_list_1"`
+	TouchNodeList2 []string `json:"touch_node_list_2"`
+	Custom         string   `json:"custom"`
+	Project        string   `json:"project"`
+	HeartBeat      int      `json:"heart_beat"`
+	Module1        Module   `json:"module1"`
+	Module2        Module   `json:"module2"`
+}

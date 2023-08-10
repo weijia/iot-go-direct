@@ -17,13 +17,13 @@ type MsgFactory interface {
 func HandleMsg(body []byte) {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
-		util.IotLog(err)
+		util.IotLogFatal(err)
 	}
 	switch baseRequest.Method {
 	case "config":
 		var configRequest ConfigRequest
 		if err := json.Unmarshal(body, &configRequest); err != nil {
-			util.IotLog(err)
+			util.IotLogFatal(err)
 		}
 		configRequest.handle()
 	}

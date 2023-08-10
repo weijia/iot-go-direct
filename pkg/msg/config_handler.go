@@ -2,25 +2,22 @@ package msg
 
 import (
 	"fmt"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/shared"
 )
 
 type ConfigRequest struct {
-	Method string      `json:"method"`
-	Params ConfigParam `json:"params"`
-}
-
-type ConfigParam struct {
-	NodeList1      []string `json:"node_list_1"`
-	NodeList2      []string `json:"node_list_2"`
-	TouchNodeList1 []string `json:"touch_node_list_1"`
-	TouchNodeList2 []string `json:"touch_node_list_2"`
-	Custom         string   `json:"custom"`
-	Project        string   `json:"project"`
-	HeartBeat      int      `json:"heart_beat"`
-	Module1        Module1  `json:"module1"`
-	Module2        Module2  `json:"module2"`
+	Method string              `json:"method"`
+	Params shared.ConfigParams `json:"params"`
 }
 
 func (config ConfigRequest) handle() {
+	bspInstance := bsp.GetBsp()
+	bspInstance.SetModule1Params(config.Params.Module1)
+	bspInstance.SetModule2Params(config.Params.Module2)
 	fmt.Println(config.Method)
+	bsp.BspConfigInstance.InitConfig.Module1 = config.Params.Module1
+	bsp.BspConfigInstance.InitConfig.Module2 = config.Params.Module2
+	bsp.BspConfigInstance.ConfigParams = config.Params
+	bsp.BspConfigInstance.CommitChanges()
 }

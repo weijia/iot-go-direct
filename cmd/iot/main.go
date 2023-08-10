@@ -3,27 +3,31 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"iot_go/pkg/msg"
-	"iot_go/pkg/util"
+
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/carlmjohnson/versioninfo"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/msg"
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/spf13/viper"
 )
 
 func main() {
-	fmt.Println("Version:", versioninfo.Version)
-	fmt.Println("Revision:", versioninfo.Revision)
-	config := util.FixedIotConfig{Broker: "tcp://115.159.53.168:1883", ClientId: "mqtt_golang_example"}
-	deviceId := "test"
+	bsp.InitConfig()
+	fmt.Println(viper.GetString("msg_type"))
+
+	deviceId := bsp.BspConfigInstance.InitConfig.GatewayNodeID
 	var topic = "device/" + deviceId + "/in"
 	var publishTopic = "device/" + deviceId + "/out"
 
+	bsp.InitBoard()
+
 	// MQTT 连接设置
-	opts := mqtt.NewClientOptions().AddBroker(config.GetBroker())
-	opts.SetClientID(config.GetClientId())
+	opts := mqtt.NewClientOptions().AddBroker(bsp.BspConfigInstance.Broker)
+	opts.SetClientID(bsp.BspConfigInstance.InitConfig.GatewayNodeID)
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
@@ -35,8 +39,9 @@ func main() {
 	}
 
 	// 订阅主题
-	token = client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-		fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
+		fmt.Printf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic())
+		msg.HandleMsg(mqttMsg.Payload())
 	})
 	if token.Wait() && token.Error() != nil {
 		panic(token.Error())
@@ -50,18 +55,14 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 
-	client.Disconnect(250)
-	fmt.Println("Disconnected")
+	// client.Disconnect(250)
+	// fmt.Println("Disconnected")
 }
 
 func publishInitMsg(client mqtt.Client, publishTopic string) {
-	init := &msg.Init{
-		MsgType:       "init",
-		GatewayNodeID: "testing",
-	}
-	payload, _ := json.Marshal(init)
+	payload, _ := json.Marshal(bsp.BspConfigInstance.InitConfig)
 	token := client.Publish(publishTopic, 0, false, payload)
 	token.Wait()
-	fmt.Println("Published message:", payload)
+	fmt.Println("Published message:", string(payload))
 	time.Sleep(1 * time.Second)
 }
