@@ -1,3 +1,4 @@
 main
-main.exe
 go.sum
+iot_go.json
+*.exe

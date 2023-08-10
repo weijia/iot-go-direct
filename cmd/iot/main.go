@@ -26,7 +26,9 @@ func main() {
 	bsp.InitBoard()
 
 	// MQTT 连接设置
-	opts := mqtt.NewClientOptions().AddBroker(bsp.BspConfigInstance.Broker)
+	broker := "tcp://" + bsp.BspConfigInstance.MqttParams.MqttIP + ":" +
+		fmt.Sprint(bsp.BspConfigInstance.MqttParams.MqttPort)
+	opts := mqtt.NewClientOptions().AddBroker(broker)
 	opts.SetClientID(bsp.BspConfigInstance.InitConfig.GatewayNodeID)
 
 	// 创建 MQTT 客户端

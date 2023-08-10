@@ -1,12 +1,10 @@
 package msg
 
+import (
+	"iot_go/pkg/shared"
+)
+
 type MqttConfigRequest struct {
-	Method string     `json:"method"`
-	Params MqttParams `json:"params"`
-}
-type MqttParams struct {
-	MqttIP       string `json:"mqtt_ip"`
-	MqttPort     int    `json:"mqtt_port"`
-	MqttUserName string `json:"mqtt_user_name"`
-	MqttPwd      string `json:"mqtt_pwd"`
+	Method string            `json:"method"`
+	Params shared.MqttParams `json:"params"`
 }

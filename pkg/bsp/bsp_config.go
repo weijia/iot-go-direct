@@ -11,8 +11,8 @@ import (
 
 type BspConfig struct {
 	InitConfig   shared.Init
-	Broker       string
 	ConfigParams shared.ConfigParams
+	MqttParams   shared.MqttParams
 }
 
 var swVersion = "0.1.0"
@@ -50,7 +50,8 @@ var defaultInitMsg = shared.Init{
 var BspConfigInstance BspConfig
 
 func InitConfig() {
-	BspConfigInstance.Broker = "tcp://115.159.53.168:1883"
+	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
+	BspConfigInstance.MqttParams.MqttPort = 1883
 	viper.SetConfigName("iot_go.json")
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
