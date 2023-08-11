@@ -32,6 +32,17 @@ func HandleMsg(body []byte) interface{} {
 			util.IotLogFatal(err)
 		}
 		return mqttConfigRequest.handle()
+	case "node_list_request":
+	 nodeListReply NodeListReply
+		return nodeListReply.handle()
+	case "node_info_request":
+	 return nil
+	case "gateway_reboot":
+	 return BaseReply {"msg_type": "gateway_reboot_reply", 
+	     "gateway_node_id": bsp.Bsp...
+	 }
+	case "update_glass_color_request":
+	 
 	}
 	return nil
 }
