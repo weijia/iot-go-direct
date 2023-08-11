@@ -8,3 +8,10 @@ type UpdateGlassColorParams struct {
 	NodeID string `json:"node_id"`
 	Color  string `json:"color"`
 }
+
+
+func (request UpdateGlassColorRequest) handle() interface{} {
+    var reply UpdateGlassColorReply
+    reply.
+    return reply
+}
