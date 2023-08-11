@@ -27,12 +27,12 @@ func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 
 func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	fmt.Printf("Setting Module1 Params: %s", moduleParamsInJson)
+	fmt.Printf("Setting Module1 Params: %s\n", moduleParamsInJson)
 }
 
 func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	fmt.Printf("Setting Module2 Params: %s", moduleParamsInJson)
+	fmt.Printf("Setting Module2 Params: %s\n", moduleParamsInJson)
 }
 
 func GetBsp() VirtualBsp {
