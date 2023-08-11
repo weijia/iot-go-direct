@@ -1,3 +1,3 @@
 set GOOS=windows
 set GOARCH=amd64
-go build cmd/iot/main.go
+go build  -ldflags="-s -w" cmd/iot/main.go
