@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"iot_go/pkg/msg"
+	"iot_go/pkg/shared"
 )
 
 func TestConfigMsg(t *testing.T) {
-	params := msg.ConfigParam{
+	params := shared.ConfigParams{
 		Project: "test",
 	}
 

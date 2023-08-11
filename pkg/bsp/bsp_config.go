@@ -10,9 +10,9 @@ import (
 )
 
 type BspConfig struct {
-	InitConfig   shared.Init
-	ConfigParams shared.ConfigParams
-	MqttParams   shared.MqttParams
+	shared.InitMsgContent
+	shared.ConfigParams
+	shared.MqttParams
 }
 
 var swVersion = "0.1.0"
@@ -32,8 +32,7 @@ var module2 = shared.Module{
 	Band:   250,
 	Factor: 10,
 }
-var defaultInitMsg = shared.Init{
-	MsgType:       "init",
+var defaultInitMsgContent = shared.InitMsgContent{
 	GatewayNodeID: "test",
 	HardVersion:   "0.1.0",
 	SoftVersion:   swVersion,
@@ -58,7 +57,7 @@ func InitConfig() {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		BspConfigInstance.InitConfig = defaultInitMsg
+		BspConfigInstance.InitMsgContent = defaultInitMsgContent
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile("./iot_go.json", defaultLocalConfig, 0666) //写入文件(字节数组)

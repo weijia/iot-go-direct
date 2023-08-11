@@ -15,12 +15,12 @@ func (config ConfigRequest) handle() interface{} {
 	bspInstance.SetModule1Params(config.Params.Module1)
 	bspInstance.SetModule2Params(config.Params.Module2)
 	// fmt.Printf("%s", config.Method)
-	bsp.BspConfigInstance.InitConfig.Module1 = config.Params.Module1
-	bsp.BspConfigInstance.InitConfig.Module2 = config.Params.Module2
+	bsp.BspConfigInstance.InitMsgContent.Module1 = config.Params.Module1
+	bsp.BspConfigInstance.InitMsgContent.Module2 = config.Params.Module2
 	bsp.BspConfigInstance.ConfigParams = config.Params
 	bsp.BspConfigInstance.CommitChanges()
 	var gatewayNodeIdReply GatewayNodeIdReply
 	gatewayNodeIdReply.MsgType = "config_reply"
-	gatewayNodeIdReply.GatewayNodeID = bsp.BspConfigInstance.InitConfig.GatewayNodeID
+	gatewayNodeIdReply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
 	return gatewayNodeIdReply
 }

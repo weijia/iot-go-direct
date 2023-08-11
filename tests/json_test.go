@@ -5,19 +5,21 @@ import (
 	"fmt"
 	"testing"
 
-	"iot_go/pkg/msg"
+	"iot_go/pkg/shared"
 )
 
 func TestJsonUnmarshal(t *testing.T) {
 
-	init := &msg.Init{
-		MsgType:       "init",
-		GatewayNodeID: "testing",
+	init := shared.Init{
+		MsgType: "init",
+		InitMsgContent: shared.InitMsgContent{
+			GatewayNodeID: "testing",
+		},
 	}
-	init_json_str, _ := json.Marshal(init)
+	init_json_str, _ := json.Marshal(&init)
 	fmt.Println(string(init_json_str))
 	b := []byte(init_json_str)
-	var dat msg.Init
+	var dat shared.Init
 	if err := json.Unmarshal(b, &dat); err != nil {
 		panic(err)
 	}

@@ -3,6 +3,7 @@ package msg
 import (
 	"encoding/json"
 
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/util"
 )
 
@@ -33,16 +34,18 @@ func HandleMsg(body []byte) interface{} {
 		}
 		return mqttConfigRequest.handle()
 	case "node_list_request":
-	 nodeListReply NodeListReply
+		var nodeListReply NodeListReply
 		return nodeListReply.handle()
 	case "node_info_request":
-	 return nil
+		return nil
 	case "gateway_reboot":
-	 return BaseReply {"msg_type": "gateway_reboot_reply", 
-	     "gateway_node_id": bsp.Bsp...
-	 }
+		reply := GatewayNodeIdReply{
+			MsgType:       "gateway_reboot_reply",
+			GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
+		}
+		return reply
 	case "update_glass_color_request":
-	 
+
 	}
 	return nil
 }

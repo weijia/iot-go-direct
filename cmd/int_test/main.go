@@ -18,7 +18,7 @@ import (
 
 func main() {
 	bsp.InitConfig()
-	deviceId := bsp.BspConfigInstance.InitConfig.GatewayNodeID
+	deviceId := bsp.BspConfigInstance.InitMsgContent.GatewayNodeID
 	var topic = "device/" + deviceId + "/out"
 	var publishTopic = "device/" + deviceId + "/in"
 
@@ -26,7 +26,7 @@ func main() {
 	broker := "tcp://" + bsp.BspConfigInstance.MqttParams.MqttIP + ":" +
 		fmt.Sprint(bsp.BspConfigInstance.MqttParams.MqttPort)
 	opts := mqtt.NewClientOptions().AddBroker(broker)
-	opts.SetClientID(bsp.BspConfigInstance.InitConfig.GatewayNodeID + "-server")
+	opts.SetClientID(bsp.BspConfigInstance.InitMsgContent.GatewayNodeID + "-server")
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)

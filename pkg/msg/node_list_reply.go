@@ -1,5 +1,9 @@
 package msg
 
+import (
+	"iot_go/pkg/bsp"
+)
+
 type NodeListReply struct {
 	MsgType        string   `json:"msg_type"`
 	GatewayNodeID  string   `json:"gateway_node_id"`
@@ -10,12 +14,11 @@ type NodeListReply struct {
 	TouchNodeList2 []string `json:"touch_node_list_2"`
 }
 
-
 func (reply NodeListReply) handle() interface{} {
-    reply.GatewayNodeID = bsp.BspConfigInstance.InitConfig.GatewayNodeID
-    reply.NodeList1 = bsp.BspConfigInstance.InitConfig.NodeList1
-    reply.NodeList2 = bsp.BspConfigInstance.InitConfig.NodeList2
-    reply.TouchNodeList1 = bsp.BspConfigInstance.InitConfig.TouchNodeList1
-    reply.TouchNodeList2 = bsp.BspConfigInstance.InitConfig.TouchNodeList2
-    return reply
+	reply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
+	reply.NodeList1 = bsp.BspConfigInstance.NodeList1
+	reply.NodeList2 = bsp.BspConfigInstance.NodeList2
+	reply.TouchNodeList1 = bsp.BspConfigInstance.TouchNodeList1
+	reply.TouchNodeList2 = bsp.BspConfigInstance.TouchNodeList2
+	return reply
 }
