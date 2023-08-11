@@ -9,3 +9,13 @@ type NodeListReply struct {
 	TouchNodeList1 []string `json:"touch_node_list_1"`
 	TouchNodeList2 []string `json:"touch_node_list_2"`
 }
+
+
+func (reply NodeListReply) handle() interface{} {
+    reply.GatewayNodeID = bsp.BspConfigInstance.InitConfig.GatewayNodeID
+    reply.NodeList1 = bsp.BspConfigInstance.InitConfig.NodeList1
+    reply.NodeList2 = bsp.BspConfigInstance.InitConfig.NodeList2
+    reply.TouchNodeList1 = bsp.BspConfigInstance.InitConfig.TouchNodeList1
+    reply.TouchNodeList2 = bsp.BspConfigInstance.InitConfig.TouchNodeList2
+    return reply
+}
