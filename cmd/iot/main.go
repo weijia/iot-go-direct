@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+
 	bsp.InitConfig()
 	fmt.Println(viper.GetString("msg_type"))
 
@@ -43,7 +44,14 @@ func main() {
 	// 订阅主题
 	token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
 		fmt.Printf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic())
-		msg.HandleMsg(mqttMsg.Payload())
+		resp := msg.HandleMsg(mqttMsg.Payload())
+		if resp != nil {
+			payload, _ := json.Marshal(resp)
+			token := client.Publish(publishTopic, 0, false, payload)
+			token.Wait()
+			fmt.Printf("Published message: %s\n", string(payload))
+			time.Sleep(1 * time.Second)
+		}
 	})
 	if token.Wait() && token.Error() != nil {
 		panic(token.Error())
