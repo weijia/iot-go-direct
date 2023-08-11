@@ -7,14 +7,14 @@ import (
 )
 
 type MsgHandler interface {
-	handle()
+	handle() interface{}
 }
 
 type MsgFactory interface {
 	getTargetMsg() any
 }
 
-func HandleMsg(body []byte) {
+func HandleMsg(body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLogFatal(err)
@@ -25,6 +25,13 @@ func HandleMsg(body []byte) {
 		if err := json.Unmarshal(body, &configRequest); err != nil {
 			util.IotLogFatal(err)
 		}
-		configRequest.handle()
+		return configRequest.handle()
+	case "mqtt_config":
+		var mqttConfigRequest MqttConfigRequest
+		if err := json.Unmarshal(body, &mqttConfigRequest); err != nil {
+			util.IotLogFatal(err)
+		}
+		return mqttConfigRequest.handle()
 	}
+	return nil
 }

@@ -10,7 +10,7 @@ type ConfigRequest struct {
 	Params shared.ConfigParams `json:"params"`
 }
 
-func (config ConfigRequest) handle() {
+func (config ConfigRequest) handle() interface{} {
 	bspInstance := bsp.GetBsp()
 	bspInstance.SetModule1Params(config.Params.Module1)
 	bspInstance.SetModule2Params(config.Params.Module2)
@@ -19,4 +19,8 @@ func (config ConfigRequest) handle() {
 	bsp.BspConfigInstance.InitConfig.Module2 = config.Params.Module2
 	bsp.BspConfigInstance.ConfigParams = config.Params
 	bsp.BspConfigInstance.CommitChanges()
+	var gatewayNodeIdReply GatewayNodeIdReply
+	gatewayNodeIdReply.MsgType = "config_reply"
+	gatewayNodeIdReply.GatewayNodeID = bsp.BspConfigInstance.InitConfig.GatewayNodeID
+	return gatewayNodeIdReply
 }
