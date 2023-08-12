@@ -37,6 +37,7 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()
 	case "node_info_request":
+		// TODO
 		return nil
 	case "gateway_reboot":
 		reply := GatewayNodeIdReply{
@@ -50,6 +51,16 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			util.IotLogFatal(err)
 		}
 		return request.handle(mqttClient)
+	case "group_update_glass_color_request":
+		// TODO need to clarify the 2 group requests first
+		return nil
+	case "set_touch_device_node_list_request":
+		var request SetTouchDeviceNodeList
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		request.handle()
+		return nil
 	}
 	return nil
 }
