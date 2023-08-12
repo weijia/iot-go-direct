@@ -15,7 +15,7 @@ type MsgFactory interface {
 	getTargetMsg() any
 }
 
-func HandleMsg(body []byte) interface{} {
+func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLogFatal(err)
@@ -45,7 +45,11 @@ func HandleMsg(body []byte) interface{} {
 		}
 		return reply
 	case "update_glass_color_request":
-
+		var request UpdateGlassColorRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle(mqttClient)
 	}
 	return nil
 }

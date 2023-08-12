@@ -2,22 +2,16 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 )
 
 type UpdateGlassColorRequest struct {
-	Method string                   `json:"method"`
-	Params []UpdateGlassColorParams `json:"params"`
+	Method string                          `json:"method"`
+	Params []shared.UpdateGlassColorParams `json:"params"`
 }
 
-type UpdateGlassColorParams struct {
-	NodeID string `json:"node_id"`
-	Color  string `json:"color"`
-}
-
-func (request UpdateGlassColorRequest) handle() interface{} {
-	var reply UpdateGlassColorReply
-
-	reply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
-	reply.MsgType = "update_glass_color_reply"
-	return reply
+func (request UpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
+	go bsp.GetBsp().SetGlassColorsBlocking(mqttClient, request.Params)
+	return nil
 }

@@ -45,7 +45,7 @@ func main() {
 	// 订阅主题
 	token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
 		fmt.Printf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic())
-		resp := msg.HandleMsg(mqttMsg.Payload())
+		resp := msg.HandleMsg(mqttClient, mqttMsg.Payload())
 		if resp != nil {
 			mqttClient.SendToServer(resp)
 		}
