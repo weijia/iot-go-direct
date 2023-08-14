@@ -52,8 +52,17 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		return request.handle(mqttClient)
 	case "group_update_glass_color_request":
-		// TODO need to clarify the 2 group requests first
-		return nil
+		var request GroupUpdateGlassColorRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle(mqttClient)
+	case "broadcast_update_glass_color_request":
+		var request BroadcastUpdateGlassColorRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle(mqttClient)
 	case "set_touch_device_node_list_request":
 		var request SetTouchDeviceNodeList
 		if err := json.Unmarshal(body, &request); err != nil {
