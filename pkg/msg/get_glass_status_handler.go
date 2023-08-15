@@ -1,9 +1,9 @@
 package msg
 
 type GetGlassStatusRequest struct {
-	Method string `json:"method"`
-	Params Params `json:"params"`
+	Method string            `json:"method"`
+	Params GlassStatusParams `json:"params"`
 }
-type Params struct {
+type GlassStatusParams struct {
 	NodeID string `json:"node_id"`
 }

@@ -62,7 +62,7 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		if err := json.Unmarshal(body, &request); err != nil {
 			util.IotLogFatal(err)
 		}
-		return request.handle(mqttClient)
+		return request.handle()
 	case "set_touch_device_node_list_request":
 		var request SetTouchDeviceNodeList
 		if err := json.Unmarshal(body, &request); err != nil {
