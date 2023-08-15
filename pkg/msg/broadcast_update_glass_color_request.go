@@ -10,7 +10,7 @@ type ColorParams struct {
 	ColorParams string `json:"color"`
 }
 
-func (request BroadcastUpdateGlassColorRequest) handler() interface{} {
+func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 	reply := GatewayNodeIdReply{
 		MsgType:       "gateway_reboot_reply",
 		GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,

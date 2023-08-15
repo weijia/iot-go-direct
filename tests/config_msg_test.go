@@ -4,13 +4,18 @@ import (
 	"encoding/json"
 	"testing"
 
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 )
 
 func TestConfigMsg(t *testing.T) {
+	bsp.InitConfig()
 	params := shared.ConfigParams{
 		Project: "test",
+		Module1: shared.Module{Freq: 30, Band: 50, Factor: 80},
+		Module2: shared.Module{Freq: 35, Band: 55, Factor: 85},
 	}
 
 	config := &msg.ConfigRequest{
@@ -18,5 +23,6 @@ func TestConfigMsg(t *testing.T) {
 		Params: params,
 	}
 	config_json_bytes, _ := json.Marshal(config)
-	msg.HandleMsg(config_json_bytes)
+	var mqtt util.Mqtt
+	msg.HandleMsg(&mqtt, config_json_bytes)
 }

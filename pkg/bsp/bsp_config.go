@@ -3,6 +3,7 @@ package bsp
 import (
 	"encoding/json"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/thingsboard_shared"
 	"iot_go/pkg/util"
 	"os"
 
@@ -13,6 +14,7 @@ type BspConfig struct {
 	shared.InitMsgContent
 	shared.ConfigParams
 	shared.MqttParams
+	thingsboard_shared.DeviceProfile `json:"device_profile"`
 }
 
 var swVersion = "0.1.0"
@@ -33,7 +35,7 @@ var module2 = shared.Module{
 	Factor: 10,
 }
 var defaultInitMsgContent = shared.InitMsgContent{
-	GatewayNodeID: "test",
+	GatewayNodeID: "testing-20230815",
 	HardVersion:   "0.1.0",
 	SoftVersion:   swVersion,
 	Custom:        "test",
