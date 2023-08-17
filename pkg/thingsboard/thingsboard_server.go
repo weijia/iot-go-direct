@@ -52,3 +52,20 @@ func (thingsboardServer ThingsboardServer) UploadTelemetry(accessToken string, d
 		accessToken)
 	thingsboardServer.Post(url, data)
 }
+
+func (thingsboardServer ThingsboardServer) SubscribeToAttribute(accessToken string, timeout int) {
+	url := fmt.Sprintf("%s:%d/api/v1/%s/attributes/updates?timeout=%d",
+	thingsboardServer.ThingsboardServerInfo.Server,
+	thingsboardServer.ThingsboardServerInfo.Port，
+	accessToken,
+	timeout)
+	resp, err := http.Get(url)
+		if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println("Response:", string(body))
+}
