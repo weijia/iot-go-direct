@@ -17,6 +17,7 @@ func TestNodeInfoMsg(t *testing.T) {
 		},
 	}
 	json_bytes, _ := json.Marshal(&node_info_request)
-	msg.HandleMsg(nil, json_bytes)
-	fmt.Println(json_bytes)
+	reply := msg.HandleMsg(nil, json_bytes)
+	res, _ := json.MarshalIndent(reply, "", "  ")
+	fmt.Println(string(res))
 }

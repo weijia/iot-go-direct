@@ -8,17 +8,14 @@ import (
 )
 
 type MsgHandler interface {
-	handle() interface{}
-}
-
-type MsgFactory interface {
-	getTargetMsg() any
+	handle(*util.Mqtt) interface{}
 }
 
 func GetMsgVar(method string) interface{} {
 	requestMap := map[string]interface{}{
 		"node_firmware_upgrade_request": NodeFirmwareUpgradeRequest{},
 		"config":                        ConfigRequest{},
+		"node_info_request":             NodeInfoRequest{},
 	}
 	return requestMap[method]
 }
@@ -28,6 +25,13 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLogFatal(err)
 	}
+
+	targetMsg := GetMsgVar(baseRequest.Method)
+
+	if targetMsg != nil {
+		return targetMsg.(MsgHandler).handle(mqttClient)
+	}
+
 	switch baseRequest.Method {
 	case "config":
 		var configRequest ConfigRequest
@@ -44,12 +48,6 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	case "node_list_request":
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()
-	case "node_info_request":
-		var request NodeInfoRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle()
 	case "gateway_reboot":
 		reply := GatewayNodeIdReply{
 			MsgType:       "gateway_reboot_reply",
