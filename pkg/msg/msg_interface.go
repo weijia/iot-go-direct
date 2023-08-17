@@ -13,9 +13,16 @@ type MsgHandler interface {
 
 func GetMsgVar(method string) interface{} {
 	requestMap := map[string]interface{}{
-		"node_firmware_upgrade_request": NodeFirmwareUpgradeRequest{},
-		"config":                        ConfigRequest{},
-		"node_info_request":             NodeInfoRequest{},
+		"broadcast_update_glass_color_request": BroadcastUpdateGlassColorRequest{},
+		"config":                               ConfigRequest{},
+		"gateway_upgrade_reply":                GatewayUpgradeRequest{},
+		"group_update_glass_color_request":     GroupUpdateGlassColorRequest{},
+		"mqtt_config":                          MqttConfigRequest{},
+		"node_firmware_download_request":       NodeFirmwareDownloadRequest{},
+		"node_firmware_upgrade_request":        NodeFirmwareUpgradeRequest{},
+		"node_info_request":                    NodeInfoRequest{},
+		"set_touch_device_node_list_request":   SetTouchDeviceNodeList{},
+		"update_glass_color_request":           UpdateGlassColorRequest{},
 	}
 	return requestMap[method]
 }
@@ -33,18 +40,7 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	}
 
 	switch baseRequest.Method {
-	case "config":
-		var configRequest ConfigRequest
-		if err := json.Unmarshal(body, &configRequest); err != nil {
-			util.IotLogFatal(err)
-		}
-		return configRequest.handle()
-	case "mqtt_config":
-		var mqttConfigRequest MqttConfigRequest
-		if err := json.Unmarshal(body, &mqttConfigRequest); err != nil {
-			util.IotLogFatal(err)
-		}
-		return mqttConfigRequest.handle()
+
 	case "node_list_request":
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()
@@ -54,49 +50,6 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
 		}
 		return reply
-	case "update_glass_color_request":
-		var request UpdateGlassColorRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle(mqttClient)
-	case "group_update_glass_color_request":
-		var request GroupUpdateGlassColorRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle(mqttClient)
-	case "broadcast_update_glass_color_request":
-		var request BroadcastUpdateGlassColorRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle()
-	case "set_touch_device_node_list_request":
-		var request SetTouchDeviceNodeList
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		request.handle()
-		return nil
-	case "gateway_upgrade_reply":
-		var request GatewayUpgradeRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle()
-	case "node_firmware_download_request":
-		var request NodeFirmwareDownloadRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle()
-	case "node_firmware_upgrade_request":
-		var request NodeFirmwareUpgradeRequest
-		if err := json.Unmarshal(body, &request); err != nil {
-			util.IotLogFatal(err)
-		}
-		return request.handle()
 	}
 	return nil
 }

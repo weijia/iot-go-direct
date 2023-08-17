@@ -1,5 +1,7 @@
 package msg
 
+import "iot_go/pkg/util"
+
 type NodeFirmwareUpgradeRequest struct {
 	Method string                    `json:"method"`
 	Params NodeFirmwareUpgradeParams `json:"params"`
@@ -15,7 +17,7 @@ type NodeFirmwareUpgradeParams struct {
 	Port                  int    `json:"port"`
 }
 
-func (nodeFirmwareUpgradeRequest NodeFirmwareUpgradeRequest) handle() interface{} {
+func (nodeFirmwareUpgradeRequest NodeFirmwareUpgradeRequest) handle(mqttClient *util.Mqtt) interface{} {
 	var reply NodeFirmwareUpgradeReply
 	reply.MsgType = "node_firmware_download_reply"
 	reply.NodeFirmwareUpgradeParams = nodeFirmwareUpgradeRequest.Params

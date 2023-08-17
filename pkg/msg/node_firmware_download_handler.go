@@ -2,6 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 )
 
 type NodeFirmwareDownloadRequest struct {
@@ -23,7 +24,7 @@ type NodeFirmwareDownloadParam struct {
 	// Path                  string `json:"path"`
 }
 
-func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle() interface{} {
+func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle(mqttClient *util.Mqtt) interface{} {
 	var reply NodeFirmwareDownloadReply
 	reply.MsgType = "node_firmware_download_reply"
 	reply.NodeFirmwareDownloadParam = nodeFirmwareDownloadRequest.Params

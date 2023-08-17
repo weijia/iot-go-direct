@@ -3,6 +3,7 @@ package msg
 import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 )
 
 type MqttConfigRequest struct {
@@ -10,7 +11,7 @@ type MqttConfigRequest struct {
 	Params shared.MqttParams `json:"params"`
 }
 
-func (config MqttConfigRequest) handle() interface{} {
+func (config MqttConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 	// fmt.Printf("%s", config.Method)
 	bsp.BspConfigInstance.MqttParams.MqttIP = config.Params.MqttIP
 	bsp.BspConfigInstance.MqttParams.MqttPort = config.Params.MqttPort

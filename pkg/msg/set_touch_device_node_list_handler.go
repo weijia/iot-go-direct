@@ -1,6 +1,9 @@
 package msg
 
-import "fmt"
+import (
+	"fmt"
+	"iot_go/pkg/util"
+)
 
 type SetTouchDeviceNodeList struct {
 	Method string                `json:"method"`
@@ -11,7 +14,7 @@ type TouchDeviceNodeList struct {
 	NodeIds []string `json:"node_ids"`
 }
 
-func (request SetTouchDeviceNodeList) handle() interface{} {
+func (request SetTouchDeviceNodeList) handle(mqttClient *util.Mqtt) interface{} {
 	for _, value := range request.Params {
 		fmt.Println(value.NodeID)
 	}
