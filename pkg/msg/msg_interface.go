@@ -37,8 +37,11 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()
 	case "node_info_request":
-		// TODO
-		return nil
+		var request NodeInfoRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle()
 	case "gateway_reboot":
 		reply := GatewayNodeIdReply{
 			MsgType:       "gateway_reboot_reply",
