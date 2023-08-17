@@ -1,5 +1,9 @@
 package msg
 
+import (
+	"iot_go/pkg/bsp"
+)
+
 type NodeInfoRequest struct {
 	Method string        `json:"method"`
 	Params GatewayParams `json:"params"`

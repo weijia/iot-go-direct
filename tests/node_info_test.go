@@ -12,9 +12,11 @@ func TestNodeInfoMsg(t *testing.T) {
 
 	node_info_request := msg.NodeInfoRequest{
 		Method: "node_info_request",
-		GatewayNodeID: "testing",
+		Params: msg.GatewayParams{
+			GatewayNodeID: "testing",
+		},
 	}
 	json_bytes, _ := json.Marshal(&node_info_request)
-	msg.HandleMsg(json_bytes)
+	msg.HandleMsg(nil, json_bytes)
 	fmt.Println(json_bytes)
 }

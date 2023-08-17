@@ -2,13 +2,14 @@ package util
 
 import (
 	"fmt"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
+	"iot_go/pkg/shared"
 	"log"
 	"os"
-    "path/filepath"
-)
+	"path/filepath"
 
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+)
 
 func Download(sftpInfo shared.SftpInfo) {
 	// SSH客户端配置
@@ -19,7 +20,7 @@ func Download(sftpInfo shared.SftpInfo) {
 	}
 
 	// 连接到远程SSH服务器
-	conn, err := ssh.Dial("tcp", sftpInfo.IP+":"+sftpInfo.Port, config)
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", sftpInfo.IP, sftpInfo.Port), config)
 	if err != nil {
 		log.Fatalf("无法连接到SSH服务器：%v", err)
 	}
@@ -33,7 +34,7 @@ func Download(sftpInfo shared.SftpInfo) {
 	defer client.Close()
 
 	remoteFilePath := sftpInfo.Path
-	localFilePath := "firmware/"+ filepath.Base(sftpInfo.Path)
+	localFilePath := "firmware/" + filepath.Base(sftpInfo.Path)
 
 	// 打开远程文件
 	remoteFile, err := client.Open(remoteFilePath)

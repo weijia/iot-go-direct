@@ -13,7 +13,9 @@ func TestInitMsg(t *testing.T) {
 	init := shared.Init{
 		MsgType: "init",
 		InitMsgContent: shared.InitMsgContent{
-			GatewayNodeID: "testing",
+			NodeInfoContent: shared.NodeInfoContent{
+				GatewayNodeID: "testing",
+			},
 		},
 	}
 	init_json_bytes, _ := json.Marshal(&init)
