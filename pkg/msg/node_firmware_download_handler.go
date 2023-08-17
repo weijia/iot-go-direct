@@ -16,3 +16,11 @@ type NodeFirmwareDownload struct {
 	Pwd                   string `json:"pwd"`
 	Path                  string `json:"path"`
 }
+
+
+func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle() interface {}{
+	var reply NodeFirmwareDownloadReply
+	reply.MsgType = ""
+	reply.NodeFirmwareDownload= nodeFirmwareDownloadRequest.Params
+	return reply
+}
