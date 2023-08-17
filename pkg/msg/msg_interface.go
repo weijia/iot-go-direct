@@ -15,6 +15,13 @@ type MsgFactory interface {
 	getTargetMsg() any
 }
 
+func GetMsgVar(method string) interface {} {
+	var requestMap := map[string]interface{}{
+		"node_firmware_upgrade_request": NodeFirmwareUpgradeRequest{},
+		"config": ConfigRequest{},
+	}
+}
+
 func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
