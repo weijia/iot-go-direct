@@ -73,6 +73,24 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		request.handle()
 		return nil
+	case "gateway_upgrade_reply":
+		var request GateWayUpgradeRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle()
+	case "node_firmware_download_request":
+		var request NodeFirmwareDownloadRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle()
+	case "node_firmware_upgrade_request":
+		var request NodeFirmwareUpgradeRequest
+		if err := json.Unmarshal(body, &request); err != nil {
+			util.IotLogFatal(err)
+		}
+		return request.handle()
 	}
 	return nil
 }
