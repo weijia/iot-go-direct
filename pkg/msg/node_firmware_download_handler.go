@@ -20,7 +20,7 @@ type NodeFirmwareDownload struct {
 
 func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle() interface {}{
 	var reply NodeFirmwareDownloadReply
-	reply.MsgType = ""
+	reply.MsgType = "node_firmware_download_reply"
 	reply.NodeFirmwareDownload= nodeFirmwareDownloadRequest.Params
 	return reply
 }
