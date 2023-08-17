@@ -53,7 +53,7 @@ func (thingsboardServer ThingsboardServer) UploadTelemetry(accessToken string, d
 	thingsboardServer.Post(url, data)
 }
 
-func (thingsboardServer ThingsboardServer) SubscribeToAttribute(accessToken string, timeout int) {
+func (thingsboardServer ThingsboardServer) SubscribeToAttribute(accessToken string, timeout int) interface{} {
 	url := fmt.Sprintf("%s:%d/api/v1/%s/attributes/updates?timeout=%d",
 		thingsboardServer.ThingsboardServerInfo.Server,
 		thingsboardServer.ThingsboardServerInfo.Port,
@@ -62,10 +62,21 @@ func (thingsboardServer ThingsboardServer) SubscribeToAttribute(accessToken stri
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return
+		return nil
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 	fmt.Println("Response:", string(body))
+	return resp
+}
+
+func (thingsboardServer ThingsboardServer) IsDeviceExists(accessToken string) bool {
+	resp := thingsboardServer.SubscribeToAttribute(accessToken, 10)
+	if resp != nil {
+		if resp.(http.Response).Status == "401" {
+			return false
+		}
+	}
+	return true
 }

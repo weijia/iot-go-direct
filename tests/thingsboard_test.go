@@ -37,7 +37,6 @@ func TestTelemetry(t *testing.T) {
 	server.UploadTelemetry("hello", data)
 }
 
-
 func TestSubscribe(t *testing.T) {
 	server := thingsboard.ThingsboardServer{
 		DeviceProfile: thingsboard_shared.DeviceProfile{
@@ -49,5 +48,5 @@ func TestSubscribe(t *testing.T) {
 			ProvisionSecret: "68rsgqafhw0anhcwnccr",
 		},
 	}
-	server.SubscribeToAttribute("hello", 10)
+	server.SubscribeToAttribute("hello1", 100)
 }
