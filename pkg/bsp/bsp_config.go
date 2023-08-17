@@ -50,10 +50,12 @@ var defaultInitMsgContent = shared.InitMsgContent{
 }
 var BspConfigInstance BspConfig
 
+const CONFIG_FILE_NAME := "iot_go.json"
+
 func InitConfig() {
 	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
 	BspConfigInstance.MqttParams.MqttPort = 1883
-	viper.SetConfigName("iot_go.json")
+	viper.SetConfigName(CONFIG_FILE_NAME)
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
@@ -62,7 +64,7 @@ func InitConfig() {
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
-		err2 := os.WriteFile("./iot_go.json", defaultLocalConfig, 0666) //写入文件(字节数组)
+		err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
 		if err2 != nil {
 			util.IotLogFatal(err2)
 		}
@@ -73,7 +75,7 @@ func InitConfig() {
 		}
 		viper.WriteConfig()
 	}
-	data, err := os.ReadFile("./iot_go.json")
+	data, err := os.ReadFile(CONFIG_FILE_NAME)
 	if err == nil && data != nil {
 		err = json.Unmarshal(data, &BspConfigInstance)
 		if err != nil {
@@ -85,7 +87,7 @@ func InitConfig() {
 func (bspConfig BspConfig) CommitChanges() {
 	defaultLocalConfig, _ := json.MarshalIndent(bspConfig, "", "    ")
 	/*******************  使用 ioutil.WriteFile 写入文件 *****************/
-	err2 := os.WriteFile("./iot_go.json", defaultLocalConfig, 0666) //写入文件(字节数组)
+	err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
 	if err2 != nil {
 		util.IotLogFatal(err2)
 	}
