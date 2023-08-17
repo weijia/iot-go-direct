@@ -1,10 +1,9 @@
 package iot_go_test
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
+	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
 )
 
@@ -18,7 +17,5 @@ func TestInitMsg(t *testing.T) {
 			},
 		},
 	}
-	init_json_bytes, _ := json.Marshal(&init)
-	// msg.HandleMsg(init_json_bytes)
-	fmt.Println(string(init_json_bytes))
+	msg.DumpMsg(init)
 }
