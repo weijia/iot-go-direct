@@ -11,6 +11,7 @@ type GatewayParams struct {
 
 func (nodeInfoRequest NodeInfoRequest) handle() interface {}{
 	var reply NodeInfoReply
+	reply.MsgType = "node_info_reply"
 	reply.NodeInfoContent = bsp.BspConfigInstance.InitMsgContent.NodeInfoContent
 	return reply
 }
