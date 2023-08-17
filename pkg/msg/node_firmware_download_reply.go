@@ -12,6 +12,6 @@ type NodeFirmwareDownloadReply struct {
 	// User                  string `json:"user"`
 	// Pwd                   string `json:"pwd"`
 	// Path                  string `json:"path"`
-	NodeFirmwareDownload
+	NodeFirmwareDownloadParam
 	State                 string `json:"state"`
 }

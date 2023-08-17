@@ -1,20 +1,27 @@
 package msg
 
+
+import (
+	"iot_go/pkg/shared"
+)
+
 type NodeFirmwareDownloadRequest struct {
 	Method string               `json:"method"`
-	Params NodeFirmwareDownload `json:"params"`
+	Params NodeFirmwareDownloadParam `json:"params"`
 }
-type NodeFirmwareDownload struct {
+
+type NodeFirmwareDownloadParam struct {
 	TargetHardwareVersion string `json:"target_hardware_version"`
 	TargetSoftwareVersion string `json:"target_software_version"`
 	NodeType              int    `json:"node_type"`
 	TargetRunArea         int    `json:"target_run_area"`
 	Crc8                  int    `json:"crc8"`
-	IP                    string `json:"ip"`
-	Port                  int    `json:"port"`
-	User                  string `json:"user"`
-	Pwd                   string `json:"pwd"`
-	Path                  string `json:"path"`
+	shared.SftpInfo
+	// IP                    string `json:"ip"`
+	// Port                  int    `json:"port"`
+	// User                  string `json:"user"`
+	// Pwd                   string `json:"pwd"`
+	// Path                  string `json:"path"`
 }
 
 

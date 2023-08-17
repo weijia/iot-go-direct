@@ -4,6 +4,7 @@ type NodeFirmwareUpgradeRequest struct {
 	Method string                    `json:"method"`
 	Params NodeFirmwareUpgradeParams `json:"params"`
 }
+
 type NodeFirmwareUpgradeParams struct {
 	TargetHardwareVersion string `json:"target_hardware_version"`
 	TargetSoftwareVersion string `json:"target_software_version"`
