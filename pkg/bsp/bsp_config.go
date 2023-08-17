@@ -35,22 +35,24 @@ var module2 = shared.Module{
 	Factor: 10,
 }
 var defaultInitMsgContent = shared.InitMsgContent{
-	GatewayNodeID: "testing-20230815",
-	HardVersion:   "0.1.0",
-	SoftVersion:   swVersion,
-	Custom:        "test",
-	Project:       "test",
-	NodeType:      1,
-	Rssi:          10,
-	Ccid:          "test",
-	HeartBeat:     20,
-	Module0:       module0,
-	Module1:       module1,
-	Module2:       module2,
+	NodeInfoContent: shared.NodeInfoContent{
+		GatewayNodeID: "testing-20230815",
+		HardVersion:   "0.1.0",
+		SoftVersion:   swVersion,
+		Custom:        "test",
+		Project:       "test",
+		NodeType:      1,
+		Rssi:          10,
+		Ccid:          "test",
+		HeartBeat:     20,
+		Module1:       module1,
+		Module2:       module2,
+	},
+	Module0: module0,
 }
 var BspConfigInstance BspConfig
 
-const CONFIG_FILE_NAME := "iot_go.json"
+const CONFIG_FILE_NAME = "iot_go.json"
 
 func InitConfig() {
 	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"

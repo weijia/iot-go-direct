@@ -1,12 +1,11 @@
 package msg
 
-
 import (
 	"iot_go/pkg/shared"
 )
 
 type NodeFirmwareDownloadRequest struct {
-	Method string               `json:"method"`
+	Method string                    `json:"method"`
 	Params NodeFirmwareDownloadParam `json:"params"`
 }
 
@@ -24,10 +23,9 @@ type NodeFirmwareDownloadParam struct {
 	// Path                  string `json:"path"`
 }
 
-
-func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle() interface {}{
+func (nodeFirmwareDownloadRequest NodeFirmwareDownloadRequest) handle() interface{} {
 	var reply NodeFirmwareDownloadReply
 	reply.MsgType = "node_firmware_download_reply"
-	reply.NodeFirmwareDownload= nodeFirmwareDownloadRequest.Params
+	reply.NodeFirmwareDownloadParam = nodeFirmwareDownloadRequest.Params
 	return reply
 }

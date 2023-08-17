@@ -1,18 +1,17 @@
 package msg
 
+import (
+	"iot_go/pkg/shared"
+)
+
 type GatewayUpgradeRequest struct {
-	Method string               `json:"method"`
-	Params GatewayUpgradeParams `json:"params"`
+	Method string                      `json:"method"`
+	Params shared.GatewayUpgradeParams `json:"params"`
 }
-type GatewayUpgradeParams struct {
-	GatewayNodeID         string `json:"gateway_node_id"`
-	TargetHardwareVersion string `json:"target_hardware_version"`
-	TargetSoftwareVersion string `json:"target_software_version"`
-	NodeType              int    `json:"node_type"`
-	Crc8                  int    `json:"crc8"`
-	IP                    string `json:"ip"`
-	Port                  int    `json:"port"`
-	User                  string `json:"user"`
-	Pwd                   string `json:"pwd"`
-	Path                  string `json:"path"`
+
+func (gatewayUpgradeRequest GatewayUpgradeRequest) handle() interface{} {
+	var reply GatewayUpgradeReply
+	reply.MsgType = "node_firmware_download_reply"
+	reply.GatewayUpgradeParams = gatewayUpgradeRequest.Params
+	return reply
 }

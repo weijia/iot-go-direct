@@ -14,3 +14,10 @@ type NodeFirmwareUpgradeParams struct {
 	IP                    string `json:"ip"`
 	Port                  int    `json:"port"`
 }
+
+func (nodeFirmwareUpgradeRequest NodeFirmwareUpgradeRequest) handle() interface{} {
+	var reply NodeFirmwareUpgradeReply
+	reply.MsgType = "node_firmware_download_reply"
+	reply.NodeFirmwareUpgradeParams = nodeFirmwareUpgradeRequest.Params
+	return reply
+}

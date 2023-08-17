@@ -15,11 +15,12 @@ type MsgFactory interface {
 	getTargetMsg() any
 }
 
-func GetMsgVar(method string) interface {} {
-	var requestMap := map[string]interface{}{
+func GetMsgVar(method string) interface{} {
+	requestMap := map[string]interface{}{
 		"node_firmware_upgrade_request": NodeFirmwareUpgradeRequest{},
-		"config": ConfigRequest{},
+		"config":                        ConfigRequest{},
 	}
+	return requestMap[method]
 }
 
 func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
@@ -81,7 +82,7 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		request.handle()
 		return nil
 	case "gateway_upgrade_reply":
-		var request GateWayUpgradeRequest
+		var request GatewayUpgradeRequest
 		if err := json.Unmarshal(body, &request); err != nil {
 			util.IotLogFatal(err)
 		}
