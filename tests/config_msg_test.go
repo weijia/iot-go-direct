@@ -24,5 +24,6 @@ func TestConfigMsg(t *testing.T) {
 	}
 	config_json_bytes, _ := json.Marshal(config)
 	var mqtt util.Mqtt
-	msg.HandleMsg(&mqtt, config_json_bytes)
+	reply := msg.HandleMsg(&mqtt, config_json_bytes)
+	msg.DumpMsg(reply)
 }

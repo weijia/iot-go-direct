@@ -2,7 +2,6 @@ package iot_go_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"iot_go/pkg/msg"
@@ -18,6 +17,5 @@ func TestNodeInfoMsg(t *testing.T) {
 	}
 	json_bytes, _ := json.Marshal(&node_info_request)
 	reply := msg.HandleMsg(nil, json_bytes)
-	res, _ := json.MarshalIndent(reply, "", "  ")
-	fmt.Println(string(res))
+	msg.DumpMsg(reply)
 }

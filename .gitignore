@@ -2,3 +2,4 @@ main
 go.sum
 iot_go.json
 *.exe
+go.work.sum

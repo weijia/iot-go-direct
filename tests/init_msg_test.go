@@ -20,5 +20,5 @@ func TestInitMsg(t *testing.T) {
 	}
 	init_json_bytes, _ := json.Marshal(&init)
 	// msg.HandleMsg(init_json_bytes)
-	fmt.Println(init_json_bytes)
+	fmt.Println(string(init_json_bytes))
 }
