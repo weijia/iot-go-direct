@@ -15,7 +15,7 @@ type NodeInfoReply struct {
 	// Project         string `json:"project"`
 	// Module1 shared.Module `json:"module1"`
 	// Module2 shared.Module `json:"module2"`
-	shared.InitMsgContent
+	shared.NodeInfoContent
 	// MqttIP          string        `json:"mqtt_ip"`
 	// MqttPort        int           `json:"mqtt_port"`
 	// MqttUserName    string        `json:"mqtt_user_name"`
