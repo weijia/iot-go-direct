@@ -1,5 +1,14 @@
 package main
 
+/*
+
+#cgo LDFLAGS: -L${SRCDIR} -lpan3028 -lm
+
+#include "radio.h"
+
+*/
+import "C"
+
 import (
 	"fmt"
 
@@ -16,6 +25,7 @@ import (
 )
 
 func main() {
+	C.rf_init()
 
 	bsp.InitConfig()
 	fmt.Println(viper.GetString("msg_type"))
