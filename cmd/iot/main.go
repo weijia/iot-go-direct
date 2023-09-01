@@ -1,31 +1,41 @@
 package main
 
-/*
-
-#cgo LDFLAGS: -L${SRCDIR} -lpan3028 -lm
-
-#include "radio.h"
-
-*/
-import "C"
-
 import (
 	"fmt"
 
+	"log"
 	"os"
 	"os/signal"
 
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	fork "github.com/kraken-hpc/go-fork"
 	"github.com/spf13/viper"
 )
 
+func init() {
+	fork.RegisterFunc("StartLoraService", lora.StartLoraService)
+	fork.RegisterFunc("StartLoraService1", lora.StartLoraService)
+	fork.RegisterFunc("StartLoraService2", lora.StartLoraService)
+	fork.Init()
+}
+
 func main() {
-	C.rf_init()
+	fmt.Printf("main() pid: %d\n", os.Getpid())
+	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866); err != nil {
+		log.Fatalf("failed to fork: %v", err)
+	}
+	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867); err != nil {
+		log.Fatalf("failed to fork: %v", err)
+	}
+	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868); err != nil {
+		log.Fatalf("failed to fork: %v", err)
+	}
 
 	bsp.InitConfig()
 	fmt.Println(viper.GetString("msg_type"))
