@@ -13,9 +13,10 @@ import "C"
 
 import (
 	"fmt"
+	"iot_go/pkg/lora_shared"
 )
 
-func (lora Lora) InitLora() {
+func (lora Lora) InitLora(argType lora_shared.EmptyArg, reply *lora_shared.ReplyResult) error {
 	fmt.Println("Initiating Lora")
 	C.rf_init()
 }

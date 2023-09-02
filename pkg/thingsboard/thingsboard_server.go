@@ -32,6 +32,7 @@ func (thingsboardServer ThingsboardServer) Post(url string, data interface{}) {
 }
 
 func (thingsboardServer ThingsboardServer) CreateDevice(deviceName string) {
+	fmt.Printf("Calling create dev with %s", deviceName)
 	url := fmt.Sprintf("%s:%d/api/v1/provision",
 		thingsboardServer.ThingsboardServerInfo.Server,
 		thingsboardServer.ThingsboardServerInfo.Port)

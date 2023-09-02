@@ -17,13 +17,6 @@ func NewLora(devName string) *Lora {
 	return &Lora{DeviceName: devName}
 }
 
-type EmptyArg struct {
-}
-
-type ReplyResult struct {
-	Result int
-}
-
 func StartLoraService(devName string, port int) {
 	fmt.Printf("Starting lora service on dev: %s, port: %d", devName, port)
 	rolaDev := NewLora(devName)

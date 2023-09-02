@@ -2,6 +2,7 @@ package bsp
 
 import (
 	"encoding/json"
+	"iot_go/pkg/lora_client"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard"
 	"iot_go/pkg/thingsboard_shared"
@@ -17,8 +18,18 @@ type Bsp interface {
 	SetModule2Params(module shared.Module)
 }
 
-func InitBoard() {
+var module0Client *lora_client.LoraClient
+var module1Client *lora_client.LoraClient
+var module2Client *lora_client.LoraClient
 
+func InitBoard() {
+	module0Client = lora_client.NewLoraClient(8866)
+	module1Client = lora_client.NewLoraClient(8867)
+	module2Client = lora_client.NewLoraClient(8868)
+
+	module0Client.InitLora()
+	module1Client.InitLora()
+	module2Client.InitLora()
 }
 
 type VirtualBsp struct {
@@ -78,7 +89,7 @@ func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 
 func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
 	fmt.Println("Setting glass color:", nodeId, color)
-	
+
 	data := map[string]interface{}{
 		"color": color,
 	}
@@ -103,4 +114,10 @@ func (virtualBsp VirtualBsp) SetGlassColorsBlocking(
 
 func GetBsp() *VirtualBsp {
 	return &virtualBsp
+}
+
+func (virtualBsp VirtualBsp) StopAllProcess() {
+	module0Client.Exit()
+	module1Client.Exit()
+	module2Client.Exit()
 }

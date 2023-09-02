@@ -19,17 +19,17 @@ type BspConfig struct {
 
 var swVersion = "0.1.0"
 
-var module0 = shared.Module{
+var module0Param = shared.Module{
 	Freq:   443,
 	Band:   250,
 	Factor: 10,
 }
-var module1 = shared.Module{
+var module1Param = shared.Module{
 	Freq:   444,
 	Band:   250,
 	Factor: 10,
 }
-var module2 = shared.Module{
+var module2Param = shared.Module{
 	Freq:   446,
 	Band:   250,
 	Factor: 10,
@@ -45,10 +45,10 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		Rssi:          10,
 		Ccid:          "test",
 		HeartBeat:     20,
-		Module1:       module1,
-		Module2:       module2,
+		Module1:       module1Param,
+		Module2:       module2Param,
 	},
-	Module0: module0,
+	Module0: module0Param,
 }
 var BspConfigInstance BspConfig
 

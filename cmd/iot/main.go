@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-
 	"log"
+
 	"os"
 	"os/signal"
 
@@ -14,7 +14,7 @@ import (
 	"iot_go/pkg/util"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	fork "github.com/kraken-hpc/go-fork"
+	"github.com/kraken-hpc/go-fork"
 	"github.com/spf13/viper"
 )
 
@@ -87,4 +87,5 @@ func main() {
 
 	client.Disconnect(250)
 	fmt.Println("Disconnected")
+	bsp.GetBsp().StopAllProcess()
 }
