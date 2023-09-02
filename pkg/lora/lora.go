@@ -18,7 +18,7 @@ func NewLora(devName string) *Lora {
 }
 
 func StartLoraService(devName string, port int) {
-	fmt.Printf("Starting lora service on dev: %s, port: %d", devName, port)
+	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
 	rolaDev := NewLora(devName)
 	rpc.Register(rolaDev)
 	rpc.HandleHTTP()

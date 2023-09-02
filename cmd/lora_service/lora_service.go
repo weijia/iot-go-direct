@@ -7,5 +7,5 @@ import (
 
 func main() {
 	bsp.InitConfig()
-	lora.StartLoraService("spidev0.0", 8866)
+	lora.StartLoraService("/dev/spidev2.0", 8866)
 }

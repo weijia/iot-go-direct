@@ -12,11 +12,15 @@ type LoraClient struct {
 	RpcClient *rpc.Client
 }
 
-func NewLoraClient(port int) *LoraClient {
+func NewLoraClient(port int, host ...string) *LoraClient {
 	var rpcClient *rpc.Client
 	var err error
+	realHost := "127.0.0.1"
+	if len(host) > 0 {
+		realHost = host[0]
+	}
 	for {
-		rpcClient, err = rpc.DialHTTP("tcp", fmt.Sprintf(":%d", port))
+		rpcClient, err = rpc.DialHTTP("tcp", fmt.Sprintf("%s:%d", realHost, port))
 		if err != nil {
 			log.Println("dialing:", err)
 		} else {
