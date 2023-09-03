@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"iot_go/pkg/util"
+	"log"
 	"net/http"
 
 	"iot_go/pkg/thingsboard_shared"
@@ -16,6 +17,7 @@ type ThingsboardServer struct {
 }
 
 func (thingsboardServer ThingsboardServer) Post(url string, data interface{}) {
+	log.Printf("url: %s, data: %s", url, data)
 	dataStr, err := json.Marshal(data)
 	if err != nil {
 		util.IotLogFatal(err)
@@ -32,6 +34,11 @@ func (thingsboardServer ThingsboardServer) Post(url string, data interface{}) {
 }
 
 func (thingsboardServer ThingsboardServer) CreateDevice(deviceName string) {
+	if deviceName == "" {
+		log.Fatalf("Device name should not be empty: '%s'", deviceName)
+		return
+	}
+	log.Printf("creating device: %s", deviceName)
 	fmt.Printf("Calling create dev with %s", deviceName)
 	url := fmt.Sprintf("%s:%d/api/v1/provision",
 		thingsboardServer.ThingsboardServerInfo.Server,

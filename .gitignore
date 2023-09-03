@@ -5,3 +5,7 @@ iot_go.json
 go.work.sum
 *.o
 *.a
+lora_service
+*log.txt
+pan3028-app
+
