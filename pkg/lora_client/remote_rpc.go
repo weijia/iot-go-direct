@@ -36,7 +36,7 @@ func (client LoraClient) InitLora() {
 
 	args := &lora_shared.EmptyArg{}
 	var reply lora_shared.ReplyResult
-	err := client.RpcClient.Call("Lora.InitLora", args, &reply)
+	err := client.RpcClient.Call("LoraRpc.InitLora", args, &reply)
 	if err != nil {
 		log.Println("Lora.InitLora error:", err)
 	}
@@ -45,8 +45,8 @@ func (client LoraClient) InitLora() {
 func (client LoraClient) Exit() {
 	args := &lora_shared.EmptyArg{}
 	var reply lora_shared.ReplyResult
-	err := client.RpcClient.Call("Lora.Exit", args, &reply)
+	err := client.RpcClient.Call("LoraRpc.Exit", args, &reply)
 	if err != nil {
-		log.Println("Lora.Exit error:", err)
+		log.Println("LoraRpc.Exit error:", err)
 	}
 }

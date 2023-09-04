@@ -8,7 +8,7 @@ import (
 	"os/signal"
 
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora"
+	"iot_go/pkg/lora_rpc"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
@@ -19,9 +19,9 @@ import (
 )
 
 func init() {
-	fork.RegisterFunc("StartLoraService", lora.StartLoraService)
-	fork.RegisterFunc("StartLoraService1", lora.StartLoraService)
-	fork.RegisterFunc("StartLoraService2", lora.StartLoraService)
+	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraService)
+	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraService)
+	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraService)
 	fork.Init()
 }
 

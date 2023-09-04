@@ -1,0 +1,64 @@
+package lora_rpc
+
+import (
+	"fmt"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora"
+	"iot_go/pkg/lora_shared"
+	"iot_go/pkg/shared"
+	"log"
+	"net/http"
+	"net/rpc"
+	"os"
+	"strings"
+)
+
+type LoraRpc struct {
+	Port    int
+	LoraDev *lora.Lora
+}
+
+func (loraRpc LoraRpc) InitLora(argType shared.Module, reply *lora_shared.ReplyResult) error {
+	reply.Result = loraRpc.LoraDev.InitLora(argType)
+	return nil
+}
+
+func (loraRpc LoraRpc) Exit(argType lora_shared.EmptyArg, reply *lora_shared.ReplyResult) error {
+	reply.Result = loraRpc.LoraDev.Exit()
+	return nil
+}
+
+func NewLoraRpc(devName string, port int) *LoraRpc {
+	loraDev := lora.NewLora(devName)
+	return &LoraRpc{
+		Port:    port,
+		LoraDev: loraDev,
+	}
+}
+
+func StartLoraService(devName string, port int) {
+	bsp.InitConfig()
+	dev := strings.Split(devName, "/")
+
+	file, err := os.OpenFile(dev[2]+"log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	// // 设置日志输出到文件
+	log.SetOutput(file)
+
+	// 以下是一些日志示例
+	// log.Println("这是一条普通日志")
+	log.Printf("StartLoraService started for：%s", devName)
+	// log.Fatalf("发生了严重错误：%s", "错误信息")
+
+	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
+	rolaDev := NewLoraRpc(devName, port)
+	rpc.Register(rolaDev)
+	rpc.HandleHTTP()
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+		log.Fatal("serve error:", err)
+	}
+}

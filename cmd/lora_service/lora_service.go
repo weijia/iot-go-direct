@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora"
+	"iot_go/pkg/lora_rpc"
 )
 
 func main() {
@@ -34,5 +34,5 @@ func main() {
 	fmt.Printf("devName=%v port=%v\n", devName, port)
 
 	bsp.InitConfig()
-	lora.StartLoraService(devName, port)
+	lora_rpc.StartLoraService(devName, port)
 }

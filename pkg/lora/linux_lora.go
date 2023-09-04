@@ -14,29 +14,32 @@ import "C"
 
 import (
 	"fmt"
-	"iot_go/pkg/lora_shared"
+	"iot_go/pkg/shared"
+	"log"
 	"os"
 	"unsafe"
 )
 
-func (lora Lora) InitLora(argType lora_shared.EmptyArg, reply *lora_shared.ReplyResult) error {
+func (lora Lora) InitLora(module shared.Module) int {
 	fmt.Println("Initiating Lora")
 	device := C.CString(lora.DeviceName)
 	defer C.free(unsafe.Pointer(device))
 	C.set_device(device)
-	C.rf_init()
-	fmt.Println("rf_init OK\n")
-	return nil
+	// ret = rf_init();
+	isOK := int(C.rf_init())
+	if isOK != 0 {
+		return isOK
+	}
+	log.Println("rf_init OK\n")
+	C.set_freq(C.int(module.Freq))
+	C.set_band(C.int(module.Band))
+	C.set_factor(C.int(module.Factor))
+	C.rf_set_default_para()
+
+	return 0
 }
 
-func (lora Lora) Exit(argType lora_shared.EmptyArg, reply *lora_shared.ReplyResult) error {
-	// data := map[string]interface{}{
-	// 	fmt.Sprintf("%s-exited",
-	// 		lora.DeviceName): "yes",
-	// }
-	// bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeID, data)
-	reply.Result = 0
+func (lora Lora) Exit() int {
 	os.Exit(0)
-	reply.Result = 0
-	return nil
+	return 0
 }

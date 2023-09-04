@@ -45,8 +45,8 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		Rssi:          10,
 		Ccid:          "test",
 		HeartBeat:     20,
-		Module1:       module1Param,
-		Module2:       module2Param,
+		// Module1:       module1Param, // This will be overwritten by ConfigParams
+		// Module2:       module2Param, // This will be overwritten by ConfigParams
 	},
 	Module0: module0Param,
 }
@@ -64,6 +64,8 @@ func InitConfig() {
 
 	if err != nil {
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
+		BspConfigInstance.ConfigParams.Module1 = module1Param
+		BspConfigInstance.ConfigParams.Module2 = module2Param
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
