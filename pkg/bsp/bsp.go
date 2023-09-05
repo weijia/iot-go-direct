@@ -27,9 +27,9 @@ func InitBoard() {
 	module1Client = lora_client.NewLoraClient(8867)
 	module2Client = lora_client.NewLoraClient(8868)
 
-	module0Client.InitLora()
-	module1Client.InitLora()
-	module2Client.InitLora()
+	module0Client.InitLora(module0Param)
+	module1Client.InitLora(module1Param)
+	module2Client.InitLora(module2Param)
 }
 
 type VirtualBsp struct {

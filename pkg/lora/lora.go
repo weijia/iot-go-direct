@@ -5,8 +5,9 @@ import (
 )
 
 type Lora struct {
-	DeviceName string
-	ModuleInst *shared.Module
+	DeviceName      string
+	ModuleInst      *shared.Module
+	IsInitCompleted bool
 }
 
 func NewLora(devName string) *Lora {

@@ -29,11 +29,15 @@ func (loraRpc LoraRpc) Exit(argType lora_shared.EmptyArg, reply *lora_shared.Rep
 }
 
 func (loraRpc LoraRpc) Send(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
+	fmt.Println("RPC: Send called")
+	log.Println("RPC: Send called")
 	reply.Result = loraRpc.LoraDev.Send(argType.Data)
 	return nil
 }
 
 func (loraRpc LoraRpc) Receive(argType lora_shared.EmptyArg, reply *lora_shared.LoraData) error {
+	fmt.Println("RPC: Receive called")
+	log.Println("RPC: Receive called")
 	reply.Data = loraRpc.LoraDev.Receive()
 	return nil
 }
