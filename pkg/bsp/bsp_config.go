@@ -25,7 +25,7 @@ var module0Param = shared.Module{
 	Factor: 10,
 }
 var module1Param = shared.Module{
-	Freq:   444,
+	Freq:   443,
 	Band:   250,
 	Factor: 10,
 }
@@ -45,8 +45,8 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		Rssi:          10,
 		Ccid:          "test",
 		HeartBeat:     20,
-		// Module1:       module1Param, // This will be overwritten by ConfigParams
-		// Module2:       module2Param, // This will be overwritten by ConfigParams
+		Module1:       module1Param, // This will be overwritten by ConfigParams
+		Module2:       module2Param, // This will be overwritten by ConfigParams
 	},
 	Module0: module0Param,
 }

@@ -13,6 +13,7 @@ package lora
 import "C"
 
 import (
+	"bytes"
 	"fmt"
 	"iot_go/pkg/shared"
 	"log"
@@ -42,4 +43,27 @@ func (lora Lora) InitLora(module shared.Module) int {
 func (lora Lora) Exit() int {
 	os.Exit(0)
 	return 0
+}
+
+func (lora Lora) Send(data []byte) int {
+	// Ref: https://packagewjx.github.io/2018/09/19/cgo-cstring-ram-leak/
+	cBufferNeedToFree := C.CBytes(data)
+	defer C.free(unsafe.Pointer(&cBufferNeedToFree))
+	res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
+	return int(res)
+}
+
+func (lora Lora) Receive() []byte {
+	buffer := bytes.NewBuffer(make([]byte, 0, 513))
+
+	// Call the C function to fill the buffer
+	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
+	if len <= 0 {
+		log.Printf("Receive error, len: %d", int(len))
+		return make([]byte, 0)
+	} else {
+		byteSlice := make([]byte, len)
+		buffer.Read(byteSlice)
+		return byteSlice
+	}
 }

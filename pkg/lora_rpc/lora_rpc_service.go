@@ -28,6 +28,16 @@ func (loraRpc LoraRpc) Exit(argType lora_shared.EmptyArg, reply *lora_shared.Rep
 	return nil
 }
 
+func (loraRpc LoraRpc) Send(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
+	reply.Result = loraRpc.LoraDev.Send(argType.Data)
+	return nil
+}
+
+func (loraRpc LoraRpc) Receive(argType lora_shared.EmptyArg, reply *lora_shared.LoraData) error {
+	reply.Data = loraRpc.LoraDev.Receive()
+	return nil
+}
+
 func NewLoraRpc(devName string, port int) *LoraRpc {
 	loraDev := lora.NewLora(devName)
 	return &LoraRpc{
