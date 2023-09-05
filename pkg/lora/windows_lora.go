@@ -29,3 +29,11 @@ func (lora Lora) Exit() int {
 	os.Exit(0)
 	return 0
 }
+
+func (lora Lora) Send(data []byte) int {
+	return 0
+}
+
+func (lora Lora) Receive() []byte {
+	return make([]byte, 0)
+}

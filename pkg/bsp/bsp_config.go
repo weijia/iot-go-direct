@@ -85,6 +85,9 @@ func InitConfig() {
 		if err != nil {
 			util.IotLogFatal(err)
 		}
+		// Module1&2 data will be missing because they are in ConfigParam as well
+		BspConfigInstance.InitMsgContent.Module1 = BspConfigInstance.ConfigParams.Module1
+		BspConfigInstance.InitMsgContent.Module2 = BspConfigInstance.ConfigParams.Module2
 	}
 }
 
