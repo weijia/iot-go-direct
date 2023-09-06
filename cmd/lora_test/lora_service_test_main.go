@@ -20,9 +20,9 @@ func ReceiveLoop(receivingCh chan<- []byte, client *lora_client.LoraClient) {
 			fmt.Println("No data received, wait for 10 seconds")
 			time.Sleep(10 * time.Second)
 		} else {
-			for i := 0; i < len(data); i++ {
-				print(data[i], "\n")
-			}
+			// for i := 0; i < len(data); i++ {
+			// 	fmt.Println(data[i])
+			// }
 			receivingCh <- data
 		}
 	}
@@ -47,11 +47,12 @@ func main() {
 		client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module0)
 		ch := make(chan []byte)
 		go ReceiveLoop(ch, client)
-		data := <-ch
-		for i := 0; i < len(data); i++ {
-			print(data[i], "\n")
+		for {
+			data := <-ch
+			for i := 0; i < len(data); i++ {
+				print(data[i], "\n")
+			}
 		}
-		isQuit = true
 	} else {
 		client := lora_client.NewLoraClient(8866, server)
 		// client.ToggleDebug()

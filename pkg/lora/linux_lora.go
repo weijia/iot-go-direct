@@ -90,7 +90,8 @@ func (loraDev Lora) Receive() []byte {
 	// fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
 	if C.is_loop_started() == 0 {
 		fmt.Printf("Start handling loop\n")
-		go loraDev.ReceiveLoop()
+		// go loraDev.ReceiveLoop()
+		go loraDev.SendReceiveLoop()
 	}
 
 	buffer := bytes.NewBuffer(make([]byte, 513))
