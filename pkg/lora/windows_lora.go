@@ -37,3 +37,6 @@ func (lora Lora) Send(data []byte) int {
 func (lora Lora) Receive() []byte {
 	return make([]byte, 0)
 }
+
+func (lora Lora) ToggleDebug() {
+}

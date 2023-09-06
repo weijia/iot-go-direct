@@ -51,7 +51,7 @@ func (client LoraClient) Exit() {
 }
 
 func (client LoraClient) Send(data []byte) {
-	args := &lora_shared.LoraData{Data: []byte{97, 98, 99}}
+	args := &lora_shared.LoraData{Data: data}
 	var reply lora_shared.ReplyResult
 	err := client.RpcClient.Call("LoraRpc.Send", args, &reply)
 	if err != nil {
@@ -71,4 +71,10 @@ func (client LoraClient) Receive() []byte {
 	}
 	log.Printf("\n")
 	return reply.Data
+}
+
+func (client LoraClient) ToggleDebug() {
+	args := &lora_shared.EmptyArg{}
+	var reply lora_shared.EmptyArg
+	client.RpcClient.Call("LoraRpc.ToggleDebug", args, &reply)
 }

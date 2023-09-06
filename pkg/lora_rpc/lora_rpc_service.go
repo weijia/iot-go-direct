@@ -29,16 +29,22 @@ func (loraRpc LoraRpc) Exit(argType lora_shared.EmptyArg, reply *lora_shared.Rep
 }
 
 func (loraRpc LoraRpc) Send(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
-	fmt.Println("RPC: Send called")
-	log.Println("RPC: Send called")
+	// fmt.Println("RPC: Send called")
+	// log.Println("RPC: Send called")
+	fmt.Printf("Sending len: %d\n", len(argType.Data))
 	reply.Result = loraRpc.LoraDev.Send(argType.Data)
 	return nil
 }
 
 func (loraRpc LoraRpc) Receive(argType lora_shared.EmptyArg, reply *lora_shared.LoraData) error {
-	fmt.Println("RPC: Receive called")
+	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p", &loraRpc, &loraRpc.LoraDev)
 	log.Println("RPC: Receive called")
 	reply.Data = loraRpc.LoraDev.Receive()
+	return nil
+}
+
+func (loraRpc LoraRpc) ToggleDebug(argType lora_shared.EmptyArg, reply *lora_shared.EmptyArg) error {
+	loraRpc.LoraDev.ToggleDebug()
 	return nil
 }
 
@@ -69,8 +75,10 @@ func StartLoraService(devName string, port int) {
 	// log.Fatalf("发生了严重错误：%s", "错误信息")
 
 	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
-	rolaDev := NewLoraRpc(devName, port)
-	rpc.Register(rolaDev)
+	rolaRpc := NewLoraRpc(devName, port)
+	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
+	// So the data changed after Register may be discarded
+	rpc.Register(rolaRpc)
 	rpc.HandleHTTP()
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		log.Fatal("serve error:", err)
