@@ -18,8 +18,8 @@
     },
     "explorerExclude.backup": {},
     "triggerTaskOnSave.tasks": {
-        "arm build": [
-            "*.go",
+        "build": [
+            "int_test_main.go",
             "*.h",
             "*.c",
         ],

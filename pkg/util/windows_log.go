@@ -2,10 +2,8 @@
 
 package util
 
-import "log"
+func AdditionalLog(err error) {
+}
 
-func IotLogFatal(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
+func AdditionalLogStr(s string) {
 }

@@ -3,6 +3,7 @@ package bsp
 import (
 	"encoding/json"
 	"iot_go/pkg/lora_client"
+	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard"
 	"iot_go/pkg/thingsboard_shared"
@@ -87,8 +88,27 @@ func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeID, data)
 }
 
+func IsSliceContainsStr(a []string, b string) bool {
+	for _, c := range a {
+		if c == b {
+			return true
+		}
+	}
+	return false
+}
+
 func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
 	fmt.Println("Setting glass color:", nodeId, color)
+
+	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
+		module1Client.Send(node.GetUpdateGlassColorMsg(nodeId, color))
+	} else {
+		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
+			module1Client.Send(node.GetUpdateGlassColorMsg(nodeId, color))
+		} else {
+			util.IotLogError("Node does not exists\n")
+		}
+	}
 
 	data := map[string]interface{}{
 		"color": color,
@@ -120,4 +140,8 @@ func (virtualBsp VirtualBsp) StopAllProcess() {
 	module0Client.Exit()
 	module1Client.Exit()
 	module2Client.Exit()
+}
+
+func Lora0Send(data []byte) {
+	module0Client.Send(data)
 }

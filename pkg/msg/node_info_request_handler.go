@@ -17,5 +17,6 @@ func (nodeInfoRequest NodeInfoRequest) handle(mqttClient *util.Mqtt) interface{}
 	var reply NodeInfoReply
 	reply.MsgType = "node_info_reply"
 	reply.NodeInfoContent = bsp.BspConfigInstance.InitMsgContent.NodeInfoContent
+	reply.MqttParams = bsp.BspConfigInstance.MqttParams
 	return reply
 }

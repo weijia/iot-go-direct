@@ -30,13 +30,13 @@ func GetMsgVar(method string) interface{} {
 func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
-		util.IotLogFatal(err)
+		util.IotLogError(err)
 	}
 
 	// targetMsg := GetMsgVar(baseRequest.Method).(MsgHandler)
 
 	// if err := json.Unmarshal(body, &targetMsg); err != nil {
-	// 	util.IotLogFatal(err)
+	// 	util.IotLogError(err)
 	// }
 
 	// if targetMsg != nil {
@@ -48,13 +48,13 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	case "broadcast_update_glass_color_request":
 		var broadcastUpdateGlassColorRequest BroadcastUpdateGlassColorRequest
 		if err := json.Unmarshal(body, &broadcastUpdateGlassColorRequest); err != nil {
-			util.IotLogFatal(err)
+			util.IotLogError(err)
 		}
 		return broadcastUpdateGlassColorRequest.handle(mqttClient)
 	case "config":
 		var configRequest ConfigRequest
 		if err := json.Unmarshal(body, &configRequest); err != nil {
-			util.IotLogFatal(err)
+			util.IotLogError(err)
 		}
 		return configRequest.handle(mqttClient)
 	case "gateway_upgrade_reply":
@@ -62,6 +62,13 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 
 	case "group_update_glass_color_request":
 		return nil
+
+	case "node_info_request":
+		var nodeInfoRequest NodeInfoRequest
+		if err := json.Unmarshal(body, &nodeInfoRequest); err != nil {
+			util.IotLogError(err)
+		}
+		return nodeInfoRequest.handle(mqttClient)
 	case "node_list_request":
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()
@@ -71,6 +78,12 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
 		}
 		return reply
+	case "update_glass_color_request":
+		var req UpdateGlassColorRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			util.IotLogError(err)
+		}
+		return req.handle(mqttClient)
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 	"iot_go/pkg/lora_rpc"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 
 	"github.com/kraken-hpc/go-fork"
 )
@@ -25,13 +25,13 @@ func init() {
 func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
 	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866); err != nil {
-		log.Fatalf("failed to fork: %v", err)
+		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867); err != nil {
-		log.Fatalf("failed to fork: %v", err)
+		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868); err != nil {
-		log.Fatalf("failed to fork: %v", err)
+		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 
 	bsp.InitConfig()

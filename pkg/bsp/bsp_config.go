@@ -70,12 +70,12 @@ func InitConfig() {
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
 		if err2 != nil {
-			util.IotLogFatal(err2)
+			util.IotLogError(err2)
 		}
 
 		secondErr := viper.ReadInConfig()
 		if secondErr != nil {
-			util.IotLogFatal(secondErr)
+			util.IotLogError(secondErr)
 		}
 		viper.WriteConfig()
 	}
@@ -83,7 +83,7 @@ func InitConfig() {
 	if err == nil && data != nil {
 		err = json.Unmarshal(data, &BspConfigInstance)
 		if err != nil {
-			util.IotLogFatal(err)
+			util.IotLogError(err)
 		}
 		// Module1&2 data will be missing because they are in ConfigParam as well
 		// BspConfigInstance.InitMsgContent.Module1 = BspConfigInstance.ConfigParams.Module1
@@ -96,6 +96,6 @@ func (bspConfig BspConfig) CommitChanges() {
 	/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 	err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
 	if err2 != nil {
-		util.IotLogFatal(err2)
+		util.IotLogError(err2)
 	}
 }

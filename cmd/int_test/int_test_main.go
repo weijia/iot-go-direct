@@ -43,7 +43,7 @@ func main() {
 		// 发布消息
 		var reply msg.BaseReply
 		if err := json.Unmarshal(mqttMsg.Payload(), &reply); err != nil {
-			util.IotLogFatal(err)
+			util.IotLogError(err)
 		}
 		switch reply.MsgType {
 		case "init":
@@ -59,7 +59,7 @@ func main() {
 			}
 			configParams := shared.ConfigParams{
 				BaseConfigParams: shared.BaseConfigParams{
-					NodeList1:      []string{"test1", "test2"},
+					NodeList1:      []string{"FD000001", "FD000002"},
 					NodeList2:      []string{"test3", "test4"},
 					TouchNodeList1: []string{"touch1", "touch2"},
 					TouchNodeList2: []string{"touch3", "touch4"},
@@ -85,6 +85,46 @@ func main() {
 				Method: "node_list_request",
 			}
 			payload, _ := json.Marshal(nodeListRequest)
+			token := client.Publish(publishTopic, 0, false, payload)
+			token.Wait()
+			fmt.Println("Published message:", string(payload))
+			time.Sleep(1 * time.Second)
+		case "node_list_reply":
+			nodeInfoReq := msg.GatewayNodeIdRequest{
+				Method:        "node_info_request",
+				GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
+			}
+			payload, _ := json.Marshal(nodeInfoReq)
+			token := client.Publish(publishTopic, 0, false, payload)
+			token.Wait()
+			fmt.Println("Published message:", string(payload))
+			time.Sleep(1 * time.Second)
+		case "node_info_request":
+			req := msg.BaseRequest{
+				Method: "gateway_reboot",
+			}
+			payload, _ := json.Marshal(req)
+			token := client.Publish(publishTopic, 0, false, payload)
+			token.Wait()
+			fmt.Println("Published message:", string(payload))
+			time.Sleep(1 * time.Second)
+		case "gateway_reboot_reply":
+			params := []shared.UpdateGlassColorParams{
+				{
+					NodeID: "FD000001",
+					Color:  "1223",
+				},
+				{
+					NodeID: "FD000002",
+					Color:  "122332",
+				},
+			}
+
+			req := msg.UpdateGlassColorRequest{
+				Method: "update_glass_color_request",
+				Params: params,
+			}
+			payload, _ := json.Marshal(req)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
 			fmt.Println("Published message:", string(payload))

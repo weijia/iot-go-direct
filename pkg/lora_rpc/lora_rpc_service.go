@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/lora"
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 	"log"
 	"net/http"
 	"net/rpc"
@@ -62,7 +63,7 @@ func StartLoraService(devName string, port int) {
 
 	file, err := os.OpenFile(dev[2]+"log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Fatal(err)
+		util.IotLogError(err)
 	}
 	defer file.Close()
 
@@ -72,7 +73,6 @@ func StartLoraService(devName string, port int) {
 	// 以下是一些日志示例
 	// log.Println("这是一条普通日志")
 	log.Printf("StartLoraService started for：%s", devName)
-	// log.Fatalf("发生了严重错误：%s", "错误信息")
 
 	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
 	rolaRpc := NewLoraRpc(devName, port)
@@ -81,6 +81,6 @@ func StartLoraService(devName string, port int) {
 	rpc.Register(rolaRpc)
 	rpc.HandleHTTP()
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
-		log.Fatal("serve error:", err)
+		util.IotLogErrorStr(fmt.Sprintf("serve error:", err))
 	}
 }

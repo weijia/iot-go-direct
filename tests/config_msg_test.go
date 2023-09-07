@@ -13,7 +13,9 @@ import (
 func TestConfigMsg(t *testing.T) {
 	bsp.InitConfig()
 	params := shared.ConfigParams{
-		Project: "test",
+		BaseConfigParams: shared.BaseConfigParams{
+			Project: "test",
+		},
 		Module1: shared.Module{Freq: 30, Band: 50, Factor: 80},
 		Module2: shared.Module{Freq: 35, Band: 55, Factor: 85},
 	}

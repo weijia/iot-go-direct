@@ -20,7 +20,7 @@ func (thingsboardServer ThingsboardServer) Post(url string, data interface{}) {
 	log.Printf("url: %s, data: %s", url, data)
 	dataStr, err := json.Marshal(data)
 	if err != nil {
-		util.IotLogFatal(err)
+		util.IotLogError(err)
 	}
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(dataStr))
 	if err != nil {
@@ -35,7 +35,7 @@ func (thingsboardServer ThingsboardServer) Post(url string, data interface{}) {
 
 func (thingsboardServer ThingsboardServer) CreateDevice(deviceName string) {
 	if deviceName == "" {
-		log.Fatalf("Device name should not be empty: '%s'", deviceName)
+		util.IotLogErrorStr(fmt.Sprintf("Device name should not be empty: '%s'", deviceName))
 		return
 	}
 	log.Printf("creating device: %s", deviceName)

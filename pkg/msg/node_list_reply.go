@@ -15,6 +15,7 @@ type NodeListReply struct {
 }
 
 func (reply NodeListReply) handle() interface{} {
+	reply.MsgType = "node_list_reply"
 	reply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
 	reply.NodeList1 = bsp.BspConfigInstance.NodeList1
 	reply.NodeList2 = bsp.BspConfigInstance.NodeList2
