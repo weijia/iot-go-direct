@@ -97,9 +97,9 @@ func (loraDev Lora) MsgLoop() {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
 		case <-time.After(time.Second * 5):
-			C.init_tx_or_rx()
 			C.event_handler()
 			CopyFromBufferIfExists()
+			C.init_tx_or_rx()
 		}
 	}
 	isLoopRunning = false
