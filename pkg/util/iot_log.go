@@ -7,13 +7,13 @@ import (
 func IotLogError(err error) {
 	AdditionalLog(err)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 }
 
 func IotLogErrorStr(s string) {
 	AdditionalLogStr(s)
-	log.Error(s)
+	log.Println(s)
 }
 
 func IotLogFatal(err error) {

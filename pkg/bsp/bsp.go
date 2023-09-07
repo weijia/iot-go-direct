@@ -106,7 +106,7 @@ func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
 		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
 			module1Client.Send(node.GetUpdateGlassColorMsg(nodeId, color))
 		} else {
-			util.IotLogError("Node does not exists\n")
+			util.IotLogErrorStr("Node does not exists\n")
 		}
 	}
 
