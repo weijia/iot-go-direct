@@ -12,7 +12,9 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "**/*.o": true,
-        "**/*.a": true
+        "**/*.a": true,
+        "**/go.mod": true,
+        "**/*.exe": true
     },
     "explorerExclude.backup": {},
     "triggerTaskOnSave.tasks": {

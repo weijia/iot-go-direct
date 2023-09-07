@@ -37,7 +37,7 @@ func (loraRpc LoraRpc) Send(argType lora_shared.LoraData, reply *lora_shared.Rep
 }
 
 func (loraRpc LoraRpc) Receive(argType lora_shared.EmptyArg, reply *lora_shared.LoraData) error {
-	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p", &loraRpc, &loraRpc.LoraDev)
+	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p\n", &loraRpc, &loraRpc.LoraDev)
 	log.Println("RPC: Receive called")
 	reply.Data = loraRpc.LoraDev.Receive()
 	return nil

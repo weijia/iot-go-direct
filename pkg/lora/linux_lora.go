@@ -18,6 +18,7 @@ import (
 	"iot_go/pkg/shared"
 	"log"
 	"os"
+	"time"
 	"unsafe"
 )
 
@@ -27,8 +28,21 @@ func (loraDev Lora) SendReceiveLoop() {
 	fmt.Println("after calling send_receive_loop\n")
 }
 
+var quit = make(chan bool)
+var quitCompleted = make(chan bool)
+var send = make(chan []byte)
+var recv = make(chan []byte, 10)
+var isLoopRunning = false
+
 func (loraDev Lora) InitLora(module shared.Module) int {
+	fmt.Println("Stop loop")
+	// Do not call InitLora too frequently, otherwise, maybe isLoopRunning flag will not be set in time
+	if isLoopRunning {
+		quit <- true
+		<-quitCompleted
+	}
 	fmt.Println("Initiating Lora")
+
 	device := C.CString(loraDev.DeviceName)
 	defer C.free(unsafe.Pointer(device))
 	C.set_device(device)
@@ -54,7 +68,41 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	C.set_factor(C.int(module.Factor))
 	fmt.Printf("freq: %d, band: %d, factor: %d\n", module.Freq, module.Band, module.Factor)
 
+	res := int(C.rf_set_syncword(0x12)) // 0x3>0: select page, 0x12->0xf: sync word
+	if res != 0 {
+		fmt.Printf("-------------rf_set_syncword return non OK\n")
+	}
+	C.rf_set_default_para()
+	C.rf_enter_continous_rx()
+	go loraDev.MsgLoop()
 	return 0
+}
+
+func (loraDev Lora) MsgLoop() {
+	isLoopRunning = true
+	for {
+		select {
+		case <-quit:
+			isLoopRunning = false
+			quitCompleted <- true
+			return
+
+		case data := <-send:
+			// Ref: https://packagewjx.github.io/2018/09/19/cgo-cstring-ram-leak/
+			cBufferNeedToFree := C.CBytes(data)
+			defer C.free(unsafe.Pointer(cBufferNeedToFree))
+			fmt.Printf("Lora.Send: Sending len: %d\n", len(data))
+			res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
+			if res != 0 {
+				fmt.Printf("Lora.Send: Error sending: %d\n", res)
+			}
+		case <-time.After(time.Second * 5):
+			C.init_tx_or_rx()
+			C.event_handler()
+			CopyFromBufferIfExists()
+		}
+	}
+	isLoopRunning = false
 }
 
 func (loraDev Lora) Exit() int {
@@ -67,26 +115,27 @@ func (loraDev Lora) ToggleDebug() {
 }
 
 func (loraDev Lora) Send(data []byte) int {
-	if C.is_loop_started() == 0 {
-		fmt.Printf("Start handling loop\n")
-		go loraDev.SendReceiveLoop()
-	}
-	// Ref: https://packagewjx.github.io/2018/09/19/cgo-cstring-ram-leak/
-	cBufferNeedToFree := C.CBytes(data)
-	defer C.free(unsafe.Pointer(cBufferNeedToFree))
-	fmt.Printf("Lora.Send: Sending len: %d\n", len(data))
-	res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
-	return int(res)
+	send <- data
+	return 0
 }
 
 func (loraDev Lora) Receive() []byte {
-	fmt.Printf("loraDev: %s, loop started: %v, loraDev: 0x%p\n", loraDev.DeviceName, loraDev.IsHandlingLoopStarted, &loraDev)
-	// fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
-	if C.is_loop_started() == 0 {
-		fmt.Printf("Start handling loop\n")
-		// go loraDev.ReceiveLoop()
-		go loraDev.SendReceiveLoop()
+	select {
+	case data := <-recv:
+		return data
+	default:
+		return nil
 	}
+}
+
+func (loraDev Lora) CopyFromBufferIfExists() {
+	// fmt.Printf("loraDev: %s, loop started: %v, loraDev: 0x%p\n", loraDev.DeviceName, loraDev.IsHandlingLoopStarted, &loraDev)
+	// // fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
+	// if C.is_loop_started() == 0 {
+	// 	fmt.Printf("Start handling loop\n")
+	// 	// go loraDev.ReceiveLoop()
+	// 	go loraDev.SendReceiveLoop()
+	// }
 
 	buffer := bytes.NewBuffer(make([]byte, 513))
 	log.Println("Got buffer\n")
@@ -99,11 +148,10 @@ func (loraDev Lora) Receive() []byte {
 	log.Println("After calling receive\n")
 	// fmt.Println("After calling receive\n")
 	if len <= 0 {
-		log.Printf("Receive error, len: %d", int(len))
-		return make([]byte, 0)
+		return
 	} else {
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
-		return byteSlice
+		recv <- byteSlice
 	}
 }
