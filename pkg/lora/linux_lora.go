@@ -30,7 +30,7 @@ func (loraDev Lora) SendReceiveLoop() {
 
 var quit = make(chan bool)
 var quitCompleted = make(chan bool)
-var send = make(chan []byte)
+var send = make(chan []byte, 10)
 var recv = make(chan []byte, 10)
 var isLoopRunning = false
 
@@ -115,8 +115,13 @@ func (loraDev Lora) ToggleDebug() {
 }
 
 func (loraDev Lora) Send(data []byte) int {
-	send <- data
-	return 0
+	select {
+	case send <- data:
+		fmt.Println("Send buffer full, please check the reason\n")
+		return 0
+	default:
+		return -1
+	}
 }
 
 func (loraDev Lora) Receive() []byte {
@@ -152,6 +157,10 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 	} else {
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
-		recv <- byteSlice
+		select {
+		case recv <- byteSlice:
+		default:
+			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel\n")
+		}
 	}
 }

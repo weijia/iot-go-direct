@@ -18,7 +18,7 @@ func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 	// fmt.Printf("%s", config.Method)
 	bsp.BspConfigInstance.InitMsgContent.Module1 = config.Params.Module1
 	bsp.BspConfigInstance.InitMsgContent.Module2 = config.Params.Module2
-	bsp.BspConfigInstance.ConfigParams = config.Params
+	bsp.BspConfigInstance.BaseConfigParams = config.Params.BaseConfigParams
 	bsp.BspConfigInstance.CommitChanges()
 	var gatewayNodeIdReply GatewayNodeIdReply
 	gatewayNodeIdReply.MsgType = "config_reply"

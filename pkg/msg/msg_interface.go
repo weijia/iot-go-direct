@@ -33,14 +33,35 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		util.IotLogFatal(err)
 	}
 
-	targetMsg := GetMsgVar(baseRequest.Method)
+	// targetMsg := GetMsgVar(baseRequest.Method).(MsgHandler)
 
-	if targetMsg != nil {
-		return targetMsg.(MsgHandler).handle(mqttClient)
-	}
+	// if err := json.Unmarshal(body, &targetMsg); err != nil {
+	// 	util.IotLogFatal(err)
+	// }
+
+	// if targetMsg != nil {
+	// 	return targetMsg.(MsgHandler).handle(mqttClient)
+	// }
 
 	switch baseRequest.Method {
 
+	case "broadcast_update_glass_color_request":
+		var broadcastUpdateGlassColorRequest BroadcastUpdateGlassColorRequest
+		if err := json.Unmarshal(body, &broadcastUpdateGlassColorRequest); err != nil {
+			util.IotLogFatal(err)
+		}
+		return broadcastUpdateGlassColorRequest.handle(mqttClient)
+	case "config":
+		var configRequest ConfigRequest
+		if err := json.Unmarshal(body, &configRequest); err != nil {
+			util.IotLogFatal(err)
+		}
+		return configRequest.handle(mqttClient)
+	case "gateway_upgrade_reply":
+		return nil
+
+	case "group_update_glass_color_request":
+		return nil
 	case "node_list_request":
 		var nodeListReply NodeListReply
 		return nodeListReply.handle()

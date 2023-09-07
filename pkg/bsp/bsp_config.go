@@ -12,7 +12,7 @@ import (
 
 type BspConfig struct {
 	shared.InitMsgContent
-	shared.ConfigParams
+	shared.BaseConfigParams
 	shared.MqttParams
 	thingsboard_shared.DeviceProfile `json:"device_profile"`
 }
@@ -64,8 +64,8 @@ func InitConfig() {
 
 	if err != nil {
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
-		BspConfigInstance.ConfigParams.Module1 = module1Param
-		BspConfigInstance.ConfigParams.Module2 = module2Param
+		// BspConfigInstance.ConfigParams.Module1 = module1Param
+		// BspConfigInstance.ConfigParams.Module2 = module2Param
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
@@ -86,8 +86,8 @@ func InitConfig() {
 			util.IotLogFatal(err)
 		}
 		// Module1&2 data will be missing because they are in ConfigParam as well
-		BspConfigInstance.InitMsgContent.Module1 = BspConfigInstance.ConfigParams.Module1
-		BspConfigInstance.InitMsgContent.Module2 = BspConfigInstance.ConfigParams.Module2
+		// BspConfigInstance.InitMsgContent.Module1 = BspConfigInstance.ConfigParams.Module1
+		// BspConfigInstance.InitMsgContent.Module2 = BspConfigInstance.ConfigParams.Module2
 	}
 }
 

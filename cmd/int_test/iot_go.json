@@ -1,30 +1,36 @@
 {
-  "broker": "tcp://115.159.53.168:1883",
-  "initconfig": {
-    "ccid": "test",
-    "custom": "test",
-    "gateway_node_id": "test",
-    "hard_version": "0.1.0",
-    "heart_beat": 20,
-    "module0": {
-      "band": 250,
-      "factor": 10,
-      "freq": 443
-    },
-    "module1": {
-      "band": 250,
-      "factor": 10,
-      "freq": 444
-    },
-    "module2": {
-      "band": 250,
-      "factor": 10,
-      "freq": 446
-    },
-    "msg_type": "init",
-    "node_type": 1,
-    "project": "test",
-    "rssi": 10,
-    "soft_version": "0.1.0"
-  }
+  "ccid": "test",
+  "custom": "",
+  "device_profile": {
+    "port": 0,
+    "provision_key": "",
+    "provision_secret": "",
+    "server": ""
+  },
+  "gateway_node_id": "testing-20230815",
+  "hard_version": "0.1.0",
+  "heart_beat": 0,
+  "module0": {
+    "band": 250,
+    "factor": 10,
+    "freq": 443
+  },
+  "module1": {
+    "band": 250,
+    "factor": 10,
+    "freq": 443
+  },
+  "module2": {
+    "band": 250,
+    "factor": 10,
+    "freq": 446
+  },
+  "mqtt_ip": "115.159.53.168",
+  "mqtt_port": 1883,
+  "mqtt_pwd": "",
+  "mqtt_user_name": "",
+  "node_type": 1,
+  "project": "",
+  "rssi": 10,
+  "soft_version": "0.1.0"
 }
