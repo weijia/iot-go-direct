@@ -14,5 +14,12 @@
         "**/*.o": true,
         "**/*.a": true
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
+    "triggerTaskOnSave.tasks": {
+        "arm build": [
+            "*.go",
+            "*.h",
+            "*.c",
+        ],
+    }
 }

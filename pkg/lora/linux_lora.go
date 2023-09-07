@@ -27,12 +27,6 @@ func (loraDev Lora) SendReceiveLoop() {
 	fmt.Println("after calling send_receive_loop\n")
 }
 
-func (loraDev Lora) ReceiveLoop() {
-	fmt.Println("calling receive_loop\n")
-	C.receive_loop()
-	fmt.Println("after calling receive_loop\n")
-}
-
 func (loraDev Lora) InitLora(module shared.Module) int {
 	fmt.Println("Initiating Lora")
 	device := C.CString(loraDev.DeviceName)

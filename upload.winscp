@@ -1,0 +1,6 @@
+# Connect to SFTP server using a password
+open sftp://root@192.168.1.61/
+# Upload file
+put lora_service /home/root/
+# Exit WinSCP
+exit
