@@ -73,7 +73,7 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 		fmt.Printf("-------------rf_set_syncword return non OK\n")
 	}
 	C.rf_set_default_para()
-	C.rf_enter_continous_rx()
+	// C.rf_enter_continous_rx()
 	go loraDev.MsgLoop()
 	return 0
 }
@@ -96,7 +96,7 @@ func (loraDev Lora) MsgLoop() {
 			if res != 0 {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 1):
 			C.event_handler()
 			CopyFromBufferIfExists()
 			C.init_tx_or_rx()
@@ -138,14 +138,14 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 	// }
 
 	buffer := bytes.NewBuffer(make([]byte, 513))
-	log.Println("Got buffer\n")
+	// log.Println("Got buffer\n")
 	// fmt.Println("Got buffer\n")
 	// len := 0
 	// Call the C function to fill the buffer
-	fmt.Printf("receive to: %p\n", &buffer.Bytes()[0])
+	// fmt.Printf("receive to: %p\n", &buffer.Bytes()[0])
 	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
 	// len := 0
-	log.Println("After calling receive\n")
+	// log.Println("After calling receive\n")
 	// fmt.Println("After calling receive\n")
 	if len <= 0 {
 		return
