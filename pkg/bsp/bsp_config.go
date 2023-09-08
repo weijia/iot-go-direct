@@ -10,11 +10,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+type NodeState struct {
+	NodeId              string `json:"node_id"`
+	LastMsgTimestamp    int64  `json:"node_msg_timestamp"`
+	NodeReportedColor   []int  `json:"node_reported_color"`
+	NodeRequestingColor []int  `json:"node_requesting_color"`
+}
+
 type BspConfig struct {
 	shared.InitMsgContent
 	shared.BaseConfigParams
 	shared.MqttParams
 	thingsboard_shared.DeviceProfile `json:"device_profile"`
+	NodeStates                       []NodeState `json:"node_state_list"`
 }
 
 var swVersion = "0.1.0"
@@ -34,6 +42,7 @@ var module2Param = shared.Module{
 	Band:   250,
 	Factor: 10,
 }
+
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
 		GatewayNodeID: "testing-20230815",
@@ -45,8 +54,8 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		Rssi:          10,
 		Ccid:          "test",
 		HeartBeat:     20,
-		Module1:       module1Param, // This will be overwritten by ConfigParams
-		Module2:       module2Param, // This will be overwritten by ConfigParams
+		Module1:       module1Param,
+		Module2:       module2Param,
 	},
 	Module0: module0Param,
 }
@@ -85,9 +94,6 @@ func InitConfig() {
 		if err != nil {
 			util.IotLogError(err)
 		}
-		// Module1&2 data will be missing because they are in ConfigParam as well
-		// BspConfigInstance.InitMsgContent.Module1 = BspConfigInstance.ConfigParams.Module1
-		// BspConfigInstance.InitMsgContent.Module2 = BspConfigInstance.ConfigParams.Module2
 	}
 }
 

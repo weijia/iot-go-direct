@@ -2,17 +2,18 @@ package msg
 
 import (
 	"fmt"
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/util"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-func StartMqttMsgLoop(server string, port int, gatewayId string, sendingCh chan interface{}, quit chan bool) {
-	var topic = "device/" + gatewayId + "/in"
+func StartMqttMsgLoop(sendingCh chan interface{}, nodeMsgCh chan []byte, quit chan bool) {
+	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeID + "/in"
 	// MQTT 连接设置
-	broker := "tcp://" + server + ":" + fmt.Sprint(port)
+	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
 	opts := mqtt.NewClientOptions().AddBroker(broker)
-	opts.SetClientID(gatewayId)
+	opts.SetClientID(bsp.BspConfigInstance.GatewayNodeID)
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
@@ -23,7 +24,7 @@ func StartMqttMsgLoop(server string, port int, gatewayId string, sendingCh chan 
 		panic(token.Error())
 	}
 
-	mqttClient := util.NewMqtt(&client, gatewayId)
+	mqttClient := util.NewMqtt(&client, bsp.BspConfigInstance.GatewayNodeID)
 
 	mqttCh := make(chan mqtt.Message)
 
@@ -45,6 +46,8 @@ func StartMqttMsgLoop(server string, port int, gatewayId string, sendingCh chan 
 			if resp != nil {
 				sendingCh <- resp
 			}
+		case nodeMsg := <-nodeMsgCh:
+			HandleNodeMsg(nodeMsg, sendingCh)
 		case <-quit:
 			break
 		}

@@ -67,6 +67,7 @@ func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 }
 
 func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
+	module1Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
 	fmt.Printf("Setting Module1 Params: %s\n", moduleParamsInJson)
 
@@ -75,9 +76,11 @@ func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
 			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
 	}
 	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeID, data)
+
 }
 
 func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
+	module2Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
 	fmt.Printf("Setting Module2 Params: %s\n", moduleParamsInJson)
 
@@ -144,4 +147,26 @@ func (virtualBsp VirtualBsp) StopAllProcess() {
 
 func Lora0Send(data []byte) {
 	module0Client.Send(data)
+}
+
+func SendHeartbeat() {
+	for {
+		for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
+			module1Client.Send(node.GetHeartBeatMsg(BspConfigInstance.GatewayNodeID, value))
+		}
+		for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
+			module2Client.Send(node.GetHeartBeatMsg(BspConfigInstance.GatewayNodeID, value))
+		}
+		// Wait for specified time and send again
+		time.Sleep(time.Duration(BspConfigInstance.BaseConfigParams.HeartBeat * 1000 * 1000 * 1000 * 60))
+	}
+}
+
+func SendNodeInit() {
+	for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
+		module0Client.Send(node.GetNodeInitMsg(BspConfigInstance.GatewayNodeID, value, module1Param))
+	}
+	for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
+		module0Client.Send(node.GetNodeInitMsg(BspConfigInstance.GatewayNodeID, value, module1Param))
+	}
 }

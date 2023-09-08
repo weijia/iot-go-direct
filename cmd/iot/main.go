@@ -42,7 +42,12 @@ func main() {
 	sendingCh := make(chan interface{}, 10)
 	quit := make(chan bool)
 
-	go msg.StartMqttMsgLoop(bsp.BspConfigInstance.MqttIP, bsp.BspConfigInstance.MqttParams.MqttPort, bsp.BspConfigInstance.GatewayNodeID, sendingCh, quit)
+	nodeMsgCh := make(chan []byte, 10)
+
+	go msg.StartMqttMsgLoop(sendingCh, nodeMsgCh, quit)
+	go bsp.SendHeartbeat()
+	go lora_rpc.StartLoraReceiverRpc(nodeMsgCh, 8869)
+	bsp.SendNodeInit()
 
 	// 发布消息
 	var initMsg shared.Init

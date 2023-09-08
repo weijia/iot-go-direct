@@ -49,3 +49,12 @@ func GetUpdateGlassColorMsg(nodeId string, color string) []byte {
 	result = append(result, getCRC8HighByTable(result))
 	return result
 }
+
+func IsChecksumCorrect(msg []byte) bool {
+	checksum := msg[len(msg)-1]
+	// Get byte slice from msg except last byte
+	msgSlice := msg[:len(msg)-1]
+	// Calculate checksum
+	calculatedChecksum := getCRC8HighByTable(msgSlice)
+	return calculatedChecksum == checksum
+}

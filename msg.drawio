@@ -1,0 +1,125 @@
+<mxfile host="65bd71144e">
+    <diagram id="7dEDXYwmaVERmBDIuyPj" name="Page-1">
+        <mxGraphModel dx="2018" dy="680" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="54" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry y="60" width="1050" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="52" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry y="180" width="1050" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="" style="shape=ext;double=1;rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry y="280" width="1050" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="Pool" style="swimlane;childLayout=stackLayout;resizeParent=1;resizeParentMax=0;startSize=20;horizontal=0;horizontalStack=1;" vertex="1" parent="1">
+                    <mxGeometry x="20" y="20" width="620" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="main" style="swimlane;startSize=20;" vertex="1" parent="3">
+                    <mxGeometry x="20" width="120" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="" style="shape=singleArrow;direction=south;whiteSpace=wrap;html=1;" vertex="1" parent="4">
+                    <mxGeometry x="30" y="20" width="60" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="MqttMsgLoop" style="swimlane;startSize=20;" vertex="1" parent="3">
+                    <mxGeometry x="140" width="120" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="" style="shape=singleArrow;direction=south;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="30" y="20" width="60" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Heartbeat" style="swimlane;startSize=20;" vertex="1" parent="3">
+                    <mxGeometry x="260" width="120" height="480" as="geometry">
+                        <mxRectangle x="260" width="40" height="480" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="36" value="" style="shape=singleArrow;direction=south;whiteSpace=wrap;html=1;" vertex="1" parent="20">
+                    <mxGeometry x="30" y="20" width="60" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="LoraReceiveRpc" style="swimlane;startSize=20;" vertex="1" parent="3">
+                    <mxGeometry x="380" width="120" height="480" as="geometry">
+                        <mxRectangle x="260" width="40" height="480" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="37" value="" style="shape=singleArrow;direction=south;whiteSpace=wrap;html=1;" vertex="1" parent="21">
+                    <mxGeometry x="30" y="20" width="60" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="LoraService" style="swimlane;startSize=20;" vertex="1" parent="3">
+                    <mxGeometry x="500" width="120" height="480" as="geometry">
+                        <mxRectangle x="260" width="40" height="480" as="alternateBounds"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="38" value="" style="shape=singleArrow;direction=south;whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="30" y="20" width="60" height="460" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="" style="endArrow=classic;html=1;entryX=0.637;entryY=0.3;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="6">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="50" y="291.99" as="sourcePoint"/>
+                        <mxPoint x="-48" y="292.01" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="OnReceive" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="23">
+                    <mxGeometry x="-0.3373" y="-2" relative="1" as="geometry">
+                        <mxPoint x="-17" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="42" value="r" style="endArrow=classic;html=1;entryX=0.63;entryY=0.333;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="40">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="448" y="330" as="sourcePoint"/>
+                        <mxPoint x="280" y="330" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="recvCh" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="42">
+                    <mxGeometry x="-0.3373" y="-2" relative="1" as="geometry">
+                        <mxPoint x="-17" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="44" value="" style="endArrow=classic;html=1;entryX=0.637;entryY=0.3;entryDx=0;entryDy=0;entryPerimeter=0;exitX=-0.022;exitY=0.581;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="48">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="688" y="300" as="sourcePoint"/>
+                        <mxPoint x="590" y="300.02" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="45" value="Lora Msg" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="44">
+                    <mxGeometry x="-0.3373" y="-2" relative="1" as="geometry">
+                        <mxPoint x="-17" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="46" value="" style="endArrow=classic;html=1;entryX=0.13;entryY=0.667;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" target="40">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint y="100" as="sourcePoint"/>
+                        <mxPoint x="330" y="230" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="47" value="MQTT Msg" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="46">
+                    <mxGeometry x="0.162" y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="48" value="Lora Node" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="800" y="20" width="70" height="480" as="geometry"/>
+                </mxCell>
+                <mxCell id="49" value="" style="endArrow=classic;html=1;" edge="1" parent="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="350" y="220" as="sourcePoint"/>
+                        <mxPoint x="790" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="50" value="heartbeat" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="49">
+                    <mxGeometry x="0.576" y="-2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="51" value="Lora to gateway msg" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="290" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="53" value="heartbeat" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="190" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="55" value="MQTT msg" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="920" y="60" width="60" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

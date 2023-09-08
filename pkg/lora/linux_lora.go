@@ -164,3 +164,14 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		}
 	}
 }
+
+var serverRpc = NewLoraClient(8869)
+
+func PushLoraMsgToRpc() {
+	for {
+		select {
+		case data := <-recv:
+			serverRpc.OnReceive(data)
+		}
+	}
+}

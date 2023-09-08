@@ -44,10 +44,10 @@ func (loraRpc LoraRpc) Receive(argType lora_shared.EmptyArg, reply *lora_shared.
 	return nil
 }
 
-func (loraRpc LoraRpc) ToggleDebug(argType lora_shared.EmptyArg, reply *lora_shared.EmptyArg) error {
-	loraRpc.LoraDev.ToggleDebug()
-	return nil
-}
+// func (loraRpc LoraRpc) ToggleDebug(argType lora_shared.EmptyArg, reply *lora_shared.EmptyArg) error {
+// 	loraRpc.LoraDev.ToggleDebug()
+// 	return nil
+// }
 
 func NewLoraRpc(devName string, port int) *LoraRpc {
 	loraDev := lora.NewLora(devName)
@@ -55,6 +55,12 @@ func NewLoraRpc(devName string, port int) *LoraRpc {
 		Port:    port,
 		LoraDev: loraDev,
 	}
+}
+
+func (loraRpc LoraRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.EmptyArg) error {
+	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p\n", &loraRpc, &loraRpc.LoraDev)
+	log.Println("RPC: Receive called")
+	return nil
 }
 
 func StartLoraService(devName string, port int) {
@@ -75,12 +81,15 @@ func StartLoraService(devName string, port int) {
 	log.Printf("StartLoraService started for：%s", devName)
 
 	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
+
+	go lora.PushLoraMsgToRpc()
+
 	rolaRpc := NewLoraRpc(devName, port)
 	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
 	// So the data changed after Register may be discarded
 	rpc.Register(rolaRpc)
 	rpc.HandleHTTP()
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
-		util.IotLogErrorStr(fmt.Sprintf("serve error:", err))
+		util.IotLogErrorStr(fmt.Sprintf("serve error: %v", err))
 	}
 }

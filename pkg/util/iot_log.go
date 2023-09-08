@@ -22,3 +22,8 @@ func IotLogFatal(err error) {
 		log.Fatal(err)
 	}
 }
+
+func IotLogInfo(s string) {
+	AdditionalLogStr(s)
+	log.Println(s)
+}

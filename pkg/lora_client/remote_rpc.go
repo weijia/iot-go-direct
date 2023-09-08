@@ -78,3 +78,12 @@ func (client LoraClient) ToggleDebug() {
 	var reply lora_shared.EmptyArg
 	client.RpcClient.Call("LoraRpc.ToggleDebug", args, &reply)
 }
+
+func (client LoraClient) OnReceive(data []byte) {
+	args := &lora_shared.LoraData{Data: data}
+	var reply lora_shared.ReplyResult
+	err := client.RpcClient.Call("LoraRpc.OnReceive", args, &reply)
+	if err != nil {
+		log.Println("LoraRpc.OnReceive error:", err)
+	}
+}
