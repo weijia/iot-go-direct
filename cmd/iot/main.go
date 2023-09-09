@@ -44,9 +44,9 @@ func main() {
 
 	nodeMsgCh := make(chan []byte, 10)
 
+	go lora_rpc.StartLoraReceiverRpc(nodeMsgCh, 8869)
 	go msg.StartMqttMsgLoop(sendingCh, nodeMsgCh, quit)
 	go bsp.SendHeartbeat()
-	go lora_rpc.StartLoraReceiverRpc(nodeMsgCh, 8869)
 	bsp.SendNodeInit()
 
 	// 发布消息

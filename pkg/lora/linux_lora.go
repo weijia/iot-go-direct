@@ -135,23 +135,14 @@ func (loraDev Lora) Receive() []byte {
 
 func (loraDev Lora) CopyFromBufferIfExists() {
 	// fmt.Printf("loraDev: %s, loop started: %v, loraDev: 0x%p\n", loraDev.DeviceName, loraDev.IsHandlingLoopStarted, &loraDev)
-	// // fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
-	// if C.is_loop_started() == 0 {
-	// 	fmt.Printf("Start handling loop\n")
-	// 	// go loraDev.ReceiveLoop()
-	// 	go loraDev.SendReceiveLoop()
-	// }
+	// fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
 
 	buffer := bytes.NewBuffer(make([]byte, 513))
-	// log.Println("Got buffer\n")
-	// fmt.Println("Got buffer\n")
-	// len := 0
+
 	// Call the C function to fill the buffer
 	// fmt.Printf("receive to: %p\n", &buffer.Bytes()[0])
 	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
-	// len := 0
-	// log.Println("After calling receive\n")
-	// fmt.Println("After calling receive\n")
+
 	if len <= 0 {
 		return
 	} else {

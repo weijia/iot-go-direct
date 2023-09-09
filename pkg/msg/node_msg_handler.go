@@ -37,7 +37,7 @@ func getAreaFromColorReport(r byte) int {
 func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	util.IotLogInfo("Received message\n")
 	DumpMsg(msg)
-	if !node.IsChecksumCorrect() {
+	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
 		util.IotLogErrorStr("Checksum incorrect, discard pacakge")
 		return

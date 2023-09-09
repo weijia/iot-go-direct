@@ -76,13 +76,9 @@ func StartLoraService(devName string, port int) {
 	// // 设置日志输出到文件
 	log.SetOutput(file)
 
-	// 以下是一些日志示例
-	// log.Println("这是一条普通日志")
-	log.Printf("StartLoraService started for：%s", devName)
+	util.IotLogInfo("Starting lora service on dev: %s, port: %d\n", devName, port)
 
-	fmt.Printf("Starting lora service on dev: %s, port: %d\n", devName, port)
-
-	go lora.PushLoraMsgToRpc()
+	go lora_rpc.PushLoraMsgToRpc()
 
 	rolaRpc := NewLoraRpc(devName, port)
 	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
