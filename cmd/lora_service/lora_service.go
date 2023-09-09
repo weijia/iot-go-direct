@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	// 打印
-	fmt.Printf("devName=%v port=%v\n", devName, port)
+	fmt.Printf("devName=%v port=%v, service v1\n", devName, port)
 
 	bsp.InitConfig()
 	lora_rpc.StartLoraService(devName, port, pushHost)

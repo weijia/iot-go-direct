@@ -26,7 +26,7 @@ import (
 
 var quit = make(chan bool)
 var quitCompleted = make(chan bool)
-var send = make(chan []byte, 10)
+var send = make(chan []byte)
 var recv = make(chan []byte, 10)
 var isLoopRunning = false
 
@@ -116,6 +116,7 @@ func (loraDev Lora) MsgLoop() {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
 		case <-time.After(time.Second * 1):
+			util.IotLogInfo("Start event loop\n")
 			C.event_handler()
 			loraDev.CopyFromBufferIfExists()
 			C.init_tx_or_rx()
@@ -134,13 +135,15 @@ func (loraDev Lora) ToggleDebug() {
 }
 
 func (loraDev Lora) Send(data []byte) int {
+	util.IotLogInfo(fmt.Sprintf("len of ch %d vs cap of ch %d\n", len(send), cap(send)))
+
 	select {
 	case send <- data:
-		fmt.Println("Send buffer full, please check the reason\n")
-		return 0
 	default:
+		fmt.Println("Send buffer full, please check the reason\n")
 		return -1
 	}
+	return 0
 }
 
 func (loraDev Lora) Receive() []byte {
