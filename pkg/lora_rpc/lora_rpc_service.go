@@ -57,11 +57,11 @@ func NewLoraRpc(devName string, port int) *LoraRpc {
 	}
 }
 
-func (loraRpc LoraRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.EmptyArg) error {
-	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p\n", &loraRpc, &loraRpc.LoraDev)
-	log.Println("RPC: Receive called")
-	return nil
-}
+// func (loraRpc LoraRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.EmptyArg) error {
+// 	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p\n", &loraRpc, &loraRpc.LoraDev)
+// 	log.Println("RPC: Receive called")
+// 	return nil
+// }
 
 func StartLoraServiceInBackgrand(devName string, port int, pushHost string) {
 	dev := strings.Split(devName, "/")

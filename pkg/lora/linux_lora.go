@@ -116,7 +116,7 @@ func (loraDev Lora) MsgLoop() {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
 		case <-time.After(time.Second * 1):
-			util.IotLogInfo("Start event loop\n")
+			// util.IotLogInfo("Start event loop\n")
 			C.event_handler()
 			loraDev.CopyFromBufferIfExists()
 			C.init_tx_or_rx()
@@ -161,7 +161,9 @@ func PushLoraMsgToRpc(port int, host ...string) {
 		realHost = host[0]
 	}
 	var serverRpc = lora_client.NewLoraClient(port, realHost)
+	util.IotLogInfo(fmt.Sprintf("Connecting to lora receive service: %s:%d", realHost, port))
 	for {
+		util.IotLogInfo(fmt.Sprintf("Receiving\n"))
 		select {
 		case data := <-recv:
 			util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
