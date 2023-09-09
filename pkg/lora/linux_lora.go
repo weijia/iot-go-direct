@@ -15,18 +15,14 @@ import "C"
 import (
 	"bytes"
 	"fmt"
+	"iot_go/pkg/lora_client"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 	"log"
 	"os"
 	"time"
 	"unsafe"
 )
-
-func (loraDev Lora) SendReceiveLoop() {
-	fmt.Println("calling send_receive_loop\n")
-	C.send_receive_loop()
-	fmt.Println("after calling send_receive_loop\n")
-}
 
 var quit = make(chan bool)
 var quitCompleted = make(chan bool)
@@ -78,6 +74,29 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	return 0
 }
 
+func (loraDev Lora) CopyFromBufferIfExists() {
+	// fmt.Printf("loraDev: %s, loop started: %v, loraDev: 0x%p\n", loraDev.DeviceName, loraDev.IsHandlingLoopStarted, &loraDev)
+	// fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
+
+	buffer := bytes.NewBuffer(make([]byte, 513))
+
+	// Call the C function to fill the buffer
+	// fmt.Printf("receive to: %p\n", &buffer.Bytes()[0])
+	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
+
+	if len <= 0 {
+		return
+	} else {
+		byteSlice := make([]byte, len)
+		buffer.Read(byteSlice)
+		select {
+		case recv <- byteSlice:
+		default:
+			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel\n")
+		}
+	}
+}
+
 func (loraDev Lora) MsgLoop() {
 	isLoopRunning = true
 	for {
@@ -98,7 +117,7 @@ func (loraDev Lora) MsgLoop() {
 			}
 		case <-time.After(time.Second * 1):
 			C.event_handler()
-			CopyFromBufferIfExists()
+			loraDev.CopyFromBufferIfExists()
 			C.init_tx_or_rx()
 		}
 	}
@@ -133,35 +152,16 @@ func (loraDev Lora) Receive() []byte {
 	}
 }
 
-func (loraDev Lora) CopyFromBufferIfExists() {
-	// fmt.Printf("loraDev: %s, loop started: %v, loraDev: 0x%p\n", loraDev.DeviceName, loraDev.IsHandlingLoopStarted, &loraDev)
-	// fmt.Printf("loraDev: %s, %d, %v", loraDev.DeviceName, loraDev.ModuleInst.Freq, loraDev.IsHandlingLoopStarted)
-
-	buffer := bytes.NewBuffer(make([]byte, 513))
-
-	// Call the C function to fill the buffer
-	// fmt.Printf("receive to: %p\n", &buffer.Bytes()[0])
-	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
-
-	if len <= 0 {
-		return
-	} else {
-		byteSlice := make([]byte, len)
-		buffer.Read(byteSlice)
-		select {
-		case recv <- byteSlice:
-		default:
-			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel\n")
-		}
+func PushLoraMsgToRpc(port int, host ...string) {
+	realHost := "127.0.0.1"
+	if len(host) > 0 {
+		realHost = host[0]
 	}
-}
-
-var serverRpc = NewLoraClient(8869)
-
-func PushLoraMsgToRpc() {
+	var serverRpc = lora_client.NewLoraClient(port, realHost)
 	for {
 		select {
 		case data := <-recv:
+			util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
 			serverRpc.OnReceive(data)
 		}
 	}

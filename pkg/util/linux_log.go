@@ -7,9 +7,9 @@ import (
 )
 
 func AdditionalLog(err error) {
-	err = journal.Print(journal.PriErr, "Error: ", err)
+	journal.Print(journal.PriErr, "Error: ", err)
 }
 
 func AdditionalLogStr(s string) {
-	err = journal.Print(journal.PriErr, "Error: ", s)
+	journal.Print(journal.PriErr, "Error: ", s)
 }

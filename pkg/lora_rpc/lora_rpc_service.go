@@ -63,8 +63,7 @@ func (loraRpc LoraRpc) OnReceive(argType lora_shared.LoraData, reply *lora_share
 	return nil
 }
 
-func StartLoraService(devName string, port int) {
-	bsp.InitConfig()
+func StartLoraServiceInBackgrand(devName string, port int, pushHost string) {
 	dev := strings.Split(devName, "/")
 
 	file, err := os.OpenFile(dev[2]+"log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -75,10 +74,14 @@ func StartLoraService(devName string, port int) {
 
 	// // 设置日志输出到文件
 	log.SetOutput(file)
+	StartLoraService(devName, port, pushHost)
+}
 
-	util.IotLogInfo("Starting lora service on dev: %s, port: %d\n", devName, port)
+func StartLoraService(devName string, port int, pushHost string) {
+	bsp.InitConfig()
 
-	go lora_rpc.PushLoraMsgToRpc()
+	util.IotLogInfo(fmt.Sprintf("Starting lora service on dev: %s, port: %d\n", devName, port))
+	go lora.PushLoraMsgToRpc(8869, pushHost)
 
 	rolaRpc := NewLoraRpc(devName, port)
 	// The rolaRpc object will be copied to RPC procedure instead of sending the original object

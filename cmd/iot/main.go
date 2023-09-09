@@ -16,21 +16,21 @@ import (
 )
 
 func init() {
-	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraService)
-	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraService)
-	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraService)
+	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackgrand)
+	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackgrand)
+	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackgrand)
 	fork.Init()
 }
 
 func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
-	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866); err != nil {
+	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, "127.0.0.1"); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867); err != nil {
+	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, "127.0.0.1"); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868); err != nil {
+	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, "127.0.0.1"); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 

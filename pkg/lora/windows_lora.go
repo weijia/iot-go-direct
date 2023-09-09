@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 	"os"
 )
 
@@ -39,4 +40,8 @@ func (lora Lora) Receive() []byte {
 }
 
 func (lora Lora) ToggleDebug() {
+}
+
+func PushLoraMsgToRpc(pushPort int, pushHost ...string) {
+	util.IotLogInfo("Started dummy windows push msg RPC\n")
 }

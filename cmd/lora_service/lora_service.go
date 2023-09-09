@@ -14,6 +14,7 @@ func main() {
 
 	// 用户
 	var devName string
+	var pushHost string
 	// // 密码
 	// var password string
 	// // 主机名
@@ -23,6 +24,7 @@ func main() {
 
 	// StringVar用指定的名称、控制台参数项目、默认值、使用信息注册一个string类型flag，并将flag的值保存到p指向的变量
 	flag.StringVar(&devName, "d", "/dev/spidev3.0", "device name")
+	flag.StringVar(&pushHost, "s", "127.0.0.1", "push msg server")
 	// flag.StringVar(&password, "p", "", "密码,默认为空")
 	// flag.StringVar(&host, "h", "127.0.0.1", "主机名,默认 127.0.0.1")
 	flag.IntVar(&port, "p", 8866, "port number")
@@ -34,5 +36,5 @@ func main() {
 	fmt.Printf("devName=%v port=%v\n", devName, port)
 
 	bsp.InitConfig()
-	lora_rpc.StartLoraService(devName, port)
+	lora_rpc.StartLoraService(devName, port, pushHost)
 }
