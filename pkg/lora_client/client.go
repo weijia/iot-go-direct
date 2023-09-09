@@ -7,6 +7,7 @@ import (
 
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 )
 
 type LoraClient struct {
@@ -82,8 +83,11 @@ func (client LoraClient) ToggleDebug() {
 func (client LoraClient) OnReceive(data []byte) {
 	args := &lora_shared.LoraData{Data: data}
 	var reply lora_shared.ReplyResult
+	util.IotLogInfo("Before on receive call\n")
 	err := client.RpcClient.Call("LoraReceiverRpc.OnReceive", args, &reply)
 	if err != nil {
-		log.Println("LoraReceiverRpc.OnReceive error:", err)
+		util.IotLogInfo("Error in on receive call\n")
+		util.IotLogError(err)
 	}
+	util.IotLogInfo("After on receive call\n")
 }

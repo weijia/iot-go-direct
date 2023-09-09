@@ -85,14 +85,16 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
 
 	if len <= 0 {
+		util.IotLogInfo("----------------No data received\n")
 		return
 	} else {
+		util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
 		select {
 		case recv <- byteSlice:
 		default:
-			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel\n")
+			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel, recv channel full\n")
 		}
 	}
 }
@@ -146,14 +148,14 @@ func (loraDev Lora) Send(data []byte) int {
 	return 0
 }
 
-func (loraDev Lora) Receive() []byte {
-	select {
-	case data := <-recv:
-		return data
-	default:
-		return nil
-	}
-}
+// func (loraDev Lora) Receive() []byte {
+// 	select {
+// 	case data := <-recv:
+// 		return data
+// 	default:
+// 		return nil
+// 	}
+// }
 
 func PushLoraMsgToRpc(port int, host ...string) {
 	realHost := "127.0.0.1"
@@ -168,6 +170,8 @@ func PushLoraMsgToRpc(port int, host ...string) {
 		case data := <-recv:
 			util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
 			serverRpc.OnReceive(data)
+			util.IotLogInfo(fmt.Sprintf("After pusing data: %v\n", data))
 		}
 	}
+	util.IotLogInfo(fmt.Sprintf("Quitting push msg loop\n"))
 }

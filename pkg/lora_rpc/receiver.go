@@ -10,16 +10,20 @@ import (
 )
 
 type LoraReceiverRpc struct {
-	recvCh chan []byte
 }
 
-func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.EmptyArg) error {
+var recvChannel *chan []byte
+
+func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
 	log.Println("RPC: OnReceive called")
-	loraReceiverRpc.recvCh <- argType.Data
+	*recvChannel <- argType.Data
+	log.Println("RPC: after put to channel")
+	reply.Result = 0
 	return nil
 }
 
-func StartLoraReceiverRpc(recvCh chan []byte, port int) {
+func StartLoraReceiverRpc(recvCh *chan []byte, port int) {
+	recvChannel = recvCh
 	rolaRpc := LoraReceiverRpc{}
 	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
 	// So the data changed after Register may be discarded
