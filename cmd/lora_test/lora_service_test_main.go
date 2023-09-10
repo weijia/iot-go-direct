@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
+	"iot_go/pkg/node"
 	"time"
 )
 
@@ -33,10 +34,12 @@ func main() {
 	server := ""
 	isReceive := 0
 	initNeeded := 0
+	port := 8866
 
 	flag.IntVar(&isReceive, "r", 0, "is start in receive mode")
 	flag.StringVar(&server, "d", "192.168.1.57", "server name")
 	flag.IntVar(&initNeeded, "i", 0, "Is init needed")
+	flag.IntVar(&port, "p", 0, "Server port")
 	// 从arguments中解析注册的flag。必须在所有flag都注册好而未访问其值时执行。未注册却使用flag -help时，会返回ErrHelp。
 	flag.Parse()
 
@@ -44,7 +47,7 @@ func main() {
 	fmt.Printf("server=%v isReceive=%v\n", server, isReceive)
 
 	if isReceive == 1 {
-		client := lora_client.NewLoraClient(8867, server)
+		client := lora_client.NewLoraClient(port, server)
 		client.ToggleDebug()
 		if initNeeded == 1 {
 			client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module0)
@@ -61,11 +64,21 @@ func main() {
 		client := lora_client.NewLoraClient(8866, server)
 		// client.ToggleDebug()
 		if initNeeded == 1 {
-			client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module1)
+			client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module0)
 		}
-		b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
+		// b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
+		b := node.GetNodeInitMsg(
+			bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+			bsp.DecodeId("01020304"), bsp.BspConfigInstance.InitMsgContent.Module1)
+		// h := node.GetHeartBeatMsg(
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId("01020304"))
+		// c := node.GetUpdateGlassColorMsg(
+		// 	bsp.DecodeId("01020304"), "122331")
 		// for {
 		client.Send(b)
+		// client.Send(h)
+		// client.Send(c)
 		// 	time.Sleep(20 * time.Second)
 		// }
 	}

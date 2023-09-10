@@ -1,6 +1,6 @@
 package node
 
-func GetHeartBeatMsg(gatewayId string, nodeId string) []byte {
+func GetHeartBeatMsg(gatewayId []byte, nodeId []byte) []byte {
 	var result []byte
 	result = append(result, 0)            // package len
 	result = append(result, 1)            // node type 1 gateway

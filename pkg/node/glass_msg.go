@@ -25,14 +25,18 @@ var crc8Table = []byte{
 	0x82, 0xb3, 0xe0, 0xd1, 0x46, 0x77, 0x24, 0x15, 0x3b, 0x0a, 0x59, 0x68, 0xff, 0xce, 0x9d, 0xac,
 }
 
-func getCRC8HighByTable(buf []byte) (val byte) {
-	for i := len(buf) - 1; i >= 0; i-- {
+func getCRC8HighByTable(buf []byte) byte {
+	var val byte
+	val = 0
+	for i := 0; i < len(buf); i++ {
+		// fmt.Printf("%d, %d, %02x %c\n", i, val, val, val)
+		// fmt.Printf("%d, %d, %02x %c\n", i, buf[i], buf[i], buf[i])
 		val = crc8Table[(val^buf[i])&0xff]
 	}
 	return val
 }
 
-func GetUpdateGlassColorMsg(nodeId string, color string) []byte {
+func GetUpdateGlassColorMsg(nodeId []byte, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {

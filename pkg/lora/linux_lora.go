@@ -48,7 +48,7 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 		return isOK
 	}
 	log.Println("rf_init OK\n")
-	freq := module.Freq * 100 * 100
+	freq := module.Freq * 100 * 1000
 	C.set_freq(C.int(freq))
 	/*
 		#define BW_62_5K                        6

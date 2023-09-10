@@ -104,10 +104,10 @@ func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
 	fmt.Println("Setting glass color:", nodeId, color)
 
 	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
-		module1Client.Send(node.GetUpdateGlassColorMsg(nodeId, color))
+		module1Client.Send(node.GetUpdateGlassColorMsg(DecodeId(nodeId), color))
 	} else {
 		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
-			module1Client.Send(node.GetUpdateGlassColorMsg(nodeId, color))
+			module1Client.Send(node.GetUpdateGlassColorMsg(DecodeId(nodeId), color))
 		} else {
 			util.IotLogErrorStr("Node does not exists\n")
 		}
@@ -152,10 +152,14 @@ func Lora0Send(data []byte) {
 func SendHeartbeat() {
 	for {
 		for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
-			module1Client.Send(node.GetHeartBeatMsg(BspConfigInstance.GatewayNodeID, value))
+			module1Client.Send(
+				node.GetHeartBeatMsg(
+					DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value)))
 		}
 		for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
-			module2Client.Send(node.GetHeartBeatMsg(BspConfigInstance.GatewayNodeID, value))
+			module2Client.Send(
+				node.GetHeartBeatMsg(
+					DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value)))
 		}
 		// Wait for specified time and send again
 		time.Sleep(time.Duration(BspConfigInstance.BaseConfigParams.HeartBeat * 1000 * 1000 * 1000 * 60))
@@ -164,9 +168,11 @@ func SendHeartbeat() {
 
 func SendNodeInit() {
 	for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
-		module0Client.Send(node.GetNodeInitMsg(BspConfigInstance.GatewayNodeID, value, module1Param))
+		module0Client.Send(node.GetNodeInitMsg(
+			DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value), module1Param))
 	}
 	for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
-		module0Client.Send(node.GetNodeInitMsg(BspConfigInstance.GatewayNodeID, value, module1Param))
+		module0Client.Send(node.GetNodeInitMsg(
+			DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value), module1Param))
 	}
 }

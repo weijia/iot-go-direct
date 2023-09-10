@@ -5,22 +5,30 @@ import (
 	"testing"
 
 	"iot_go/pkg/node"
+	"iot_go/pkg/shared"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/msg"
 )
 
-func DumpBytes(a []byte) {
-	for i := 0; i < len(a); i++ {
-		fmt.Printf("%d, %d, %02x %c\n", i, a[i], a[i], a[i])
-	}
-	fmt.Printf("\n")
-}
-
 func TestNodePacket(t *testing.T) {
-	DumpBytes(node.GetUpdateGlassColorMsg("Nod1", "122365"))
+	msg.DumpBytes(node.GetUpdateGlassColorMsg(bsp.DecodeId("01020304"), "122365"))
 }
 
 func TestChecksum(t *testing.T) {
-	data := node.GetUpdateGlassColorMsg("Nod1", "122365")
-	DumpBytes(data)
+	data := node.GetUpdateGlassColorMsg(bsp.DecodeId("01020304"), "122365")
+	msg.DumpBytes(data)
+	// asset check result using go
+	if node.IsChecksumCorrect(data) {
+		fmt.Printf("checksum correct\n")
+	} else {
+		fmt.Printf("checksum incorrect\n")
+	}
+}
+
+func TestNodeInit(t *testing.T) {
+	m := shared.Module{Freq: 470, Band: 250, Factor: 9}
+	data := node.GetNodeInitMsg(bsp.DecodeId("000000F23456"), bsp.DecodeId("1234"), m)
+	msg.DumpBytes(data)
 	// asset check result using go
 	if node.IsChecksumCorrect(data) {
 		fmt.Printf("checksum correct\n")

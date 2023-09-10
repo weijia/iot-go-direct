@@ -14,4 +14,4 @@ rem go build -a -v
 
 @REM go build -a -v  -ldflags="-s -w" cmd/iot/main.go
 go build -a -v  -ldflags="-s -w" cmd/lora_service/lora_service.go
-sync.bat
+@REM sync.bat

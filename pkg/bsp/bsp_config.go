@@ -1,6 +1,7 @@
 package bsp
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard_shared"
@@ -28,24 +29,24 @@ type BspConfig struct {
 var swVersion = "0.1.0"
 
 var module0Param = shared.Module{
-	Freq:   443,
+	Freq:   4723,
 	Band:   250,
-	Factor: 10,
+	Factor: 9,
 }
 var module1Param = shared.Module{
-	Freq:   443,
+	Freq:   4723,
 	Band:   250,
-	Factor: 10,
+	Factor: 9,
 }
 var module2Param = shared.Module{
-	Freq:   446,
+	Freq:   4463,
 	Band:   250,
-	Factor: 10,
+	Factor: 9,
 }
 
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
-		GatewayNodeID: "testing-20230815",
+		GatewayNodeID: "000000F23456",
 		HardVersion:   "0.1.0",
 		SoftVersion:   swVersion,
 		Custom:        "test",
@@ -62,6 +63,14 @@ var defaultInitMsgContent = shared.InitMsgContent{
 var BspConfigInstance BspConfig
 
 const CONFIG_FILE_NAME = "iot_go.json"
+
+func DecodeId(i string) []byte {
+	b, err := hex.DecodeString(i)
+	if err != nil {
+		util.IotLogError(err)
+	}
+	return b
+}
 
 func InitConfig() {
 	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
