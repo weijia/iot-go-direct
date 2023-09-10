@@ -104,10 +104,14 @@ func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
 	fmt.Println("Setting glass color:", nodeId, color)
 
 	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
-		module1Client.Send(node.GetUpdateGlassColorMsg(DecodeId(nodeId), color))
+		module1Client.Send(node.GetUpdateGlassColorMsg(
+			DecodeId(BspConfigInstance.GatewayNodeID),
+			DecodeId(nodeId), color))
 	} else {
 		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
-			module1Client.Send(node.GetUpdateGlassColorMsg(DecodeId(nodeId), color))
+			module1Client.Send(node.GetUpdateGlassColorMsg(
+				DecodeId(BspConfigInstance.GatewayNodeID),
+				DecodeId(nodeId), color))
 		} else {
 			util.IotLogErrorStr("Node does not exists\n")
 		}

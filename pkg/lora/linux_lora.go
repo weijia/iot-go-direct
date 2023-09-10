@@ -138,7 +138,8 @@ func (loraDev Lora) ToggleDebug() {
 }
 
 func (loraDev Lora) Send(data []byte) int {
-	util.IotLogInfo(fmt.Sprintf("len of ch %d vs cap of ch %d\n", len(send), cap(send)))
+	// The following is not working as both are 0
+	// util.IotLogInfo(fmt.Sprintf("len of ch %d vs cap of ch %d\n", len(send), cap(send)))
 
 	select {
 	case send <- data:

@@ -3,6 +3,7 @@ package node
 import (
 	"encoding/hex"
 	"fmt"
+	"iot_go/pkg/util"
 )
 
 // https://blog.csdn.net/skh2015java/article/details/111595686
@@ -36,17 +37,19 @@ func getCRC8HighByTable(buf []byte) byte {
 	return val
 }
 
-func GetUpdateGlassColorMsg(nodeId []byte, color string) []byte {
+func GetUpdateGlassColorMsg(gatewayId []byte, nodeId []byte, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {
-		fmt.Printf("Color value invalid: %s\n", color)
+		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
 		return nil
 	}
 	result = append(result, 0)                  // package len
 	result = append(result, 1)                  // node type 1 gateway
 	result = append(result, 5)                  // cmd type
-	result = append(result, nodeId...)          // gateway id
+	result = append(result, gatewayId...) // gateway id must be 6 bytes
+
+	result = append(result, nodeId...)          // node id
 	result = append(result, byte(len(color)/2)) // param len
 	result = append(result, data...)            // color
 	result[0] = byte(len(result) + 1)
@@ -61,4 +64,62 @@ func IsChecksumCorrect(msg []byte) bool {
 	// Calculate checksum
 	calculatedChecksum := getCRC8HighByTable(msgSlice)
 	return calculatedChecksum == checksum
+}
+
+func GetGroupUpdateGlassColorMsg(gatewayId []byte, nodeIdList []([]byte), color string) []byte {
+	var result []byte
+	data, err := hex.DecodeString(color)
+	if err != nil {
+		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
+		return nil
+	}
+	result = append(result, 0)            // package len
+	result = append(result, 1)            // node type 1 gateway
+	result = append(result, 7)            // cmd type group control
+	result = append(result, gatewayId...) // gateway id must be 6 bytes
+
+	result = append(result, byte(len(nodeIdList))) // num of node
+	for i := 0; i < len(nodeIdList); i++ {
+		result = append(result, nodeIdList[i]...) // num of node
+	}
+
+	result = append(result, byte(len(color)/2)) // param len
+	result = append(result, data...)            // color
+
+	result[0] = byte(len(result) + 1)
+	result = append(result, getCRC8HighByTable(result))
+	return result
+}
+
+func GetBroadcastUpdateGlassColorMsg(gatewayId []byte, color string) []byte {
+	var result []byte
+	data, err := hex.DecodeString(color)
+	if err != nil {
+		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
+		return nil
+	}
+	result = append(result, 0)            // package len
+	result = append(result, 1)            // node type 1 gateway
+	result = append(result, 8)            // cmd type broadcast
+	result = append(result, gatewayId...) // gateway id must be 6 bytes
+
+	result = append(result, byte(len(color)/2)) // param len
+	result = append(result, data...)            // color
+
+	result[0] = byte(len(result) + 1)
+	result = append(result, getCRC8HighByTable(result))
+	return result
+}
+
+func GetRetrieveColorMsg(gatewayId []byte, nodeId []byte) []byte {
+	var result []byte
+	result = append(result, 0)            // package len
+	result = append(result, 1)            // node type 1 gateway
+	result = append(result, 9)            // cmd type broadcast
+	result = append(result, gatewayId...) // gateway id must be 6 bytes
+	result = append(result, nodeId...)          // node id
+
+	result[0] = byte(len(result) + 1)
+	result = append(result, getCRC8HighByTable(result))
+	return result
 }

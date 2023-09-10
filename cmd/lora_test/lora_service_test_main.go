@@ -61,7 +61,7 @@ func main() {
 		// 	}
 		// }
 	} else {
-		client := lora_client.NewLoraClient(8866, server)
+		client := lora_client.NewLoraClient(port, server)
 		// client.ToggleDebug()
 		if initNeeded == 1 {
 			client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module0)
@@ -74,11 +74,27 @@ func main() {
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
 		// 	bsp.DecodeId("01020304"))
 		// c := node.GetUpdateGlassColorMsg(
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
 		// 	bsp.DecodeId("01020304"), "122331")
+		nodeGroup := []([]byte){
+			bsp.DecodeId("01020304"),
+			bsp.DecodeId("01020305"),
+		}
+		g := node.GetGroupUpdateGlassColorMsg(
+			bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+			nodeGroup, "122331")
+		// b1 := node.GetBroadcastUpdateGlassColorMsg(
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	"122331")
+		// b1 := node.GetRetrieveColorMsg(
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	"122331")
 		// for {
 		client.Send(b)
 		// client.Send(h)
 		// client.Send(c)
+		client.Send(g)
+		// client.Send(b1)
 		// 	time.Sleep(20 * time.Second)
 		// }
 	}
