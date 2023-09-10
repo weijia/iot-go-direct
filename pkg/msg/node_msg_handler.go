@@ -46,7 +46,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
-		util.IotLogErrorStr("Checksum incorrect, discard pacakge")
+		util.IotLogErrorStr("Checksum incorrect, discard package")
 		return
 	}
 

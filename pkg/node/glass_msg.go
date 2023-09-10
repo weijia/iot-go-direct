@@ -66,7 +66,7 @@ func IsChecksumCorrect(msg []byte) bool {
 	return calculatedChecksum == checksum
 }
 
-func GetGroupUpdateGlassColorMsg(gatewayId []byte, nodeIdList []([]byte), color string) []byte {
+func GetGroupUpdateGlassColorMsg(gatewayId []byte, nodeIdList [][]byte, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {
