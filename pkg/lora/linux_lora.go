@@ -48,7 +48,8 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 		return isOK
 	}
 	log.Println("rf_init OK\n")
-	C.set_freq(C.int(module.Freq) * 1000 * 1000)
+	freq := module.Freq * 100 * 100
+	C.set_freq(C.int(freq))
 	/*
 		#define BW_62_5K                        6
 		#define BW_125K                         7
@@ -85,10 +86,10 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 	len := int(C.receive((*C.uchar)(unsafe.Pointer(&buffer.Bytes()[0])), C.int(buffer.Cap())))
 
 	if len <= 0 {
-		util.IotLogInfo("----------------No data received\n")
+		// util.IotLogInfo("----------------No data received\n")
 		return
 	} else {
-		util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
+		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
 		select {
