@@ -18,7 +18,7 @@ import (
 
 func main() {
 	bsp.InitConfig()
-	deviceId := bsp.BspConfigInstance.InitMsgContent.GatewayNodeID
+	deviceId := bsp.BspConfigInstance.InitMsgContent.GatewayNodeId
 	var topic = "device/" + deviceId + "/out"
 	var publishTopic = "device/" + deviceId + "/in"
 
@@ -26,7 +26,7 @@ func main() {
 	broker := "tcp://" + bsp.BspConfigInstance.MqttParams.MqttIP + ":" +
 		fmt.Sprint(bsp.BspConfigInstance.MqttParams.MqttPort)
 	opts := mqtt.NewClientOptions().AddBroker(broker)
-	opts.SetClientID(bsp.BspConfigInstance.InitMsgContent.GatewayNodeID + "-server")
+	opts.SetClientID(bsp.BspConfigInstance.InitMsgContent.GatewayNodeId + "-server")
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
@@ -92,7 +92,7 @@ func main() {
 		case "node_list_reply":
 			nodeInfoReq := msg.GatewayNodeIdRequest{
 				Method:        "node_info_request",
-				GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
+				GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 			}
 			payload, _ := json.Marshal(nodeInfoReq)
 			token := client.Publish(publishTopic, 0, false, payload)
@@ -111,11 +111,11 @@ func main() {
 		case "gateway_reboot_reply":
 			params := []shared.UpdateGlassColorParams{
 				{
-					NodeID: "FD000001",
+					NodeId: "FD000001",
 					Color:  "1223",
 				},
 				{
-					NodeID: "FD000002",
+					NodeId: "FD000002",
 					Color:  "122332",
 				},
 			}

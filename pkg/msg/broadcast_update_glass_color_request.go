@@ -16,7 +16,7 @@ type ColorParams struct {
 func (request BroadcastUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
 	reply := GatewayNodeIdReply{
 		MsgType:       "gateway_reboot_reply",
-		GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
+		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 	}
 	return reply
 }

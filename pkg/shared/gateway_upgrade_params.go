@@ -1,7 +1,7 @@
 package shared
 
 type GatewayUpgradeParams struct {
-	GatewayNodeID         string `json:"gateway_node_id"`
+	GatewayNodeId         string `json:"gateway_node_id"`
 	TargetHardwareVersion string `json:"target_hardware_version"`
 	TargetSoftwareVersion string `json:"target_software_version"`
 	NodeType              int    `json:"node_type"`

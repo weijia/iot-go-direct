@@ -6,7 +6,7 @@ import (
 
 type NodeListReply struct {
 	MsgType        string   `json:"msg_type"`
-	GatewayNodeID  string   `json:"gateway_node_id"`
+	GatewayNodeId  string   `json:"gateway_node_id"`
 	TotalCount     int      `json:"total_count"`
 	NodeList1      []string `json:"node_list_1"`
 	NodeList2      []string `json:"node_list_2"`
@@ -16,7 +16,7 @@ type NodeListReply struct {
 
 func (reply NodeListReply) handle() interface{} {
 	reply.MsgType = "node_list_reply"
-	reply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
+	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
 	reply.NodeList1 = bsp.BspConfigInstance.NodeList1
 	reply.NodeList2 = bsp.BspConfigInstance.NodeList2
 	reply.TouchNodeList1 = bsp.BspConfigInstance.TouchNodeList1

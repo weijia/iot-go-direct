@@ -14,7 +14,7 @@ func TestJsonUnmarshal(t *testing.T) {
 		MsgType: "init",
 		InitMsgContent: shared.InitMsgContent{
 			NodeInfoContent: shared.NodeInfoContent{
-				GatewayNodeID: "testing",
+				GatewayNodeId: "testing",
 			},
 		},
 	}

@@ -17,7 +17,7 @@ func (lora Lora) InitLora(module shared.Module) int {
 		fmt.Sprintf("%s-inited",
 			lora.DeviceName): "yes",
 	}
-	bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeID, data)
+	bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
 	return 0
 }
 
@@ -26,7 +26,7 @@ func (lora Lora) Exit() int {
 		fmt.Sprintf("%s-exited",
 			lora.DeviceName): "yes",
 	}
-	bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeID, data)
+	bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
 	os.Exit(0)
 	return 0
 }

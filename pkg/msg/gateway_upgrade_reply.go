@@ -6,7 +6,7 @@ import (
 
 type GatewayUpgradeReply struct {
 	MsgType string `json:"msg_type"`
-	// GatewayNodeID   string `json:"gateway_node_id"`
+	// GatewayNodeId   string `json:"gateway_node_id"`
 	// HardwareVersion string `json:"hardware_version"`
 	// SoftwareVersion string `json:"software_version"`
 	// NodeType        int    `json:"node_type"`

@@ -10,7 +10,7 @@ type NodeInfoRequest struct {
 	Params GatewayParams `json:"params"`
 }
 type GatewayParams struct {
-	GatewayNodeID string `json:"gateway_node_id"`
+	GatewayNodeId string `json:"gateway_node_id"`
 }
 
 func (nodeInfoRequest NodeInfoRequest) handle(mqttClient *util.Mqtt) interface{} {

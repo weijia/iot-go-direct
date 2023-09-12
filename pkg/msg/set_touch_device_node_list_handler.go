@@ -10,13 +10,13 @@ type SetTouchDeviceNodeList struct {
 	Params []TouchDeviceNodeList `json:"params"`
 }
 type TouchDeviceNodeList struct {
-	NodeID  string   `json:"node_id"`
+	NodeId  string   `json:"node_id"`
 	NodeIds []string `json:"node_ids"`
 }
 
 func (request SetTouchDeviceNodeList) handle(mqttClient *util.Mqtt) interface{} {
 	for _, value := range request.Params {
-		fmt.Println(value.NodeID)
+		fmt.Println(value.NodeId)
 	}
 	return nil
 }

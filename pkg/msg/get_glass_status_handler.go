@@ -5,5 +5,5 @@ type GetGlassStatusRequest struct {
 	Params GlassStatusParams `json:"params"`
 }
 type GlassStatusParams struct {
-	NodeID string `json:"node_id"`
+	NodeId string `json:"node_id"`
 }

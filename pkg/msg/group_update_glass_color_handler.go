@@ -29,6 +29,6 @@ func (request GroupUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interf
 
 	var reply GatewayNodeIdReply
 	reply.MsgType = "group_update_glass_color_reply"
-	reply.GatewayNodeID = bsp.BspConfigInstance.GatewayNodeID
+	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
 	return reply
 }

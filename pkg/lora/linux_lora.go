@@ -31,13 +31,12 @@ var recv = make(chan []byte, 10)
 var isLoopRunning = false
 
 func (loraDev Lora) InitLora(module shared.Module) int {
-	fmt.Println("Stop loop")
 	// Do not call InitLora too frequently, otherwise, maybe isLoopRunning flag will not be set in time
 	if isLoopRunning {
 		quit <- true
 		<-quitCompleted
 	}
-	fmt.Println("Initiating Lora")
+	util.IotLogInfo("Initiating Lora")
 
 	device := C.CString(loraDev.DeviceName)
 	defer C.free(unsafe.Pointer(device))
@@ -63,7 +62,7 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	}
 	C.set_band(C.int(bandMap[module.Band]))
 	C.set_factor(C.int(module.Factor))
-	fmt.Printf("freq: %d, band: %d, factor: %d\n", module.Freq, module.Band, module.Factor)
+	util.IotLogInfo(fmt.Sprintf("freq: %d, band: %d, factor: %d\n", module.Freq, module.Band, module.Factor))
 
 	res := int(C.rf_set_syncword(0x12)) // 0x3>0: select page, 0x12->0xf: sync word
 	if res != 0 {
@@ -102,10 +101,14 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 
 func (loraDev Lora) MsgLoop() {
 	isLoopRunning = true
+	// Create a ticker with 50 ms
+	ticker := time.NewTicker(time.Millisecond * 50)
+
 	for {
 		select {
 		case <-quit:
 			isLoopRunning = false
+			ticker.Stop()
 			quitCompleted <- true
 			return
 
@@ -118,7 +121,7 @@ func (loraDev Lora) MsgLoop() {
 			if res != 0 {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
-		case <-time.After(time.Second * 1):
+		case <-ticker.C:
 			// util.IotLogInfo("Start event loop\n")
 			C.event_handler()
 			loraDev.CopyFromBufferIfExists()
@@ -167,13 +170,13 @@ func PushLoraMsgToRpc(port int, host ...string) {
 	var serverRpc = lora_client.NewLoraClient(port, realHost)
 	util.IotLogInfo(fmt.Sprintf("Connecting to lora receive service: %s:%d", realHost, port))
 	for {
-		util.IotLogInfo(fmt.Sprintf("Receiving\n"))
+		// util.IotLogInfo(fmt.Sprintf("Receiving\n"))
 		select {
 		case data := <-recv:
-			util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
+			// util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
 			serverRpc.OnReceive(data)
 			util.IotLogInfo(fmt.Sprintf("After pusing data: %v\n", data))
 		}
 	}
-	util.IotLogInfo(fmt.Sprintf("Quitting push msg loop\n"))
+	// util.IotLogInfo(fmt.Sprintf("Quitting push msg loop\n"))
 }

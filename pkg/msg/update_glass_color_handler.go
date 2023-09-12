@@ -12,6 +12,7 @@ type UpdateGlassColorRequest struct {
 }
 
 func (request UpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
-	go bsp.GetBsp().SetGlassColorsBlocking(mqttClient, request.Params)
+	reply := bsp.GetBsp().SetGlassColors(mqttClient, request.Params)
+
 	return nil
 }

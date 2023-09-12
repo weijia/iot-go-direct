@@ -68,26 +68,26 @@ func main() {
 		}
 		// b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
 		// b := node.GetNodeInitMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"), bsp.BspConfigInstance.InitMsgContent.Module1)
 		// h := node.GetHeartBeatMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"))
 		// c := node.GetUpdateGlassColorMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"), "122331")
 		// nodeGroup := []([]byte){
 		// 	bsp.DecodeId("01020304"),
 		// 	bsp.DecodeId("01020305"),
 		// }
 		// g := node.GetGroupUpdateGlassColorMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	nodeGroup, "122331")
 		// b1 := node.GetBroadcastUpdateGlassColorMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	"122331")
 		b2 := node.GetRetrieveColorMsg(
-			bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeID),
+			bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 			bsp.DecodeId("01020304"))
 		// for {
 		// client.Send(b)

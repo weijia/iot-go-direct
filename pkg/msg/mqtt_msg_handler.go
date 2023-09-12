@@ -1,10 +1,15 @@
 package msg
 
 import (
+	_ "embed"
 	"encoding/json"
-
+	"fmt"
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
+	"time"
+
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type MsgHandler interface {
@@ -27,7 +32,43 @@ func GetMsgVar(method string) interface{} {
 	return requestMap[method]
 }
 
-func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
+func ValidateMsg(schemaStr string, data string) bool {
+	loader1 := gojsonschema.NewStringLoader(schemaStr)
+	schema, schemaErr := gojsonschema.NewSchema(loader1)
+	if schemaErr != nil {
+		util.IotLogError(schemaErr)
+		return false
+	} else {
+		result, resultErr := schema.Validate(gojsonschema.NewGoLoader(data))
+		if resultErr != nil {
+			util.IotLogError(resultErr)
+			return false
+		} else {
+			if result.Valid() {
+				return true
+			} else {
+				for _, desc := range result.Errors() {
+					util.IotLogErrorStr(fmt.Sprintf("- %s\n", desc))
+				}
+				return false
+			}
+		}
+	}
+}
+
+type ColorUpdateState struct {
+	Reply        shared.UpdateGlassColorReply
+	RepliedNodes []string
+	Timer        *time.Timer
+}
+
+var statesForPendingColorUpdate []ColorUpdateState
+
+var colorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
+
+var configReqCh = make(chan ConfigRequest)
+
+func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLogError(err)
@@ -52,9 +93,18 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		return broadcastUpdateGlassColorRequest.handle(mqttClient)
 	case "config":
+
+		//go:embed json_schema/init_msg_schema.json
+		var s string
+
+		if ValidateMsg(s, string(body)) {
+			return nil
+		}
+
 		var configRequest ConfigRequest
 		if err := json.Unmarshal(body, &configRequest); err != nil {
 			util.IotLogError(err)
+			return nil
 		}
 		return configRequest.handle(mqttClient)
 	case "gateway_upgrade_reply":
@@ -75,15 +125,39 @@ func HandleMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	case "gateway_reboot":
 		reply := GatewayNodeIdReply{
 			MsgType:       "gateway_reboot_reply",
-			GatewayNodeID: bsp.BspConfigInstance.GatewayNodeID,
+			GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 		}
 		return reply
 	case "update_glass_color_request":
+		//go:embed json_schema/update_color_schema.json
+		var s string
+
+		if ValidateMsg(s, string(body)) {
+			return nil
+		}
+
 		var req UpdateGlassColorRequest
+
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		return req.handle(mqttClient)
+		reply := req.handle(mqttClient).(shared.UpdateGlassColorReply)
+
+		state := ColorUpdateState{
+			Reply: reply,
+			Timer: time.NewTimer(120 * time.Second),
+		}
+
+		statesForPendingColorUpdate = append(statesForPendingColorUpdate, state)
+		// Send reply pointer to requestTimeoutCh after 120 seconds
+		// TODO: Maybe we need to retry before actual 120 second timeout
+		go func() {
+			select {
+			case <-state.Timer.C:
+				colorUpdateRequestTimeoutCh <- &state.Reply
+			}
+		}()
+		return nil
 	}
 	return nil
 }

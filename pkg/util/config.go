@@ -8,7 +8,7 @@ type IotConfig interface {
 type FixedIotConfig struct {
 	Broker        string
 	SwVersion     string
-	GatewayNodeID string
+	GatewayNodeId string
 	HardVersion   string
 	Ccid          string
 	HeartBeat     int
@@ -19,11 +19,11 @@ func (fixedIotConfig FixedIotConfig) GetBroker() string {
 }
 
 func (fixedIotConfig FixedIotConfig) GetClientId() string {
-	return fixedIotConfig.GatewayNodeID
+	return fixedIotConfig.GatewayNodeId
 }
 
-func (fixedIotConfig FixedIotConfig) GetGatewayNodeID() string {
-	return fixedIotConfig.GatewayNodeID
+func (fixedIotConfig FixedIotConfig) GetGatewayNodeId() string {
+	return fixedIotConfig.GatewayNodeId
 }
 
 func (fixedIotConfig FixedIotConfig) GetHardwareVersion() string {

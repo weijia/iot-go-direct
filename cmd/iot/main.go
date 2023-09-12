@@ -39,21 +39,21 @@ func main() {
 
 	bsp.InitBoard()
 
-	sendingCh := make(chan interface{}, 10)
+	mqttPublishCh := make(chan interface{}, 10)
 	quit := make(chan bool)
 
 	nodeMsgCh := make(chan []byte, 10)
 
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
-	go msg.StartMqttMsgLoop(sendingCh, nodeMsgCh, quit)
+	go msg.StartMqttMsgLoop(mqttPublishCh, nodeMsgCh, quit)
 	go bsp.SendHeartbeat()
-	bsp.SendNodeInit()
+	bsp.SendNodeInitAfterStartup()
 
 	// 发布消息
 	var initMsg shared.Init
 	initMsg.InitMsgContent = bsp.BspConfigInstance.InitMsgContent
 	initMsg.MsgType = "init"
-	sendingCh <- initMsg
+	mqttPublishCh <- initMsg
 
 	// 捕捉退出信号，断开连接并退出程序
 	c := make(chan os.Signal, 1)

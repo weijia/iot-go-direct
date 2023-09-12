@@ -2,7 +2,7 @@ package shared
 
 type Init struct {
 	MsgType string `json:"msg_type"`
-	// GatewayNodeID string `json:"gateway_node_id"`
+	// GatewayNodeId string `json:"gateway_node_id"`
 	// HardVersion   string `json:"hard_version"`
 	// SoftVersion   string `json:"soft_version"`
 	// Custom        string `json:"custom"`

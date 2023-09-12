@@ -1,7 +1,7 @@
 package shared
 
 type NodeInfoContent struct {
-	GatewayNodeID string `json:"gateway_node_id"`
+	GatewayNodeId string `json:"gateway_node_id"`
 	HardVersion   string `json:"hard_version"`
 	SoftVersion   string `json:"soft_version"`
 	Custom        string `json:"custom"`
@@ -16,5 +16,5 @@ type NodeInfoContent struct {
 
 type InitMsgContent struct {
 	NodeInfoContent
-	Module0       Module `json:"module0"`
+	Module0 Module `json:"module0"`
 }

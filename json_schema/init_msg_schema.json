@@ -1,0 +1,128 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "method": {
+        "type": "string"
+      },
+      "params": {
+        "type": "object",
+        "properties": {
+          "node_list_1": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "pattern": "[0-9a-fA-F]{8}"
+              }
+            ]
+          },
+          "node_list_2": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "pattern": "[0-9a-fA-F]{8}"
+              }
+            ]
+          },
+          "touch_node_list_1": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "pattern": "[0-9a-fA-F]{8}"
+              }
+            ]
+          },
+          "touch_node_list_2": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string",
+                "pattern": "[0-9a-fA-F]{8}"
+              }
+            ]
+          },
+          "custom": {
+            "type": "string"
+          },
+          "project": {
+            "type": "string"
+          },
+          "heart_beat": {
+            "type": "integer"
+          },
+          "module1": {
+            "type": "object",
+            "properties": {
+              "freq": {
+                "type": "integer",
+                "minimum": 4500,
+                "maximum": 4900
+              },
+              "band": {
+                "type": "integer",
+                "enum": [
+                    125,
+                    250,
+                    500
+                ]
+              },
+              "factor": {
+                "type": "integer",
+                "enum": [
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12
+                ]
+              }
+            },
+            "required": [
+              "freq",
+              "band",
+              "factor"
+            ]
+          },
+          "module2": {
+            "type": "object",
+            "properties": {
+              "freq": {
+                "type": "integer"
+              },
+              "band": {
+                "type": "integer"
+              },
+              "factor": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "freq",
+              "band",
+              "factor"
+            ]
+          }
+        },
+        "required": [
+          "node_list_1",
+          "node_list_2",
+          "touch_node_list_1",
+          "touch_node_list_2",
+          "custom",
+          "project",
+          "heart_beat",
+          "module1",
+          "module2"
+        ]
+      }
+    },
+    "required": [
+      "method",
+      "params"
+    ]
+  }

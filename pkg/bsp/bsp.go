@@ -63,7 +63,7 @@ func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 		"module0": fmt.Sprintf("band: %d, factor: %d, freq: %d",
 			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
 	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeID, data)
+	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 }
 
 func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
@@ -75,7 +75,7 @@ func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
 		"module1": fmt.Sprintf("band: %d, factor: %d, freq: %d",
 			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
 	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeID, data)
+	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 
 }
 
@@ -88,7 +88,7 @@ func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 		"module2": fmt.Sprintf("band: %d, factor: %d, freq: %d",
 			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
 	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeID, data)
+	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 }
 
 func IsSliceContainsStr(a []string, b string) bool {
@@ -100,43 +100,60 @@ func IsSliceContainsStr(a []string, b string) bool {
 	return false
 }
 
-func (virtualBsp VirtualBsp) SetSingleGlassColor(nodeId string, color string) {
-	fmt.Println("Setting glass color:", nodeId, color)
-
-	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
-		module1Client.Send(node.GetUpdateGlassColorMsg(
-			DecodeId(BspConfigInstance.GatewayNodeID),
-			DecodeId(nodeId), color))
-	} else {
-		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
-			module1Client.Send(node.GetUpdateGlassColorMsg(
-				DecodeId(BspConfigInstance.GatewayNodeID),
-				DecodeId(nodeId), color))
-		} else {
-			util.IotLogErrorStr("Node does not exists\n")
+func SetColorForNodeAsInvalid(color string) string {
+	// set every second character as "f" for color
+	for i := 0; i < len(color); i++ {
+		if i%2 == 0 {
+			color = color[:i+1] + "f" + color[i+2:]
 		}
 	}
-
-	data := map[string]interface{}{
-		"color": color,
-	}
-	virtualBsp.SafeUploadTelemetry(nodeId, data)
+	return color
 }
 
-func (virtualBsp VirtualBsp) SetGlassColorsBlocking(
-	mqttClient *util.Mqtt, updateGlassColorParams []shared.UpdateGlassColorParams) {
-	// using for loop
-	for _, value := range updateGlassColorParams {
-		virtualBsp.SetSingleGlassColor(value.NodeID, value.Color)
-	}
-	time.Sleep(90 * time.Second)
+func (virtualBsp VirtualBsp) SetGlassColors(
+	mqttClient *util.Mqtt, updateGlassColorParams []shared.UpdateGlassColorParams) shared.UpdateGlassColorReply {
 
 	var reply shared.UpdateGlassColorReply
 
-	reply.GatewayNodeID = BspConfigInstance.GatewayNodeID
+	reply.GatewayNodeId = BspConfigInstance.GatewayNodeId
 	reply.MsgType = "update_glass_color_reply"
-	reply.Status = updateGlassColorParams
-	mqttClient.SendToServer(reply)
+
+	// Generate a map between node Id and lora client
+	loraClientMap := make(map[string]*lora_client.LoraClient)
+	for _, param := range updateGlassColorParams {
+		loraClientMap[param.NodeId] = GetLoraClientForNode(param.NodeId)
+		if loraClientMap[param.NodeId] == nil {
+			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
+			param.Color = SetColorForNodeAsInvalid(param.Color)
+			reply.Status = append(reply.Status, param)
+		} else {
+			reply.Status = append(reply.Status, param)
+		}
+	}
+
+	for _, param := range updateGlassColorParams {
+		c := node.GetUpdateGlassColorMsg(
+			DecodeId(BspConfigInstance.GatewayNodeId),
+			DecodeId(param.NodeId), param.Color)
+		client := loraClientMap[param.NodeId]
+		client.Send(c)
+		virtualBsp.SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)
+	}
+
+	// time.Sleep(120 * time.Second)
+
+	// // Update status for all nodes according to node status
+	// for _, param := range reply.Status {
+	//     for i, state := BspConfigInstance.NodeStates {
+	// 		if state.NodeId == param.NodeId {
+
+	// 		}
+
+	// 	}
+	// }
+
+	// mqttClient.SendToServer(reply)
+	return reply
 }
 
 func GetBsp() *VirtualBsp {
@@ -158,25 +175,43 @@ func SendHeartbeat() {
 		for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
 			module1Client.Send(
 				node.GetHeartBeatMsg(
-					DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value)))
+					DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(value)))
 		}
 		for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
 			module2Client.Send(
 				node.GetHeartBeatMsg(
-					DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value)))
+					DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(value)))
 		}
 		// Wait for specified time and send again
 		time.Sleep(time.Duration(BspConfigInstance.BaseConfigParams.HeartBeat * 1000 * 1000 * 1000 * 60))
 	}
 }
 
-func SendNodeInit() {
+func SendNodeInitAfterStartup() {
 	for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
-		module0Client.Send(node.GetNodeInitMsg(
-			DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value), module1Param))
+		SendNodeInit(module0Client, value, module1Param)
 	}
 	for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
-		module0Client.Send(node.GetNodeInitMsg(
-			DecodeId(BspConfigInstance.GatewayNodeID), DecodeId(value), module1Param))
+		SendNodeInit(module0Client, value, module2Param)
 	}
+}
+
+func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
+	client.Send(node.GetNodeInitMsg(
+		DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(nodeId), moduelParam))
+}
+
+func GetLoraClientForNode(nodeId string) *lora_client.LoraClient {
+	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
+		return module1Client
+	} else {
+		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
+			return module2Client
+		}
+	}
+	return nil
+}
+
+func GetModule0Client() *lora_client.LoraClient {
+	return module0Client
 }

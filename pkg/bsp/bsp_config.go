@@ -12,10 +12,10 @@ import (
 )
 
 type NodeState struct {
-	NodeId              string `json:"node_id"`
-	LastMsgTimestamp    int64  `json:"node_msg_timestamp"`
-	NodeReportedColor   []int  `json:"node_reported_color"`
-	NodeRequestingColor []int  `json:"node_requesting_color"`
+	NodeId            string `json:"node_id"`
+	LastMsgTimestamp  int64  `json:"node_msg_timestamp"`
+	NodeReportedColor []int  `json:"node_reported_color"`
+	// NodeRequestingColor []int  `json:"node_requesting_color"`
 }
 
 type BspConfig struct {
@@ -46,7 +46,7 @@ var module2Param = shared.Module{
 
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
-		GatewayNodeID: "000000F23456",
+		GatewayNodeId: "000000F23456",
 		HardVersion:   "0.1.0",
 		SoftVersion:   swVersion,
 		Custom:        "test",
