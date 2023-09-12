@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/node"
+	"iot_go/pkg/util"
 	"time"
 )
 
@@ -87,8 +88,8 @@ func main() {
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	"122331")
 		b2 := node.GetRetrieveColorMsg(
-			bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-			bsp.DecodeId("01020304"))
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			util.DecodeId("01020304"))
 		// for {
 		// client.Send(b)
 		// client.Send(h)

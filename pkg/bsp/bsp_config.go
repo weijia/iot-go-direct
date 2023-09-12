@@ -1,7 +1,6 @@
 package bsp
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard_shared"
@@ -10,13 +9,6 @@ import (
 
 	"github.com/spf13/viper"
 )
-
-type NodeState struct {
-	NodeId            string `json:"node_id"`
-	LastMsgTimestamp  int64  `json:"node_msg_timestamp"`
-	NodeReportedColor []int  `json:"node_reported_color"`
-	// NodeRequestingColor []int  `json:"node_requesting_color"`
-}
 
 type BspConfig struct {
 	shared.InitMsgContent
@@ -63,14 +55,6 @@ var defaultInitMsgContent = shared.InitMsgContent{
 var BspConfigInstance BspConfig
 
 const CONFIG_FILE_NAME = "iot_go.json"
-
-func DecodeId(i string) []byte {
-	b, err := hex.DecodeString(i)
-	if err != nil {
-		util.IotLogError(err)
-	}
-	return b
-}
 
 func InitConfig() {
 	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"

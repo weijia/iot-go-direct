@@ -3,6 +3,9 @@ package node
 import (
 	"encoding/hex"
 	"fmt"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_client"
+	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 )
 
@@ -44,9 +47,9 @@ func GetUpdateGlassColorMsg(gatewayId []byte, nodeId []byte, color string) []byt
 		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
 		return nil
 	}
-	result = append(result, 0)                  // package len
-	result = append(result, 1)                  // node type 1 gateway
-	result = append(result, 5)                  // cmd type
+	result = append(result, 0)            // package len
+	result = append(result, 1)            // node type 1 gateway
+	result = append(result, 5)            // cmd type
 	result = append(result, gatewayId...) // gateway id must be 6 bytes
 
 	result = append(result, nodeId...)          // node id
@@ -117,9 +120,52 @@ func GetRetrieveColorMsg(gatewayId []byte, nodeId []byte) []byte {
 	result = append(result, 1)            // node type 1 gateway
 	result = append(result, 9)            // cmd type broadcast
 	result = append(result, gatewayId...) // gateway id must be 6 bytes
-	result = append(result, nodeId...)          // node id
+	result = append(result, nodeId...)    // node id
 
 	result[0] = byte(len(result) + 1)
 	result = append(result, getCRC8HighByTable(result))
 	return result
+}
+
+func SetColorForNodeAsInvalid(color string) string {
+	// set every second character as "f" for color
+	for i := 0; i < len(color); i++ {
+		if i%2 == 0 {
+			color = color[:i+1] + "f" + color[i+2:]
+		}
+	}
+	return color
+}
+
+func SetGlassColors(mqttClient *util.Mqtt,
+	updateGlassColorParams []shared.UpdateGlassColorParams) shared.UpdateGlassColorReply {
+
+	var reply shared.UpdateGlassColorReply
+
+	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
+	reply.MsgType = "update_glass_color_reply"
+
+	// Generate a map between node Id and lora client
+	loraClientMap := make(map[string]*lora_client.LoraClient)
+	for _, param := range updateGlassColorParams {
+		loraClientMap[param.NodeId] = bsp.GetLoraClientForNode(param.NodeId)
+		if loraClientMap[param.NodeId] == nil {
+			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
+			param.Color = SetColorForNodeAsInvalid(param.Color)
+			reply.Status = append(reply.Status, param)
+		} else {
+			reply.Status = append(reply.Status, param)
+		}
+	}
+
+	for _, param := range updateGlassColorParams {
+		c := GetUpdateGlassColorMsg(
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			util.DecodeId(param.NodeId), param.Color)
+		client := loraClientMap[param.NodeId]
+		client.Send(c)
+		bsp.GetBsp().SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)
+	}
+
+	return reply
 }

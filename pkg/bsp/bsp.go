@@ -3,12 +3,9 @@ package bsp
 import (
 	"encoding/json"
 	"iot_go/pkg/lora_client"
-	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard"
 	"iot_go/pkg/thingsboard_shared"
-	"iot_go/pkg/util"
-	"time"
 
 	"fmt"
 )
@@ -100,62 +97,6 @@ func IsSliceContainsStr(a []string, b string) bool {
 	return false
 }
 
-func SetColorForNodeAsInvalid(color string) string {
-	// set every second character as "f" for color
-	for i := 0; i < len(color); i++ {
-		if i%2 == 0 {
-			color = color[:i+1] + "f" + color[i+2:]
-		}
-	}
-	return color
-}
-
-func (virtualBsp VirtualBsp) SetGlassColors(
-	mqttClient *util.Mqtt, updateGlassColorParams []shared.UpdateGlassColorParams) shared.UpdateGlassColorReply {
-
-	var reply shared.UpdateGlassColorReply
-
-	reply.GatewayNodeId = BspConfigInstance.GatewayNodeId
-	reply.MsgType = "update_glass_color_reply"
-
-	// Generate a map between node Id and lora client
-	loraClientMap := make(map[string]*lora_client.LoraClient)
-	for _, param := range updateGlassColorParams {
-		loraClientMap[param.NodeId] = GetLoraClientForNode(param.NodeId)
-		if loraClientMap[param.NodeId] == nil {
-			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
-			param.Color = SetColorForNodeAsInvalid(param.Color)
-			reply.Status = append(reply.Status, param)
-		} else {
-			reply.Status = append(reply.Status, param)
-		}
-	}
-
-	for _, param := range updateGlassColorParams {
-		c := node.GetUpdateGlassColorMsg(
-			DecodeId(BspConfigInstance.GatewayNodeId),
-			DecodeId(param.NodeId), param.Color)
-		client := loraClientMap[param.NodeId]
-		client.Send(c)
-		virtualBsp.SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)
-	}
-
-	// time.Sleep(120 * time.Second)
-
-	// // Update status for all nodes according to node status
-	// for _, param := range reply.Status {
-	//     for i, state := BspConfigInstance.NodeStates {
-	// 		if state.NodeId == param.NodeId {
-
-	// 		}
-
-	// 	}
-	// }
-
-	// mqttClient.SendToServer(reply)
-	return reply
-}
-
 func GetBsp() *VirtualBsp {
 	return &virtualBsp
 }
@@ -168,37 +109,6 @@ func (virtualBsp VirtualBsp) StopAllProcess() {
 
 func Lora0Send(data []byte) {
 	module0Client.Send(data)
-}
-
-func SendHeartbeat() {
-	for {
-		for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
-			module1Client.Send(
-				node.GetHeartBeatMsg(
-					DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(value)))
-		}
-		for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
-			module2Client.Send(
-				node.GetHeartBeatMsg(
-					DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(value)))
-		}
-		// Wait for specified time and send again
-		time.Sleep(time.Duration(BspConfigInstance.BaseConfigParams.HeartBeat * 1000 * 1000 * 1000 * 60))
-	}
-}
-
-func SendNodeInitAfterStartup() {
-	for _, value := range BspConfigInstance.BaseConfigParams.NodeList1 {
-		SendNodeInit(module0Client, value, module1Param)
-	}
-	for _, value := range BspConfigInstance.BaseConfigParams.NodeList2 {
-		SendNodeInit(module0Client, value, module2Param)
-	}
-}
-
-func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
-	client.Send(node.GetNodeInitMsg(
-		DecodeId(BspConfigInstance.GatewayNodeId), DecodeId(nodeId), moduelParam))
 }
 
 func GetLoraClientForNode(nodeId string) *lora_client.LoraClient {
@@ -214,4 +124,12 @@ func GetLoraClientForNode(nodeId string) *lora_client.LoraClient {
 
 func GetModule0Client() *lora_client.LoraClient {
 	return module0Client
+}
+
+func GetModule1Client() *lora_client.LoraClient {
+	return module1Client
+}
+
+func GetModule2Client() *lora_client.LoraClient {
+	return module2Client
 }

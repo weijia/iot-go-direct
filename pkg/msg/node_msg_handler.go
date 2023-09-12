@@ -26,15 +26,6 @@ const (
 	HEARTBEAT_COLOR_POS_START_INDEX = REPLY_NODE_ID_START_INDEX + NODE_ID_LEN // 13
 )
 
-func findNodeIdInNodeStateList(nodeId string) *bsp.NodeState {
-	for _, nodeState := range bsp.BspConfigInstance.NodeStates {
-		if nodeState.NodeId == nodeId {
-			return &nodeState
-		}
-	}
-	return nil
-}
-
 func getReportedGlassColor(msg []byte) []byte {
 	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN+1 : len(msg)-1]
 }
@@ -62,7 +53,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 
 	// Extract byte 10 to 14 as node id from byte slice msg
 	nodeId := string(msg[REPLY_NODE_ID_START_INDEX : REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
-	nodeState := findNodeIdInNodeStateList(nodeId)
+	nodeState := bsp.GetNodeState(nodeId)
 	if nodeState == nil {
 		util.IotLogInfo(fmt.Sprintf("Received heartbeat reply for unknown node %s\n", nodeId))
 		return
@@ -73,7 +64,8 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	case CONFIG_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s\n", nodeId))
-		// TODO: handle node config reply and check if we can already update module1 & 2 config
+		HandleNodeInitReply(msg)
+
 	case HEARTBEAT_REPLY:
 		util.IotLogInfo("Received heartbeat reply\n")
 		for i := 0; i < 4; i++ {

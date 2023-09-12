@@ -3,6 +3,7 @@ package msg
 import (
 	"fmt"
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -38,31 +39,43 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 
 	for {
 		select {
-		case sendingMsg := <-mqttPublishCh:
-			mqttClient.SendToServer(sendingMsg)
-		case receivedMsg := <-mqttCh:
-			fmt.Printf("Received message: %s from topic: %s\n", receivedMsg.Payload(), receivedMsg.Topic())
-			resp := HandleMqttMsg(mqttClient, receivedMsg.Payload())
+		case publishingMqttMsg := <-mqttPublishCh:
+			mqttClient.SendToServer(publishingMqttMsg)
+		case mqttMsg := <-mqttCh:
+			util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic()))
+			resp := HandleMqttMsg(mqttClient, mqttMsg.Payload())
 			if resp != nil {
-				mqttPublishCh <- resp
+				select {
+				case mqttPublishCh <- resp:
+				default:
+					util.IotLogErrorStr("mqtt publish channel full when sending normal mqtt reply")
+				}
 			}
 		case nodeMsg := <-nodeMsgCh:
 			HandleNodeMsg(nodeMsg, mqttPublishCh)
 		case reply := <-colorUpdateRequestTimeoutCh:
 			// Find the correct reply in statesForPendingColorUpdate and send reply if exists
 			for index, state := range statesForPendingColorUpdate {
-				fmt.Printf("data in slice: %p, data from ch: %p", &state.Reply, reply)
+				util.IotLogInfo(fmt.Sprintf("data in slice: %p, data from ch: %p", &state.Reply, reply))
 				if &state.Reply == reply {
-					mqttPublishCh <- reply
+					select {
+					case mqttPublishCh <- reply:
+					default:
+						util.IotLogErrorStr("mqtt publish channel full when sending color update reply")
+					}
 					// Remove current element from statesForPendingColorUpdate
 					statesForPendingColorUpdate = append(statesForPendingColorUpdate[:index], statesForPendingColorUpdate[index+1:]...)
 					break
 				}
 			}
-		case configRequest := <-configReqCh:
-			fmt.Printf("config request: %p\n", configRequest)
-			reply := finalizeConfigReq(configRequest)
-			mqttPublishCh <- reply
+		case configParams := <-node.ConfigReqCh:
+			util.IotLogInfo(fmt.Sprintf("config request: %p\n", configParams))
+			reply := finalizeConfigReq(configParams)
+			select {
+			case mqttPublishCh <- reply:
+			default:
+				util.IotLogErrorStr("mqtt publish channel full when sending config reply")
+			}
 		case <-quit:
 			break
 		}

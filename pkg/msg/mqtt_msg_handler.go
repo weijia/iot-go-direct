@@ -66,8 +66,6 @@ var statesForPendingColorUpdate []ColorUpdateState
 
 var colorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
 
-var configReqCh = make(chan ConfigRequest)
-
 func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
@@ -106,7 +104,8 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			util.IotLogError(err)
 			return nil
 		}
-		return configRequest.handle(mqttClient)
+		configRequest.handle(mqttClient)
+		return nil
 	case "gateway_upgrade_reply":
 		return nil
 

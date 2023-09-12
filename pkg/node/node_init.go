@@ -1,6 +1,12 @@
 package node
 
-import "iot_go/pkg/shared"
+import (
+	"fmt"
+	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_client"
+	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
+)
 
 // TODO: append prefix 0 to gatewayId and nodeId
 func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) []byte {
@@ -28,4 +34,59 @@ func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) 
 	result[0] = byte(len(result) + 1) // need to count CRC byte in len
 	result = append(result, getCRC8HighByTable(result))
 	return result
+}
+
+func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
+	util.IotLogInfo(fmt.Sprintf("Sending init msg to %s with param: %v\n", nodeId, moduelParam))
+	client.Send(GetNodeInitMsg(
+		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(nodeId), moduelParam))
+}
+
+func SendNodeInitAfterStartup() {
+	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
+		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
+	}
+	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
+		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
+	}
+}
+
+func HandleNodeInitReq(configParam shared.ConfigParams) {
+	if IsProcessingConfigReq {
+		return
+	}
+	IsProcessingConfigReq = true
+
+	if len(PendingInitReqNodeList) > 0 {
+		util.IotLogErrorStr(fmt.Sprintf("Node init req pending on %v, but is processing flag is false, clear it now\n"))
+		PendingInitReqNodeList = PendingInitReqNodeList[:0]
+	}
+
+	OngoingConfigReqParam = configParam
+
+	// For node already in node list, send init msg in working freq, otherwise send it in public freq
+	for _, nodeId := range configParam.NodeList1 {
+		client := bsp.GetLoraClientForNode(nodeId)
+		if client != nil {
+			SendNodeInit(client, nodeId, configParam.Module1)
+		} else {
+			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module1)
+		}
+		PendingInitReqNodeList = append(PendingInitReqNodeList, nodeId)
+	}
+	for _, nodeId := range configParam.NodeList2 {
+		client := bsp.GetLoraClientForNode(nodeId)
+		if client != nil {
+			SendNodeInit(client, nodeId, configParam.Module2)
+		} else {
+			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module2)
+		}
+		PendingInitReqNodeList = append(PendingInitReqNodeList, nodeId)
+	}
+	go func() {
+		select {
+		case <-NodeConfigTimer.C:
+			ConfigReqCh <- OngoingConfigReqParam
+		}
+	}()
 }
