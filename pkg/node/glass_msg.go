@@ -1,12 +1,12 @@
 package node
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
-	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_client"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
+	"time"
 )
 
 // https://blog.csdn.net/skh2015java/article/details/111595686
@@ -137,35 +137,24 @@ func SetColorForNodeAsInvalid(color string) string {
 	return color
 }
 
-func SetGlassColors(mqttClient *util.Mqtt,
-	updateGlassColorParams []shared.UpdateGlassColorParams) shared.UpdateGlassColorReply {
-
-	var reply shared.UpdateGlassColorReply
-
-	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
-	reply.MsgType = "update_glass_color_reply"
-
-	// Generate a map between node Id and lora client
-	loraClientMap := make(map[string]*lora_client.LoraClient)
-	for _, param := range updateGlassColorParams {
-		loraClientMap[param.NodeId] = bsp.GetLoraClientForNode(param.NodeId)
-		if loraClientMap[param.NodeId] == nil {
-			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
-			param.Color = SetColorForNodeAsInvalid(param.Color)
-			reply.Status = append(reply.Status, param)
-		} else {
-			reply.Status = append(reply.Status, param)
-		}
-	}
-
-	for _, param := range updateGlassColorParams {
-		c := GetUpdateGlassColorMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-			util.DecodeId(param.NodeId), param.Color)
-		client := loraClientMap[param.NodeId]
-		client.Send(c)
-		bsp.GetBsp().SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)
-	}
-
-	return reply
+type ColorUpdateState struct {
+	Reply        shared.UpdateGlassColorReply
+	PendingNodes []string
+	Timer        *time.Timer
+	CancelFunc   *context.CancelFunc
 }
+
+var StatesForPendingColorUpdate []ColorUpdateState
+
+var ColorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
+
+func getReportedGlassColor(msg []byte) []byte {
+	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN+1 : len(msg)-1]
+}
+
+// func HandleNodeColorUpdateReply(msg []byte) {
+// 	reportedColors := getReportedGlassColor(msg)
+// 	for i := 0; i < len(reportedColors); i++ {
+// 		nodeState.NodeReportedColor[getAreaFromColorReport(reportedColors[i])] = int(reportedColors[i] & 0xf)
+// 	}
+// }

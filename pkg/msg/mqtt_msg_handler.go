@@ -1,14 +1,11 @@
 package msg
 
 import (
-	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
-	"time"
 
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -56,17 +53,6 @@ func ValidateMsg(schemaStr string, data string) bool {
 		}
 	}
 }
-
-type ColorUpdateState struct {
-	Reply        shared.UpdateGlassColorReply
-	RepliedNodes []string
-	Timer        *time.Timer
-	CancelFunc   *context.CancelFunc
-}
-
-var statesForPendingColorUpdate []ColorUpdateState
-
-var colorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
 
 func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
@@ -142,28 +128,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		reply := req.handle(mqttClient).(shared.UpdateGlassColorReply)
-
-		ctx, cancel := context.WithCancel(context.Background())
-
-		state := ColorUpdateState{
-			Reply:      reply,
-			Timer:      time.NewTimer(120 * time.Second),
-			CancelFunc: &cancel,
-		}
-
-		statesForPendingColorUpdate = append(statesForPendingColorUpdate, state)
-		// Send reply pointer to requestTimeoutCh after 120 seconds
-		// TODO: Maybe we need to retry before actual 120 second timeout
-		go func() {
-			select {
-			case <-ctx.Done():
-				return
-			case <-state.Timer.C:
-				colorUpdateRequestTimeoutCh <- &state.Reply
-			}
-		}()
-		return nil
+		req.handle()
 	}
 	return nil
 }

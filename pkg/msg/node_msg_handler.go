@@ -26,10 +26,6 @@ const (
 	HEARTBEAT_COLOR_POS_START_INDEX = REPLY_NODE_ID_START_INDEX + NODE_ID_LEN // 13
 )
 
-func getReportedGlassColor(msg []byte) []byte {
-	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN+1 : len(msg)-1]
-}
-
 func getAreaFromColorReport(r byte) int {
 	return (int(r)&0xf0)>>4 - 1
 }
@@ -64,7 +60,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	case CONFIG_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s\n", nodeId))
-		HandleNodeInitReply(msg)
+		node.HandleNodeInitReply(msg)
 
 	case HEARTBEAT_REPLY:
 		util.IotLogInfo("Received heartbeat reply\n")
@@ -74,10 +70,42 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 		}
 
 	case UPDATE_GLASS_COLOR_REPLY:
-		reportedColors := getReportedGlassColor(msg)
 		util.IotLogInfo("Received update glass color reply\n")
-		for i := 0; i < len(reportedColors); i++ {
-			nodeState.NodeReportedColor[getAreaFromColorReport(reportedColors[i])] = int(reportedColors[i] & 0xf)
+		// node.HandleNodeColorUpdateReply(msg)
+		for pendingStateIndex := len(node.StatesForPendingColorUpdate) - 1; pendingStateIndex >= 0; pendingStateIndex-- {
+			state := node.StatesForPendingColorUpdate[pendingStateIndex]
+			for _, singleNodeState := range state.Reply.Status {
+				if singleNodeState.NodeId == nodeId {
+					// "params":[
+					// {
+					// 	"node_id":"FD000001",
+					// 	"color":"1223"
+					// },
+					if int(msg[node.REPLY_PAYLOAD_START_INDEX]) == node.UPDATE_COLOR_RESULT_OK {
+						for i = 0; i < len(singleNodeState.Color)/2; i++ {
+							nodeState.NodeReportedColor[util.GetGlassAreaFromStr(singleNodeState.Color[i*2])] =
+								int(singleNodeState.Color[i*2+1])
+						}
+					} else {
+						singleNodeState.Color = node.SetColorForNodeAsInvalid(singleNodeState.Color)
+					}
+					// Remove pending node, will only remove one, so we can remove when using range
+					for pendingNodeIndex, pendingNodeId := range state.PendingNodes {
+						if pendingNodeId == nodeId {
+							state.PendingNodes = append(state.PendingNodes[:pendingNodeIndex],
+								state.PendingNodes[:pendingNodeIndex+1]...)
+							break
+						}
+					}
+				}
+			}
+			if len(state.PendingNodes) == 0 {
+				// Remove the state if all pending nodes sent reply
+				node.StatesForPendingColorUpdate =
+					append(node.StatesForPendingColorUpdate[:pendingUpdateIndex],
+						node.StatesForPendingColorUpdate[:pendingUpdateIndex+1]...)
+				mqttCh <- state.Reply
+			}
 		}
 
 	case GET_GLASS_STATE_REPLY:

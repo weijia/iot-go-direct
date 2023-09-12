@@ -53,9 +53,9 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 			}
 		case nodeMsg := <-nodeMsgCh:
 			HandleNodeMsg(nodeMsg, mqttPublishCh)
-		case reply := <-colorUpdateRequestTimeoutCh:
+		case reply := <-node.ColorUpdateRequestTimeoutCh:
 			// Find the correct reply in statesForPendingColorUpdate and send reply if exists
-			for index, state := range statesForPendingColorUpdate {
+			for index, state := range node.StatesForPendingColorUpdate {
 				util.IotLogInfo(fmt.Sprintf("data in slice: %p, data from ch: %p", &state.Reply, reply))
 				if &state.Reply == reply {
 					select {
@@ -64,7 +64,8 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 						util.IotLogErrorStr("mqtt publish channel full when sending color update reply")
 					}
 					// Remove current element from statesForPendingColorUpdate
-					statesForPendingColorUpdate = append(statesForPendingColorUpdate[:index], statesForPendingColorUpdate[index+1:]...)
+					node.StatesForPendingColorUpdate = append(
+						node.StatesForPendingColorUpdate[:index], node.StatesForPendingColorUpdate[index+1:]...)
 					break
 				}
 			}
