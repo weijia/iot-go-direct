@@ -86,7 +86,9 @@ func HandleNodeInitReq(configParam shared.ConfigParams) {
 		PendingInitReqNodeList = append(PendingInitReqNodeList, nodeId)
 	}
 
-	ctx, CancelFuncForNodeInitReplyTimeout := context.WithCancel(context.Background())
+	var ctx context.Context
+
+	ctx, CancelFuncForNodeInitReplyTimeout = context.WithCancel(context.Background())
 
 	go func() {
 		NodeConfigTimer.Reset(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
