@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -60,6 +61,7 @@ type ColorUpdateState struct {
 	Reply        shared.UpdateGlassColorReply
 	RepliedNodes []string
 	Timer        *time.Timer
+	CancelFunc   *context.CancelFunc
 }
 
 var statesForPendingColorUpdate []ColorUpdateState
@@ -142,9 +144,12 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		reply := req.handle(mqttClient).(shared.UpdateGlassColorReply)
 
+		ctx, cancel := context.WithCancel(context.Background())
+
 		state := ColorUpdateState{
-			Reply: reply,
-			Timer: time.NewTimer(120 * time.Second),
+			Reply:      reply,
+			Timer:      time.NewTimer(120 * time.Second),
+			CancelFunc: &cancel,
 		}
 
 		statesForPendingColorUpdate = append(statesForPendingColorUpdate, state)
@@ -152,6 +157,8 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		// TODO: Maybe we need to retry before actual 120 second timeout
 		go func() {
 			select {
+			case <-ctx.Done():
+				return
 			case <-state.Timer.C:
 				colorUpdateRequestTimeoutCh <- &state.Reply
 			}

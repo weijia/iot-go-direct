@@ -1,11 +1,13 @@
 package node
 
 import (
+	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
+	"time"
 )
 
 // TODO: append prefix 0 to gatewayId and nodeId
@@ -83,8 +85,14 @@ func HandleNodeInitReq(configParam shared.ConfigParams) {
 		}
 		PendingInitReqNodeList = append(PendingInitReqNodeList, nodeId)
 	}
+
+	ctx, CancelFuncForNodeInitReplyTimeout := context.WithCancel(context.Background())
+
 	go func() {
+		NodeConfigTimer.Reset(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
 		select {
+		case <-ctx.Done():
+			return
 		case <-NodeConfigTimer.C:
 			ConfigReqCh <- OngoingConfigReqParam
 		}

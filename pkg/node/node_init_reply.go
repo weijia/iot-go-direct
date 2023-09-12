@@ -1,6 +1,7 @@
 package node
 
 import (
+	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/shared"
@@ -66,6 +67,7 @@ var PendingInitReqNodeList []string
 
 var ConfigReqCh = make(chan shared.ConfigParams)
 var NodeConfigTimer = time.NewTimer(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
+var CancelFuncForNodeInitReplyTimeout context.CancelFunc
 
 func HandleNodeInitReply(nodeInitReply []byte) {
 	util.IotLogInfo(fmt.Sprintf("Got init reply %v\n", nodeInitReply))
@@ -108,6 +110,7 @@ func HandleNodeInitReply(nodeInitReply []byte) {
 		}
 	}
 	if len(PendingInitReqNodeList) == 0 {
+		CancelFuncForNodeInitReplyTimeout()
 		ConfigReqCh <- OngoingConfigReqParam
 	}
 }
