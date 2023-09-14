@@ -16,6 +16,13 @@ type UpdateGlassColorRequest struct {
 	Params []shared.UpdateGlassColorParams `json:"params"`
 }
 
+func SetSingleGlassColor(client *lora_client.LoraClient, nodeId string, color string) {
+	c := node.GetUpdateGlassColorMsg(
+		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+		util.DecodeId(nodeId), color)
+	client.Send(c)
+}
+
 func (request UpdateGlassColorRequest) handle() {
 	var reply shared.UpdateGlassColorReply
 
@@ -23,7 +30,7 @@ func (request UpdateGlassColorRequest) handle() {
 	reply.MsgType = "update_glass_color_reply"
 
 	// Generate a map between node Id and lora client
-	loraClientMap := make(map[string]*lora_client.LoraClient)
+	// loraClientMap := make(map[string]*lora_client.LoraClient)
 	updateGlassColorParams := request.Params
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -35,18 +42,14 @@ func (request UpdateGlassColorRequest) handle() {
 	}
 
 	for _, param := range updateGlassColorParams {
-		loraClientMap[param.NodeId] = bsp.GetLoraClientForNode(param.NodeId)
-		if loraClientMap[param.NodeId] == nil {
+		client := bsp.GetLoraClientForNode(param.NodeId)
+		if client == nil {
 			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
 			param.Color = node.SetColorForNodeAsInvalid(param.Color)
 			reply.Status = append(reply.Status, param)
 		} else {
 			reply.Status = append(reply.Status, param)
-			c := node.GetUpdateGlassColorMsg(
-				util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-				util.DecodeId(param.NodeId), param.Color)
-			client := loraClientMap[param.NodeId]
-			client.Send(c)
+			SetSingleGlassColor(client, param.NodeId, param.Color)
 			state.PendingNodes = append(state.PendingNodes, param.NodeId)
 		}
 		bsp.GetBsp().SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)

@@ -16,14 +16,20 @@ type GroupUpdateGlassColorParams struct {
 }
 
 func (request GroupUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
-	bspInstance := bsp.GetBsp()
 	for _, group := range request.Params {
-
 		for _, nodeId := range group.NodeList1 {
-			bspInstance.SetSingleGlassColor(nodeId, group.Color)
+			client := bsp.GetLoraClientForNode(nodeId)
+			if client != nil {
+				SetSingleGlassColor(client, nodeId, group.Color)
+			}
+			
 		}
 		for _, nodeId := range group.NodeList2 {
-			bspInstance.SetSingleGlassColor(nodeId, group.Color)
+			client := bsp.GetLoraClientForNode(nodeId)
+			if client != nil {
+				SetSingleGlassColor(client, nodeId, group.Color)
+			}
+			
 		}
 	}
 

@@ -72,8 +72,8 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	case UPDATE_GLASS_COLOR_REPLY:
 		util.IotLogInfo("Received update glass color reply\n")
 		// node.HandleNodeColorUpdateReply(msg)
-		for pendingStateIndex := len(node.StatesForPendingColorUpdate) - 1; pendingStateIndex >= 0; pendingStateIndex-- {
-			state := node.StatesForPendingColorUpdate[pendingStateIndex]
+		for pendingUpdateIndex := len(node.StatesForPendingColorUpdate) - 1; pendingUpdateIndex >= 0; pendingUpdateIndex-- {
+			state := node.StatesForPendingColorUpdate[pendingUpdateIndex]
 			for _, singleNodeState := range state.Reply.Status {
 				if singleNodeState.NodeId == nodeId {
 					// "params":[
@@ -82,7 +82,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 					// 	"color":"1223"
 					// },
 					if int(msg[node.REPLY_PAYLOAD_START_INDEX]) == node.UPDATE_COLOR_RESULT_OK {
-						for i = 0; i < len(singleNodeState.Color)/2; i++ {
+						for i := 0; i < len(singleNodeState.Color)/2; i++ {
 							nodeState.NodeReportedColor[util.GetGlassAreaFromStr(singleNodeState.Color[i*2])] =
 								int(singleNodeState.Color[i*2+1])
 						}
