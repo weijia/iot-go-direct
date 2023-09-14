@@ -14,6 +14,12 @@ type MsgHandler interface {
 	handle(*util.Mqtt) interface{}
 }
 
+//go:embed json_schema/update_color_schema.json
+var update_color_schema string
+
+//go:embed json_schema/init_msg_schema.json
+var init_msg_schema string
+
 func GetMsgVar(method string) interface{} {
 	requestMap := map[string]interface{}{
 		"broadcast_update_glass_color_request": BroadcastUpdateGlassColorRequest{},
@@ -80,10 +86,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		return broadcastUpdateGlassColorRequest.handle(mqttClient)
 	case "config":
 
-		//go:embed json_schema/init_msg_schema.json
-		var s string
-
-		if ValidateMsg(s, string(body)) {
+		if ValidateMsg(init_msg_schema, string(body)) {
 			return nil
 		}
 
@@ -116,10 +119,8 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		return reply
 	case "update_glass_color_request":
-		//go:embed json_schema/update_color_schema.json
-		var s string
 
-		if ValidateMsg(s, string(body)) {
+		if ValidateMsg(update_color_schema, string(body)) {
 			return nil
 		}
 
