@@ -13,6 +13,7 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	// MQTT 连接设置
 	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
+	util.IotLogInfo(fmt.Sprintf("Connecting to server %s\n", broker))
 	opts := mqtt.NewClientOptions().AddBroker(broker)
 	opts.SetClientID(bsp.BspConfigInstance.GatewayNodeId)
 	opts.Username = bsp.BspConfigInstance.MqttUserName
