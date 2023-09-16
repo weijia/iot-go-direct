@@ -15,6 +15,8 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
 	opts := mqtt.NewClientOptions().AddBroker(broker)
 	opts.SetClientID(bsp.BspConfigInstance.GatewayNodeId)
+	opts.Username = bsp.BspConfigInstance.MqttUserName
+	opts.Password = bsp.BspConfigInstance.MqttPwd
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
@@ -22,6 +24,14 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 	// 连接到服务器
 	token := client.Connect()
 	if token.Wait() && token.Error() != nil {
+		//Post an device issue to thingsboard server
+		//Create data string map
+		data := make(map[string]interface{})
+		data["fail-server"] = broker
+		data["fail-username"] = opts.Username
+		data["fail-password"] = opts.Password
+
+		bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
 		panic(token.Error())
 	}
 
@@ -70,7 +80,7 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 				}
 			}
 		case configParams := <-node.ConfigReqCh:
-			util.IotLogInfo(fmt.Sprintf("config request: %p\n", configParams))
+			util.IotLogInfo(fmt.Sprintf("config request, all nodes replied or timeout, param point: %p\n", &configParams))
 			reply := finalizeConfigReq(configParams)
 			select {
 			case mqttPublishCh <- reply:

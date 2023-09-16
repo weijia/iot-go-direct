@@ -27,6 +27,9 @@ func main() {
 		fmt.Sprint(bsp.BspConfigInstance.MqttParams.MqttPort)
 	opts := mqtt.NewClientOptions().AddBroker(broker)
 	opts.SetClientID(bsp.BspConfigInstance.InitMsgContent.GatewayNodeId + "-server")
+	// opts.SetClientID(bsp.BspConfigInstance.InitMsgContent.GatewayNodeId)
+	// opts.Username = bsp.BspConfigInstance.MqttUserName
+	// opts.Password = bsp.BspConfigInstance.MqttPwd
 
 	// 创建 MQTT 客户端
 	client := mqtt.NewClient(opts)
@@ -48,24 +51,28 @@ func main() {
 		switch reply.MsgType {
 		case "init":
 			module1 := shared.Module{
-				Freq:   447,
+				Freq:   4723,
 				Band:   250,
 				Factor: 10,
 			}
 			module2 := shared.Module{
-				Freq:   448,
+				Freq:   4483,
 				Band:   250,
 				Factor: 10,
 			}
 			configParams := shared.ConfigParams{
 				BaseConfigParams: shared.BaseConfigParams{
-					NodeList1:      []string{"FD000001", "FD000002"},
-					NodeList2:      []string{"test3", "test4"},
-					TouchNodeList1: []string{"touch1", "touch2"},
-					TouchNodeList2: []string{"touch3", "touch4"},
-					Custom:         "test_custom",
-					Project:        "test_project",
-					HeartBeat:      30,
+					// NodeList1:      []string{"FD000001", "FD000002"},
+					NodeList1: []string{"01020304"},
+					NodeList2: []string{"01020305"},
+					// NodeList2:      []string{"01020305", "test4"},
+					TouchNodeList1: []string{"01020306"},
+					// TouchNodeList1: []string{"01020307", "touch2"},
+					TouchNodeList2: []string{"01020307"},
+					// TouchNodeList2: []string{"touch3", "touch4"},
+					Custom:    "test_custom",
+					Project:   "test_project",
+					HeartBeat: 30,
 				},
 				Module1: module1,
 				Module2: module2,

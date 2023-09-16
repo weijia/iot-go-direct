@@ -1,0 +1,49 @@
+{
+    "gateway_node_id": "F12309150001",
+    "hard_version": "0.1.0",
+    "soft_version": "0.1.0",
+    "node_type": 1,
+    "rssi": 10,
+    "ccid": "test",
+    "module1": {
+        "freq": 4723,
+        "band": 250,
+        "factor": 10
+    },
+    "module2": {
+        "freq": 4483,
+        "band": 250,
+        "factor": 10
+    },
+    "module0": {
+        "freq": 443,
+        "band": 250,
+        "factor": 10
+    },
+    "node_list_1": [
+        "01020304"
+    ],
+    "node_list_2": [
+        "01020305"
+    ],
+    "touch_node_list_1": [
+        "01020306"
+    ],
+    "touch_node_list_2": [
+        "01020307"
+    ],
+    "custom": "test_custom",
+    "project": "test_project",
+    "heart_beat": 30,
+    "mqtt_ip": "115.159.53.168",
+    "mqtt_port": 1883,
+    "mqtt_user_name": "",
+    "mqtt_pwd": "",
+    "device_profile": {
+        "server": "",
+        "port": 0,
+        "provision_key": "",
+        "provision_secret": ""
+    },
+    "node_state_list": null
+}

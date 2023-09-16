@@ -3,8 +3,8 @@
   "custom": "",
   "device_profile": {
     "port": 0,
-    "provision_key": "",
-    "provision_secret": "",
+    "provision_key": "0hsh1hpc605g4kwyal46",
+    "provision_secret": "68rsgqafhw0anhcwnccr",
     "server": ""
   },
   "gateway_node_id": "F12309150001",
@@ -12,23 +12,23 @@
   "heart_beat": 0,
   "module0": {
     "band": 250,
-    "factor": 10,
-    "freq": 443
+    "factor": 9,
+    "freq": 4723
   },
   "module1": {
     "band": 250,
-    "factor": 10,
-    "freq": 443
+    "factor": 9,
+    "freq": 4723
   },
   "module2": {
     "band": 250,
-    "factor": 10,
-    "freq": 446
+    "factor": 9,
+    "freq": 4463
   },
-  "mqtt_ip": "115.159.53.168",
+  "mqtt_ip": "app.kosglass.com",
   "mqtt_port": 1883,
-  "mqtt_pwd": "",
-  "mqtt_user_name": "",
+  "mqtt_pwd": "i0eprmhypu3r16g3wuuc",
+  "mqtt_user_name": "l8juew73i2t17wavzthg",
   "node_type": 1,
   "project": "",
   "rssi": 10,

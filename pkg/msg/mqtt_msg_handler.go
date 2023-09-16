@@ -37,25 +37,21 @@ func GetMsgVar(method string) interface{} {
 }
 
 func ValidateMsg(schemaStr string, data string) bool {
-	loader1 := gojsonschema.NewStringLoader(schemaStr)
-	schema, schemaErr := gojsonschema.NewSchema(loader1)
-	if schemaErr != nil {
-		util.IotLogError(schemaErr)
+	schemaLoader := gojsonschema.NewStringLoader(schemaStr)
+	documentLoader := gojsonschema.NewStringLoader(data)
+
+	result, resultErr := gojsonschema.Validate(schemaLoader, documentLoader)
+	if resultErr != nil {
+		util.IotLogError(resultErr)
 		return false
 	} else {
-		result, resultErr := schema.Validate(gojsonschema.NewGoLoader(data))
-		if resultErr != nil {
-			util.IotLogError(resultErr)
-			return false
+		if result.Valid() {
+			return true
 		} else {
-			if result.Valid() {
-				return true
-			} else {
-				for _, desc := range result.Errors() {
-					util.IotLogErrorStr(fmt.Sprintf("- %s\n", desc))
-				}
-				return false
+			for _, desc := range result.Errors() {
+				util.IotLogErrorStr(fmt.Sprintf("- %s\n", desc))
 			}
+			return false
 		}
 	}
 }
@@ -86,7 +82,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		return broadcastUpdateGlassColorRequest.handle(mqttClient)
 	case "config":
 
-		if ValidateMsg(init_msg_schema, string(body)) {
+		if !ValidateMsg(init_msg_schema, string(body)) {
 			return nil
 		}
 

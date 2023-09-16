@@ -41,8 +41,8 @@ const (
 	NODE_INIT_REPLY_PARAM_TYPE_HW_VER       = 4
 	NODE_INIT_REPLY_PARAM_TYPE_SW_VER       = 5
 	NODE_INIT_REPLY_PARAM_TYPE_RUNNING_AREA = 6
-
-	NODE_INIT_REPLY_TIMEOUT_SECONDS = 60
+	// TODO: Need to adjust this timer
+	NODE_INIT_REPLY_TIMEOUT_SECONDS = 6
 
 	UPDATE_COLOR_RESULT_OK   = 1
 	UPDATE_COLOR_RESULT_FAIL = 0
@@ -114,6 +114,7 @@ func HandleNodeInitReply(nodeInitReply []byte) {
 	}
 	if len(PendingInitReqNodeList) == 0 {
 		CancelFuncForNodeInitReplyTimeout()
+		util.IotLogInfo(fmt.Sprintf("config request completed, timer canceled, param point: %p\n", &OngoingConfigReqParam))
 		ConfigReqCh <- OngoingConfigReqParam
 	}
 }

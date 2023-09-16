@@ -1,0 +1,22 @@
+
+{
+    "method": "config",
+    "params": {
+        "node_list_1": [
+            "01020304"
+        ],
+        "custom": "null",
+        "project": "shenzhen1",
+        "heart_beat": 20,
+        "module1": {
+    		 "freq": 4723,
+    		 "band": 250,
+    		 "factor": 10
+    	},
+    	"module2": {
+    		 "freq": 4463,
+    		 "band": 250,
+    		 "factor": 10
+    	}
+    }
+}

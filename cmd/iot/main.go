@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"os"
@@ -25,13 +26,17 @@ func init() {
 
 func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
-	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, "127.0.0.1"); err != nil {
+	var loraHost string
+	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
+	loraServiceIp := loraHost
+
+	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, loraServiceIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, "127.0.0.1"); err != nil {
+	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, loraServiceIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, "127.0.0.1"); err != nil {
+	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, loraServiceIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 

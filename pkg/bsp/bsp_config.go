@@ -38,7 +38,7 @@ var module2Param = shared.Module{
 
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
-		GatewayNodeId: "000000F23456",
+		GatewayNodeId: "F12309150001",
 		HardVersion:   "0.1.0",
 		SoftVersion:   swVersion,
 		Custom:        "test",
@@ -57,8 +57,16 @@ var BspConfigInstance BspConfig
 const CONFIG_FILE_NAME = "iot_go.json"
 
 func InitConfig() {
-	BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
+	// TODO: Change default value to 120.xx.x.x etc
+	BspConfigInstance.MqttParams.MqttIP = "app.kosglass.com"
+	// BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
 	BspConfigInstance.MqttParams.MqttPort = 1883
+	BspConfigInstance.MqttParams.MqttUserName = "l8juew73i2t17wavzthg"
+	BspConfigInstance.MqttParams.MqttPwd = "i0eprmhypu3r16g3wuuc"
+
+	BspConfigInstance.DeviceProfile.ProvisionKey = "0hsh1hpc605g4kwyal46"
+	BspConfigInstance.DeviceProfile.ProvisionSecret = "68rsgqafhw0anhcwnccr"
+
 	viper.SetConfigName(CONFIG_FILE_NAME)
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")

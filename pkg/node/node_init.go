@@ -39,7 +39,7 @@ func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) 
 }
 
 func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
-	util.IotLogInfo(fmt.Sprintf("Sending init msg to %s with param: %v\n", nodeId, moduelParam))
+	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v\n", nodeId, moduelParam))
 	client.Send(GetNodeInitMsg(
 		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(nodeId), moduelParam))
 }
@@ -60,7 +60,7 @@ func HandleNodeInitReq(configParam shared.ConfigParams) {
 	IsProcessingConfigReq = true
 
 	if len(PendingInitReqNodeList) > 0 {
-		util.IotLogErrorStr(fmt.Sprintf("Node init req pending on %v, but is processing flag is false, clear it now\n"))
+		util.IotLogErrorStr(fmt.Sprintf("Node init req pending on %v, but is processing flag is false, clear it now\n", PendingInitReqNodeList))
 		PendingInitReqNodeList = PendingInitReqNodeList[:0]
 	}
 
@@ -96,6 +96,7 @@ func HandleNodeInitReq(configParam shared.ConfigParams) {
 		case <-ctx.Done():
 			return
 		case <-NodeConfigTimer.C:
+			util.IotLogInfo(fmt.Sprintf("config request node reply timeout, param point:%p\n", &OngoingConfigReqParam))
 			ConfigReqCh <- OngoingConfigReqParam
 		}
 	}()
