@@ -2,6 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 )
 
@@ -14,6 +15,11 @@ type ColorParams struct {
 }
 
 func (request BroadcastUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
+	broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
+		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+		request.Params.ColorParams)
+	bsp.GetModule1Client().Send(broadcastMsg)
+	bsp.GetModule2Client().Send(broadcastMsg)
 	reply := GatewayNodeIdReply{
 		MsgType:       "gateway_reboot_reply",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
