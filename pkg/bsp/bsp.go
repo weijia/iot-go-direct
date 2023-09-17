@@ -112,14 +112,22 @@ func Lora0Send(data []byte) {
 }
 
 func GetLoraClientForNode(nodeId string) *lora_client.LoraClient {
-	if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId) {
+	if IsInNodeList1(nodeId) {
 		return module1Client
 	} else {
-		if IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId) {
+		if IsInNodeList2(nodeId) {
 			return module2Client
 		}
 	}
 	return nil
+}
+
+func IsInNodeList1(nodeId string) bool {
+	return IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId)
+}
+
+func IsInNodeList2(nodeId string) bool {
+	return IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId)
 }
 
 func GetModule0Client() *lora_client.LoraClient {

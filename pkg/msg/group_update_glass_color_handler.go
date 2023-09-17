@@ -2,6 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 )
 
@@ -16,30 +17,38 @@ type GroupUpdateGlassColorParams struct {
 }
 
 func (request GroupUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
-	invalidNodeList := map[string]{}
-	finalNodeList1 := map[string]{}
-	finalNodeList2 := map[string]{}
+	invalidNodeList := []string{}
+	finalNodeList1 := [][]byte{}
+	finalNodeList2 := [][]byte{}
+	var groupMsg []byte
 	for _, group := range request.Params {
 		for _, nodeId := range group.NodeList1 {
-			// Verify if nodeId in bsp node Id list
-			invalidNodeList = append(invalidNodeList, nodeId)
-			client := bsp.GetLoraClientForNode(nodeId)
-			if client != nil {
-				SetSingleGlassColor(client, nodeId, group.Color)
+			if bsp.IsInNodeList1(nodeId) {
+				finalNodeList1 = append(finalNodeList1, util.DecodeId(nodeId))
+			} else {
+				invalidNodeList = append(invalidNodeList, nodeId)
 			}
-			
 		}
+		groupMsg = node.GetGroupUpdateGlassColorMsg(
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			finalNodeList1, group.Color)
+		bsp.GetModule1Client().Send(groupMsg)
 		for _, nodeId := range group.NodeList2 {
-			client := bsp.GetLoraClientForNode(nodeId)
-			if client != nil {
-				SetSingleGlassColor(client, nodeId, group.Color)
+			if bsp.IsInNodeList2(nodeId) {
+				finalNodeList2 = append(finalNodeList2, util.DecodeId(nodeId))
+			} else {
+				invalidNodeList = append(invalidNodeList, nodeId)
 			}
-			
 		}
+		groupMsg = node.GetGroupUpdateGlassColorMsg(
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			finalNodeList2, group.Color)
+		bsp.GetModule2Client().Send(groupMsg)
 	}
-	bps.GetLoraClient0()
-	var reply GatewayNodeIdReply
+
+	var reply GroupUpdateGlassColorReply
 	reply.MsgType = "group_update_glass_color_reply"
 	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
+	reply.InvalidNodes = invalidNodeList
 	return reply
 }
