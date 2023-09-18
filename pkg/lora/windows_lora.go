@@ -11,7 +11,7 @@ import (
 )
 
 func (lora Lora) InitLora(module shared.Module) int {
-	fmt.Println("Initiating Lora")
+	fmt.Println("Win: Initiating Lora")
 	// C.rf_init()
 	data := map[string]interface{}{
 		fmt.Sprintf("%s-inited",

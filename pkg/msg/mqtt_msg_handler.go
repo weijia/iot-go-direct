@@ -101,7 +101,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		req.handle()
+		req.handle(mqttClient)
 		return nil
 
 	case "node_info_request":

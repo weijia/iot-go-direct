@@ -1,6 +1,7 @@
 package node
 
 import (
+	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/util"
 	"time"
@@ -21,6 +22,7 @@ func GetHeartBeatMsg(gatewayId []byte, nodeId []byte) []byte {
 func SendHeartbeat() {
 	for {
 		for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
+			util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", value))
 			bsp.GetModule1Client().Send(
 				GetHeartBeatMsg(
 					util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
