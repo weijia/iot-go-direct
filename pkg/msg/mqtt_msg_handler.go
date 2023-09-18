@@ -101,8 +101,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		req.handle(mqttClient)
-		return nil
+		return req.handle(mqttClient)
 
 	case "node_info_request":
 		var nodeInfoRequest NodeInfoRequest
@@ -121,7 +120,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		return reply
 	case "update_glass_color_request":
 
-		if ValidateMsg(update_color_schema, string(body)) {
+		if !ValidateMsg(update_color_schema, string(body)) {
 			return nil
 		}
 

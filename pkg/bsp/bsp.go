@@ -20,10 +20,10 @@ var module0Client *lora_client.LoraClient
 var module1Client *lora_client.LoraClient
 var module2Client *lora_client.LoraClient
 
-func InitBoard() {
-	module0Client = lora_client.NewLoraClient(8866)
-	module1Client = lora_client.NewLoraClient(8867)
-	module2Client = lora_client.NewLoraClient(8868)
+func InitBoard(host string) {
+	module0Client = lora_client.NewLoraClient(8866, host)
+	module1Client = lora_client.NewLoraClient(8867, host)
+	module2Client = lora_client.NewLoraClient(8868, host)
 
 	module0Client.InitLora(module0Param)
 	module1Client.InitLora(module1Param)
@@ -48,8 +48,8 @@ var virtualBsp = VirtualBsp{
 }
 
 func (virtualBsp VirtualBsp) SafeUploadTelemetry(nodeId string, data interface{}) {
-	virtualBsp.thingsboardServer.CreateDevice(nodeId)
-	virtualBsp.thingsboardServer.UploadTelemetry(nodeId, data)
+	// virtualBsp.thingsboardServer.CreateDevice(nodeId)
+	// virtualBsp.thingsboardServer.UploadTelemetry(nodeId, data)
 }
 
 func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {

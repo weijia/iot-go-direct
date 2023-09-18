@@ -35,7 +35,7 @@ func StartMqttMsgLoop(mqttPublishCh chan interface{}, nodeMsgCh chan []byte, qui
 		bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
 		panic(token.Error())
 	}
-
+	// TODO: reconnect to mqtt if disconnected
 	mqttClient := util.NewMqtt(&client, bsp.BspConfigInstance.GatewayNodeId)
 
 	mqttCh := make(chan mqtt.Message)

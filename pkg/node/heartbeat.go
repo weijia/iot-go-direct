@@ -20,19 +20,23 @@ func GetHeartBeatMsg(gatewayId []byte, nodeId []byte) []byte {
 }
 
 func SendHeartbeat() {
+	ticker1 := time.NewTicker(60 * time.Second)
 	for {
-		for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
-			util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", value))
-			bsp.GetModule1Client().Send(
-				GetHeartBeatMsg(
-					util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
+		select {
+		case <-ticker1.C:
+			util.IotLogInfo("another heartbeat round\n")
+
+			for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
+				util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", value))
+				bsp.GetModule1Client().Send(
+					GetHeartBeatMsg(
+						util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
+			}
+			for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
+				bsp.GetModule2Client().Send(
+					GetHeartBeatMsg(
+						util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
+			}
 		}
-		for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
-			bsp.GetModule2Client().Send(
-				GetHeartBeatMsg(
-					util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
-		}
-		// Wait for specified time and send again
-		time.Sleep(time.Duration(bsp.BspConfigInstance.BaseConfigParams.HeartBeat * 1000 * 1000 * 1000 * 60))
 	}
 }

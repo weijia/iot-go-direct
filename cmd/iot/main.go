@@ -28,22 +28,25 @@ func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
 	var loraHost string
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
-	loraServiceIp := loraHost
+	// loraServiceIp := loraHost
+	loraServiceIp := "192.168.1.56"
+	// gatewayPushMsgIp := "127.0.0.1"
+	gatewayPushMsgIp := "192.168.1.47"
 
-	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, loraServiceIp); err != nil {
+	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, loraServiceIp); err != nil {
+	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
-	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, loraServiceIp); err != nil {
+	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
 
 	bsp.InitConfig()
 	// fmt.Println(viper.GetString("msg_type"))
 
-	bsp.InitBoard()
+	bsp.InitBoard(loraServiceIp)
 
 	mqttPublishCh := make(chan interface{}, 10)
 	quit := make(chan bool)
