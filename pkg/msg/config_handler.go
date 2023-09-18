@@ -16,6 +16,8 @@ func (config ConfigRequest) handle(mqttClient *util.Mqtt) {
 	node.HandleNodeInitReq(config.Params)
 }
 
+var IsConfigDone = false
+
 func finalizeConfigReq(configParams shared.ConfigParams) GatewayNodeIdReply {
 	bspInstance := bsp.GetBsp()
 	bspInstance.SetModule1Params(configParams.Module1)

@@ -29,7 +29,7 @@ func main() {
 	var loraHost string
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
 	// loraServiceIp := loraHost
-	loraServiceIp := "192.168.1.56"
+	loraServiceIp := "192.168.1.20"
 	// gatewayPushMsgIp := "127.0.0.1"
 	gatewayPushMsgIp := "192.168.1.47"
 
@@ -55,8 +55,9 @@ func main() {
 
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
 	go msg.StartMqttMsgLoop(mqttPublishCh, nodeMsgCh, quit)
-	go node.SendHeartbeat()
-	node.SendNodeInitAfterStartup()
+
+	go node.SendNodeHeartbeatInLoop()
+	// node.SendNodeInitAfterStartup()
 
 	// 发布消息
 	var initMsg shared.Init

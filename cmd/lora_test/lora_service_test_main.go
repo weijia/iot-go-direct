@@ -68,9 +68,10 @@ func main() {
 			client.InitLora(bsp.BspConfigInstance.InitMsgContent.Module0)
 		}
 		// b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
-		// b := node.GetNodeInitMsg(
-		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-		// 	bsp.DecodeId("01020304"), bsp.BspConfigInstance.InitMsgContent.Module1)
+
+		b := node.GetNodeInitMsg(
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			util.DecodeId("01020304"), bsp.BspConfigInstance.InitMsgContent.Module1)
 		// h := node.GetHeartBeatMsg(
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"))
@@ -87,16 +88,16 @@ func main() {
 		// b1 := node.GetBroadcastUpdateGlassColorMsg(
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	"122331")
-		b2 := node.GetRetrieveColorMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-			util.DecodeId("01020304"))
+		// b2 := node.GetRetrieveColorMsg(
+		// 	util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+		// 	util.DecodeId("01020304"))
 		// for {
-		// client.Send(b)
+		client.Send(b)
 		// client.Send(h)
 		// client.Send(c)
 		// client.Send(g)
 		// client.Send(b1)
-		client.Send(b2)
+		// client.Send(b2)
 		// 	time.Sleep(20 * time.Second)
 		// }
 	}

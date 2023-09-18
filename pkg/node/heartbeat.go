@@ -3,12 +3,15 @@ package node
 import (
 	"fmt"
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_client"
 	"iot_go/pkg/util"
 	"time"
 )
 
-func GetHeartBeatMsg(gatewayId []byte, nodeId []byte) []byte {
+func GetHeartBeatMsg(nodeIdStr string) []byte {
 	var result []byte
+	gatewayId := util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)
+	nodeId := util.DecodeId(nodeIdStr)
 	result = append(result, 0)            // package len
 	result = append(result, 1)            // node type 1 gateway
 	result = append(result, 1)            // cmd type 1 heartbeat
@@ -19,24 +22,46 @@ func GetHeartBeatMsg(gatewayId []byte, nodeId []byte) []byte {
 	return result
 }
 
-func SendHeartbeat() {
-	ticker1 := time.NewTicker(60 * time.Second)
+var HeartbeatRetryCnt = 1
+var heartbeatTimer = time.NewTimer(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
+var HeartbeatCh = make(chan string)
+
+func waitUntilReplyOrTimeout(nodeIdStr string) {
+	heartbeatTimer.Reset(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
 	for {
 		select {
-		case <-ticker1.C:
-			util.IotLogInfo("another heartbeat round\n")
-
-			for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
-				util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", value))
-				bsp.GetModule1Client().Send(
-					GetHeartBeatMsg(
-						util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
-			}
-			for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
-				bsp.GetModule2Client().Send(
-					GetHeartBeatMsg(
-						util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(value)))
+		case <-heartbeatTimer.C:
+			util.IotLogInfo(fmt.Sprintf("Heartbeat timeout for: %s\n", nodeIdStr))
+			return
+		case heartbeatReplyNodeIdStr := <-HeartbeatCh:
+			util.IotLogInfo(fmt.Sprintf("Heartbeat reply for: %s\n", heartbeatReplyNodeIdStr))
+			if nodeIdStr == heartbeatReplyNodeIdStr {
+				return
 			}
 		}
+	}
+}
+
+func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string) {
+	for _, nodeIdStr := range nodeList {
+		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", nodeIdStr))
+		for i := 0; i < HeartbeatRetryCnt; i++ {
+			client.Send(GetHeartBeatMsg(nodeIdStr))
+			waitUntilReplyOrTimeout(nodeIdStr)
+		}
+	}
+}
+
+func SendHeartbeatOnce() {
+	util.IotLogInfo("Sending a round of heartbeats\n")
+	sendHeartbeatForNodeList(bsp.GetModule1Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList1)
+	sendHeartbeatForNodeList(bsp.GetModule2Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList2)
+}
+
+func SendNodeHeartbeatInLoop() {
+	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.HeartBeat) * time.Second)
+	for {
+		<-ticker1.C
+		SendHeartbeatOnce()
 	}
 }

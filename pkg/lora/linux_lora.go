@@ -62,7 +62,7 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	}
 	C.set_band(C.int(bandMap[module.Band]))
 	C.set_factor(C.int(module.Factor))
-	util.IotLogInfo(fmt.Sprintf("freq: %d, band: %d, factor: %d\n", module.Freq, module.Band, module.Factor))
+	util.IotLogInfo(fmt.Sprintf("freq: %d, band: %d, factor: %d\n", freq, module.Band, module.Factor))
 
 	res := int(C.rf_set_syncword(0x12)) // 0x3>0: select page, 0x12->0xf: sync word
 	if res != 0 {
@@ -168,7 +168,7 @@ func PushLoraMsgToRpc(port int, host ...string) {
 		realHost = host[0]
 	}
 	var serverRpc = lora_client.NewLoraClient(port, realHost)
-	util.IotLogInfo(fmt.Sprintf("Connecting to lora receive service: %s:%d", realHost, port))
+	util.IotLogInfo(fmt.Sprintf("Connected to lora receive service: %s:%d", realHost, port))
 	for {
 		// util.IotLogInfo(fmt.Sprintf("Receiving\n"))
 		select {

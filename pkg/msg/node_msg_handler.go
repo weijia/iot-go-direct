@@ -68,6 +68,19 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf
 		}
+		// Send heartbeat node id to heartbeat channel without blocking
+		go func() {
+
+			// Semd to channel or timeout
+			select {
+			case node.HeartbeatCh <- nodeId:
+				// util.IotLogInfo(fmt.Sprintf("Sent heartbeat to MQTT channel for node %s\n", nodeId))
+				// As normally the send will success, the timeout below will not be even created
+			case <-time.After(time.Second * 10):
+				util.IotLogInfo(fmt.Sprintf("Timeout sending heartbeat to MQTT channel for node %s\n", nodeId))
+			}
+			node.HeartbeatCh <- nodeId
+		}()
 
 	case UPDATE_GLASS_COLOR_REPLY:
 		util.IotLogInfo("Received update glass color reply\n")

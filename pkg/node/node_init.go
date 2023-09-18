@@ -44,14 +44,14 @@ func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam sha
 		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(nodeId), moduelParam))
 }
 
-func SendNodeInitAfterStartup() {
-	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
-		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
-	}
-	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
-		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
-	}
-}
+// func SendNodeInitAfterStartup() {
+// 	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
+// 		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
+// 	}
+// 	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
+// 		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
+// 	}
+// }
 
 func HandleNodeInitReq(configParam shared.ConfigParams) {
 	if IsProcessingConfigReq {
