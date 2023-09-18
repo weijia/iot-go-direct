@@ -88,7 +88,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		// util.IotLogInfo("----------------No data received\n")
 		return
 	} else {
-		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
+		util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
 		select {
