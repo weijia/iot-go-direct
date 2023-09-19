@@ -10,7 +10,6 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_rpc"
 	"iot_go/pkg/msg"
-	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 
@@ -56,7 +55,7 @@ func main() {
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
 	go msg.StartMqttMsgLoop(mqttPublishCh, nodeMsgCh, quit)
 
-	go node.SendNodeHeartbeatInLoop()
+	// go node.SendNodeHeartbeatInLoop()
 	// node.SendNodeInitAfterStartup()
 
 	// 发布消息

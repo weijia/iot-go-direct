@@ -53,7 +53,7 @@ func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam sha
 // 	}
 // }
 
-func HandleNodeInitReq(configParam shared.ConfigParams) {
+func SendNodeInitReq(configParam shared.ConfigParams) {
 	if IsProcessingConfigReq {
 		return
 	}
