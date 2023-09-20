@@ -67,8 +67,6 @@ func IsStrInSlice(str string, strSlice []string) bool {
 var IsInitDone = false
 var IsInitOngoing = false
 
-var InitReplyCh = make(chan string)
-
 func InitAccordingToConfig(config ConfigRequest) {
 	IsInitOngoing = true
 	// Send heartbeat to nodes once
@@ -78,14 +76,14 @@ func InitAccordingToConfig(config ConfigRequest) {
 		nodeState := bsp.GetNodeState(nodeId)
 		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
 			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module1)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+			util.IsReplyTimeout(nodeId, node.InitReplyCh, 5)
 		}
 	}
 	for _, nodeId := range bsp.BspConfigInstance.NodeList2 {
 		nodeState := bsp.GetNodeState(nodeId)
 		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
 			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module2)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+			util.IsReplyTimeout(nodeId, node.InitReplyCh, 5)
 		}
 	}
 	IsInitOngoing = false
