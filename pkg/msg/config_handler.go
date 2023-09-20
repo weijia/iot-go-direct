@@ -67,8 +67,34 @@ func IsStrInSlice(str string, strSlice []string) bool {
 var IsInitDone = false
 var IsInitOngoing = false
 
-func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
+var InitReplyCh = make(chan string)
 
+func InitAccordingToConfig(config ConfigRequest) {
+	IsInitOngoing = true
+	// Send heartbeat to nodes once
+	node.SendHeartbeatOnce()
+	// Send node init to nodes that does not respond
+	for _, nodeId := range bsp.BspConfigInstance.NodeList1 {
+		nodeState := bsp.GetNodeState(nodeId)
+		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
+			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module1)
+			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+		}
+	}
+	for _, nodeId := range bsp.BspConfigInstance.NodeList2 {
+		nodeState := bsp.GetNodeState(nodeId)
+		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
+			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module2)
+			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+		}
+	}
+	IsInitOngoing = false
+	IsInitDone = true
+	go node.SendNodeHeartbeatInLoop()
+	// TODO: Add node init reply 40 msg handler
+}
+
+func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 	if IsInitDone {
 		if IsModuleParamChanged(config) {
 			// Need to send node init req and wait for resp in before freq change
@@ -78,22 +104,28 @@ func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 
 		}
 	} else {
+		// Init is not done
 		if IsInitOngoing {
 			//Ignore config if init config is already ongoing
 			return nil
 		} else {
-			IsInitOngoing = true
-			// Send heartbeat to nodes once
-			node.SendHeartbeatOnce()
-			// Send node init to nodes that does not respond
-			go node.SendNodeHeartbeatInLoop()
-			// TODO: Add node init reply 40 msg handler
+			saveConfig(config.Params)
+			go InitAccordingToConfig(config)
+			return getConfigReply()
 		}
 	}
-
+	return nil
 }
 
-func finalizeConfigReq(configParams shared.ConfigParams) GatewayNodeIdReply {
+func getConfigReply() interface{} {
+	var gatewayNodeIdReply GatewayNodeIdReply
+	gatewayNodeIdReply.MsgType = "config_reply"
+	gatewayNodeIdReply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
+	node.IsProcessingConfigReq = false
+	return gatewayNodeIdReply
+}
+
+func saveConfig(configParams shared.ConfigParams) {
 	bspInstance := bsp.GetBsp()
 	bspInstance.SetModule1Params(configParams.Module1)
 	bspInstance.SetModule2Params(configParams.Module2)
@@ -102,9 +134,9 @@ func finalizeConfigReq(configParams shared.ConfigParams) GatewayNodeIdReply {
 	bsp.BspConfigInstance.InitMsgContent.Module2 = configParams.Module2
 	bsp.BspConfigInstance.BaseConfigParams = configParams.BaseConfigParams
 	bsp.BspConfigInstance.CommitChanges()
-	var gatewayNodeIdReply GatewayNodeIdReply
-	gatewayNodeIdReply.MsgType = "config_reply"
-	gatewayNodeIdReply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
-	node.IsProcessingConfigReq = false
-	return gatewayNodeIdReply
+}
+
+func finalizeConfigReq(configParams shared.ConfigParams) interface{} {
+	saveConfig(configParams)
+	return getConfigReply()
 }

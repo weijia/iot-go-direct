@@ -1,7 +1,6 @@
 package node
 
 import (
-	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/shared"
@@ -66,14 +65,16 @@ func GetNodeIdFromMsg(reply []byte) string {
 // We can only handle 1 config request at a time
 var OngoingConfigReqParam shared.ConfigParams
 var IsProcessingConfigReq bool = false
-var PendingInitReqNodeList []string
+
+// var PendingInitReqNodeList []string
 
 var ConfigReqCh = make(chan shared.ConfigParams)
-var NodeConfigTimer = time.NewTimer(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
-var CancelFuncForNodeInitReplyTimeout context.CancelFunc
+
+// var NodeConfigTimer = time.NewTimer(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
+// var CancelFuncForNodeInitReplyTimeout context.CancelFunc
 
 func HandleNodeInitReply(nodeInitReply []byte) {
-	util.IotLogInfo(fmt.Sprintf("Got init reply %v\n", nodeInitReply))
+	util.IotLogInfo(fmt.Sprintf("Got init reply: %v\n", nodeInitReply))
 	nodeId := GetNodeIdFromMsg(nodeInitReply)
 
 	// Update node state in bsp
@@ -106,15 +107,15 @@ func HandleNodeInitReply(nodeInitReply []byte) {
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
 
-	for i, NodeInitPendingNodeId := range PendingInitReqNodeList {
-		if NodeInitPendingNodeId == nodeId {
-			PendingInitReqNodeList = append(PendingInitReqNodeList[:i], PendingInitReqNodeList[i+1:]...)
-			break
-		}
-	}
-	if len(PendingInitReqNodeList) == 0 {
-		CancelFuncForNodeInitReplyTimeout()
-		util.IotLogInfo(fmt.Sprintf("config request completed, timer canceled, param point: %p\n", &OngoingConfigReqParam))
-		ConfigReqCh <- OngoingConfigReqParam
-	}
+	// for i, NodeInitPendingNodeId := range PendingInitReqNodeList {
+	// 	if NodeInitPendingNodeId == nodeId {
+	// 		PendingInitReqNodeList = append(PendingInitReqNodeList[:i], PendingInitReqNodeList[i+1:]...)
+	// 		break
+	// 	}
+	// }
+	// if len(PendingInitReqNodeList) == 0 {
+	// 	CancelFuncForNodeInitReplyTimeout()
+	// 	util.IotLogInfo(fmt.Sprintf("config request completed, timer canceled, param point: %p\n", &OngoingConfigReqParam))
+	// 	ConfigReqCh <- OngoingConfigReqParam
+	// }
 }

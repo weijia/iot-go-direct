@@ -52,8 +52,11 @@ func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string)
 	}
 }
 
+var HeartbeatStartTime int64
+
 func SendHeartbeatOnce() {
 	util.IotLogInfo("Sending a round of heartbeats\n")
+	HeartbeatStartTime = time.Now().Unix()
 	sendHeartbeatForNodeList(bsp.GetModule1Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList1)
 	sendHeartbeatForNodeList(bsp.GetModule2Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList2)
 }

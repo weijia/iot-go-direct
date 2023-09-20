@@ -13,6 +13,7 @@ const (
 	HEARTBEAT_REPLY          = 2
 	CONFIG_NODE_REQ          = 3
 	CONFIG_NODE_REPLY        = 4
+	UNKNOWN_NODE_REPLY       = 40
 	UPDATE_GLASS_COLOR_REQ   = 5
 	UPDATE_GLASS_COLOR_REPLY = 6
 	GET_GLASS_STATE_REQ      = 9
@@ -62,25 +63,19 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s\n", nodeId))
 		node.HandleNodeInitReply(msg)
 
+	case UNKNOWN_NODE_REPLY:
+		// TODO: handle node config reply and check if we can already update module1 & 2 config
+		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s\n", nodeId))
+		node.HandleNodeInitReply(msg)
+
 	case HEARTBEAT_REPLY:
 		util.IotLogInfo("Received heartbeat reply\n")
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf
 		}
-		// Send heartbeat node id to heartbeat channel without blocking
-		go func() {
 
-			// Semd to channel or timeout
-			select {
-			case node.HeartbeatCh <- nodeId:
-				// util.IotLogInfo(fmt.Sprintf("Sent heartbeat to MQTT channel for node %s\n", nodeId))
-				// As normally the send will success, the timeout below will not be even created
-			case <-time.After(time.Second * 10):
-				util.IotLogInfo(fmt.Sprintf("Timeout sending heartbeat to MQTT channel for node %s\n", nodeId))
-			}
-			node.HeartbeatCh <- nodeId
-		}()
+		util.SendRepliedNodeIdWithoutBlocking(nodeId, node.HeartbeatCh, 10)
 
 	case UPDATE_GLASS_COLOR_REPLY:
 		util.IotLogInfo("Received update glass color reply\n")
