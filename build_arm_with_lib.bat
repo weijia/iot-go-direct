@@ -12,6 +12,6 @@ rem .a must be in the same folder as the go file really using the .a lib
 arm-linux-gnueabihf-ar rcs pkg\lora\libpan3028.a pan3028.o pan3028_port.o spi-3028.o radio.o
 rem go build -a -v
 
-go build -a -v  -ldflags="-s -w" cmd/iot/main.go
+@REM go build -a -v  -ldflags="-s -w" cmd/iot/main.go
 go build -a -v  -ldflags="-s -w" cmd/lora_service/lora_service.go
 sync.bat

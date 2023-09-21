@@ -7,7 +7,7 @@ import (
 type NodeState struct {
 	NodeId            string `json:"node_id"`
 	LastMsgTimestamp  int64  `json:"node_msg_timestamp"`
-	NodeReportedColor []int  `json:"node_reported_color"`
+	NodeReportedColor [8]int `json:"node_reported_color"`
 	// NodeRequestingColor []int  `json:"node_requesting_color"`
 	HwVer       int           `json:"hardware_version"`
 	SwVer       int           `json:"software_version"`

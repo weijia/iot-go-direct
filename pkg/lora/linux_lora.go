@@ -102,7 +102,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 func (loraDev Lora) MsgLoop() {
 	isLoopRunning = true
 	// Create a ticker with 50 ms
-	ticker := time.NewTicker(time.Millisecond * 50)
+	ticker := time.NewTicker(time.Millisecond * 1000 * 500)
 
 	for {
 		select {
@@ -121,7 +121,8 @@ func (loraDev Lora) MsgLoop() {
 			if res != 0 {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
-		case <-ticker.C:
+		// case <-ticker.C:
+		case <-time.After(time.Second * 1):
 			// util.IotLogInfo("Start event loop\n")
 			C.event_handler()
 			loraDev.CopyFromBufferIfExists()
