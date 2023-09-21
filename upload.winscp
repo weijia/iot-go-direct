@@ -1,5 +1,5 @@
 # Connect to SFTP server using a password
-open sftp://root@192.168.1.20/
+open sftp://root@192.168.1.46/
 # Upload file
 put lora_service /home/root/
 put main /home/root/

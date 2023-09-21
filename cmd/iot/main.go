@@ -28,9 +28,9 @@ func main() {
 	var loraHost string
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
 	// loraServiceIp := loraHost
-	loraServiceIp := "192.168.1.20"
+	loraServiceIp := "192.168.1.46"
 	// gatewayPushMsgIp := "127.0.0.1"
-	gatewayPushMsgIp := "192.168.1.47"
+	gatewayPushMsgIp := "192.168.1.30"
 
 	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
@@ -47,13 +47,12 @@ func main() {
 
 	bsp.InitBoard(loraServiceIp)
 
-	mqttPublishCh := make(chan interface{}, 10)
 	quit := make(chan bool)
 
 	nodeMsgCh := make(chan []byte, 10)
 
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
-	go msg.StartMqttMsgLoop(mqttPublishCh, nodeMsgCh, quit)
+	go msg.StartMqttMsgLoop(nodeMsgCh, quit)
 
 	// go node.SendNodeHeartbeatInLoop()
 	// node.SendNodeInitAfterStartup()
@@ -62,7 +61,7 @@ func main() {
 	var initMsg shared.Init
 	initMsg.InitMsgContent = bsp.BspConfigInstance.InitMsgContent
 	initMsg.MsgType = "init"
-	mqttPublishCh <- initMsg
+	msg.MqttPublishCh <- initMsg
 
 	// 捕捉退出信号，断开连接并退出程序
 	c := make(chan os.Signal, 1)

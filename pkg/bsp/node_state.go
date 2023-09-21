@@ -1,6 +1,8 @@
 package bsp
 
-import "iot_go/pkg/shared"
+import (
+	"iot_go/pkg/shared"
+)
 
 type NodeState struct {
 	NodeId            string `json:"node_id"`
@@ -14,10 +16,14 @@ type NodeState struct {
 }
 
 func GetNodeState(nodeId string) *NodeState {
-	for _, nodeState := range BspConfigInstance.NodeStates {
-		if nodeState.NodeId == nodeId {
-			return &nodeState
+	for index := range BspConfigInstance.NodeStates {
+		if BspConfigInstance.NodeStates[index].NodeId == nodeId {
+			return &BspConfigInstance.NodeStates[index]
 		}
 	}
-	return nil
+	newNode := NodeState{
+		NodeId: nodeId,
+	}
+	BspConfigInstance.NodeStates = append(BspConfigInstance.NodeStates, newNode)
+	return &BspConfigInstance.NodeStates[len(BspConfigInstance.NodeStates)-1]
 }

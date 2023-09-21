@@ -15,7 +15,8 @@ type BspConfig struct {
 	shared.BaseConfigParams
 	shared.MqttParams
 	thingsboard_shared.DeviceProfile `json:"device_profile"`
-	NodeStates                       []NodeState `json:"node_state_list"`
+	// The following will be real node state, it may contain nodes that is not sent from server
+	NodeStates []NodeState `json:"node_state_list"`
 }
 
 var swVersion = "0.1.0"

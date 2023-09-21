@@ -94,13 +94,14 @@ func InitAccordingToConfig(config ConfigRequest) {
 
 func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 	if IsInitDone {
-		if IsModuleParamChanged(config) {
-			// Need to send node init req and wait for resp in before freq change
-			node.SendNodeInitReq(config.Params)
-		} else {
-			// Send node init req for newly added nodes
+		// TODO: if freq is not changed, we do not need to re init lora
+		// if IsModuleParamChanged(config) {
+		// Need to send node init req and wait for resp in before freq change
+		go HandleConfigAfterInit(config.Params)
+		// } else {
+		// 	// Send node init req for newly added nodes
 
-		}
+		// }
 	} else {
 		// Init is not done
 		if IsInitOngoing {
@@ -134,7 +135,8 @@ func saveConfig(configParams shared.ConfigParams) {
 	bsp.BspConfigInstance.CommitChanges()
 }
 
-func finalizeConfigReq(configParams shared.ConfigParams) interface{} {
+func HandleConfigAfterInit(configParams shared.ConfigParams) {
+	node.SendNodeInitReq(configParams)
 	saveConfig(configParams)
-	return getConfigReply()
+	MqttPublishCh <- getConfigReply()
 }

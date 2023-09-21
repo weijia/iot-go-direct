@@ -26,28 +26,30 @@ var HeartbeatRetryCnt = 1
 var heartbeatTimer = time.NewTimer(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
 var HeartbeatCh = make(chan string)
 
-func waitUntilReplyOrTimeout(nodeIdStr string) {
-	heartbeatTimer.Reset(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
-	for {
-		select {
-		case <-heartbeatTimer.C:
-			util.IotLogInfo(fmt.Sprintf("Heartbeat timeout for: %s\n", nodeIdStr))
-			return
-		case heartbeatReplyNodeIdStr := <-HeartbeatCh:
-			util.IotLogInfo(fmt.Sprintf("Heartbeat reply for: %s\n", heartbeatReplyNodeIdStr))
-			if nodeIdStr == heartbeatReplyNodeIdStr {
-				return
-			}
-		}
-	}
-}
+// func waitUntilReplyOrTimeout(nodeIdStr string) {
+// 	heartbeatTimer.Reset(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
+// 	for {
+// 		select {
+// 		case <-heartbeatTimer.C:
+// 			util.IotLogInfo(fmt.Sprintf("Heartbeat timeout for: %s\n", nodeIdStr))
+// 			return
+// 		case heartbeatReplyNodeIdStr := <-HeartbeatCh:
+// 			util.IotLogInfo(fmt.Sprintf("Heartbeat reply for: %s\n", heartbeatReplyNodeIdStr))
+// 			if nodeIdStr == heartbeatReplyNodeIdStr {
+// 				return
+// 			}
+// 		}
+// 	}
+// }
 
 func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string) {
 	for _, nodeIdStr := range nodeList {
 		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", nodeIdStr))
 		for i := 0; i < HeartbeatRetryCnt; i++ {
 			client.Send(GetHeartBeatMsg(nodeIdStr))
-			waitUntilReplyOrTimeout(nodeIdStr)
+			if util.IsReplyTimeout(nodeIdStr, HeartbeatCh, util.HEARTBEAT_REPLY_TIMEOUT) {
+				util.IotLogInfo(fmt.Sprintf("Heartbeat reply timeout for: %s\n", nodeIdStr))
+			}
 		}
 	}
 }
