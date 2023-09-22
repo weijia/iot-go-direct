@@ -42,7 +42,7 @@ func main() {
 
 	// 订阅主题
 	token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
-		fmt.Printf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic())
+		util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic()))
 		// 发布消息
 		var reply msg.BaseReply
 		if err := json.Unmarshal(mqttMsg.Payload(), &reply); err != nil {

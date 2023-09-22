@@ -28,9 +28,9 @@ func main() {
 	var loraHost string
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
 	// loraServiceIp := loraHost
-	loraServiceIp := "192.168.1.46"
+	loraServiceIp := "192.168.1.28"
 	// gatewayPushMsgIp := "127.0.0.1"
-	gatewayPushMsgIp := "192.168.1.30"
+	gatewayPushMsgIp := "192.168.1.27"
 
 	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
@@ -52,7 +52,7 @@ func main() {
 	nodeMsgCh := make(chan []byte, 10)
 
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
-	go msg.StartMqttMsgLoop(nodeMsgCh, quit)
+	go msg.StartMainMsgLoop(nodeMsgCh, quit)
 
 	// go node.SendNodeHeartbeatInLoop()
 	// node.SendNodeInitAfterStartup()

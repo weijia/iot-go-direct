@@ -88,7 +88,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		// util.IotLogInfo("----------------No data received\n")
 		return
 	} else {
-		util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
+		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
 		select {
@@ -101,8 +101,8 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 
 func (loraDev Lora) MsgLoop() {
 	isLoopRunning = true
-	// Create a ticker with 50 ms
-	ticker := time.NewTicker(time.Millisecond * 1000 * 500)
+	// Create a ticker with 50 ms = 0.05 seconds
+	ticker := time.NewTicker(time.Millisecond * 50)
 
 	for {
 		select {
@@ -121,8 +121,8 @@ func (loraDev Lora) MsgLoop() {
 			if res != 0 {
 				fmt.Printf("Lora.Send: Error sending: %d\n", res)
 			}
-		// case <-ticker.C:
-		case <-time.After(time.Second * 1):
+		case <-ticker.C:
+			// case <-time.After(time.Second * 1):
 			// util.IotLogInfo("Start event loop\n")
 			C.event_handler()
 			loraDev.CopyFromBufferIfExists()
@@ -148,7 +148,7 @@ func (loraDev Lora) Send(data []byte) int {
 	select {
 	case send <- data:
 	default:
-		fmt.Println("Send buffer full, please check the reason\n")
+		util.IotLogInfo(fmt.Sprintf("Send buffer full, please check the reason, %v\n", data))
 		return -1
 	}
 	return 0

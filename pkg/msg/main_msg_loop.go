@@ -11,7 +11,7 @@ import (
 
 var MqttPublishCh = make(chan interface{}, 10)
 
-func StartMqttMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
+func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	// MQTT 连接设置
 	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
@@ -55,7 +55,7 @@ func StartMqttMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 		case publishingMqttMsg := <-MqttPublishCh:
 			mqttClient.SendToServer(publishingMqttMsg)
 		case mqttMsg := <-mqttCh:
-			util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s\n", mqttMsg.Payload(), mqttMsg.Topic()))
+			util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic()))
 			resp := HandleMqttMsg(mqttClient, mqttMsg.Payload())
 			if resp != nil {
 				select {

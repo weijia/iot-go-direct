@@ -44,7 +44,7 @@ func (request UpdateGlassColorRequest) handle() {
 	for _, param := range updateGlassColorParams {
 		client := bsp.GetLoraClientForNode(param.NodeId)
 		if client == nil {
-			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists\n", param.NodeId))
+			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists", param.NodeId))
 			param.Color = node.SetColorForNodeAsInvalid(param.Color)
 			reply.Status = append(reply.Status, param)
 		} else {

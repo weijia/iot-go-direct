@@ -39,7 +39,7 @@ func DumpBytes(a []byte) {
 }
 
 func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
-	util.IotLogInfo("Received message\n")
+	util.IotLogInfo("Received node message")
 	// TODO: Need to check if the message is for this gateway
 	DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
@@ -49,10 +49,10 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	}
 
 	// Extract byte 10 to 14 as node id from byte slice msg
-	nodeId := string(msg[REPLY_NODE_ID_START_INDEX : REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
+	nodeId := fmt.Sprintf("%x", msg[REPLY_NODE_ID_START_INDEX:REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
 	nodeState := bsp.GetNodeState(nodeId)
 	if nodeState == nil {
-		util.IotLogInfo(fmt.Sprintf("Received heartbeat reply for unknown node %s\n", nodeId))
+		util.IotLogInfo(fmt.Sprintf("Received reply for unknown node: %s", nodeId))
 		return
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
@@ -60,16 +60,16 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	switch msg[REPLY_CMD_START_INDEX] {
 	case CONFIG_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
-		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s\n", nodeId))
+		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s", nodeId))
 		node.HandleNodeInitReply(msg)
 
 	case UNKNOWN_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
-		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s\n", nodeId))
+		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
 		node.HandleNodeInitReply(msg)
 
 	case HEARTBEAT_REPLY:
-		util.IotLogInfo("Received heartbeat reply\n")
+		util.IotLogInfo("Received heartbeat reply")
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf
@@ -78,7 +78,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 		util.SendRepliedNodeIdWithoutBlocking(nodeId, node.HeartbeatCh, 10)
 
 	case UPDATE_GLASS_COLOR_REPLY:
-		util.IotLogInfo("Received update glass color reply\n")
+		util.IotLogInfo("Received update glass color reply")
 		// node.HandleNodeColorUpdateReply(msg)
 		for pendingUpdateIndex := len(node.StatesForPendingColorUpdate) - 1; pendingUpdateIndex >= 0; pendingUpdateIndex-- {
 			state := node.StatesForPendingColorUpdate[pendingUpdateIndex]
@@ -118,7 +118,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 
 	case GET_GLASS_STATE_REPLY:
 		// TODO: complete the real handling
-		util.IotLogInfo("Received get glass state reply\n")
+		util.IotLogInfo("Received get glass state reply")
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[15+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[15+i]) & 0xf

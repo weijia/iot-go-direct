@@ -37,7 +37,7 @@ func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) 
 }
 
 func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
-	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v\n", nodeId, moduelParam))
+	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v", nodeId, moduelParam))
 	client.Send(GetNodeInitMsg(
 		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(nodeId), moduelParam))
 }

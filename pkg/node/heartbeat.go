@@ -44,11 +44,13 @@ var HeartbeatCh = make(chan string)
 
 func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string) {
 	for _, nodeIdStr := range nodeList {
-		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s\n", nodeIdStr))
+		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s", nodeIdStr))
 		for i := 0; i < HeartbeatRetryCnt; i++ {
 			client.Send(GetHeartBeatMsg(nodeIdStr))
 			if util.IsReplyTimeout(nodeIdStr, HeartbeatCh, util.HEARTBEAT_REPLY_TIMEOUT) {
-				util.IotLogInfo(fmt.Sprintf("Heartbeat reply timeout for: %s\n", nodeIdStr))
+				util.IotLogInfo(fmt.Sprintf("Heartbeat reply timeout for: %s", nodeIdStr))
+			} else {
+				break
 			}
 		}
 	}
@@ -57,7 +59,7 @@ func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string)
 var HeartbeatStartTime int64
 
 func SendHeartbeatOnce() {
-	util.IotLogInfo("Sending a round of heartbeats\n")
+	util.IotLogInfo("Sending a round of heartbeats")
 	HeartbeatStartTime = time.Now().Unix()
 	sendHeartbeatForNodeList(bsp.GetModule1Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList1)
 	sendHeartbeatForNodeList(bsp.GetModule2Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList2)
