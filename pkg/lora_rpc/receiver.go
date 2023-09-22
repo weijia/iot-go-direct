@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/util"
-	"log"
 	"net/http"
 	"net/rpc"
 )
@@ -15,9 +14,9 @@ type LoraReceiverRpc struct {
 var recvChannel *chan []byte
 
 func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
-	log.Println("RPC: OnReceive called")
+	// log.Println("RPC: OnReceive called")
 	*recvChannel <- argType.Data
-	log.Println("RPC: after put to channel")
+	// log.Println("RPC: after put to channel")
 	reply.Result = 0
 	return nil
 }

@@ -27,10 +27,10 @@ func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
 	var loraHost string
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
-	// loraServiceIp := loraHost
-	loraServiceIp := "192.168.1.28"
-	// gatewayPushMsgIp := "127.0.0.1"
-	gatewayPushMsgIp := "192.168.1.27"
+	loraServiceIp := loraHost
+	// loraServiceIp := "192.168.1.28"
+	gatewayPushMsgIp := "127.0.0.1"
+	// gatewayPushMsgIp := "192.168.1.27"
 
 	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
