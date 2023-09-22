@@ -3,6 +3,9 @@ package util
 import "encoding/hex"
 
 func DecodeHex(i string) []byte {
+	if len(i)%2 == 1 {
+		i = "0" + i
+	}
 	b, err := hex.DecodeString(i)
 	if err != nil {
 		IotLogError(err)

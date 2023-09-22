@@ -18,7 +18,6 @@ type UpdateGlassColorRequest struct {
 
 func SetSingleGlassColor(client *lora_client.LoraClient, nodeId string, color string) {
 	c := node.GetUpdateGlassColorMsg(
-		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		util.DecodeId(nodeId), color)
 	client.Send(c)
 }
@@ -46,9 +45,9 @@ func (request UpdateGlassColorRequest) handle() {
 		if client == nil {
 			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists", param.NodeId))
 			param.Color = node.SetColorForNodeAsInvalid(param.Color)
-			reply.Status = append(reply.Status, param)
+			state.Reply.Status = append(state.Reply.Status, param)
 		} else {
-			reply.Status = append(reply.Status, param)
+			state.Reply.Status = append(state.Reply.Status, param)
 			SetSingleGlassColor(client, param.NodeId, param.Color)
 			state.PendingNodes = append(state.PendingNodes, param.NodeId)
 		}

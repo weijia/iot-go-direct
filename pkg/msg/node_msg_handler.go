@@ -101,7 +101,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 					for pendingNodeIndex, pendingNodeId := range state.PendingNodes {
 						if pendingNodeId == nodeId {
 							state.PendingNodes = append(state.PendingNodes[:pendingNodeIndex],
-								state.PendingNodes[:pendingNodeIndex+1]...)
+								state.PendingNodes[pendingNodeIndex+1:]...)
 							break
 						}
 					}
@@ -111,7 +111,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 				// Remove the state if all pending nodes sent reply
 				node.StatesForPendingColorUpdate =
 					append(node.StatesForPendingColorUpdate[:pendingUpdateIndex],
-						node.StatesForPendingColorUpdate[:pendingUpdateIndex+1]...)
+						node.StatesForPendingColorUpdate[pendingUpdateIndex+1:]...)
 				mqttCh <- state.Reply
 			}
 		}

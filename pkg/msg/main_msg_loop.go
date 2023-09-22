@@ -5,14 +5,18 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 var MqttPublishCh = make(chan interface{}, 10)
+var connectionLostHandler mqtt.ConnectionLostHandler
 
-func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
-	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
+var mqttCh = make(chan mqtt.Message, 10)
+
+func createClientOptions() *mqtt.ClientOptions {
+
 	// MQTT 连接设置
 	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
 	util.IotLogInfo(fmt.Sprintf("Connecting to server %s\n", broker))
@@ -20,12 +24,50 @@ func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 	opts.SetClientID(bsp.BspConfigInstance.GatewayNodeId)
 	opts.Username = bsp.BspConfigInstance.MqttUserName
 	opts.Password = bsp.BspConfigInstance.MqttPwd
+	opts.SetConnectionLostHandler(connectionLostHandler)
+	return opts
+}
 
-	// 创建 MQTT 客户端
+func ReconnectMqtt(client mqtt.Client, err error) {
+	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
+	fmt.Println("连接丢失:", err.Error())
+	// 在此处添加自动重连逻辑
+	for {
+		// 重新连接到MQTT代理服务器
+		opts := createClientOptions()
+		client := createClient(opts)
+		if token := client.Connect(); token.Wait() && token.Error() == nil {
+			// 重新连接成功后重新订阅主题
+			token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
+				mqttCh <- mqttMsg
+			})
+			if token.Wait() && token.Error() != nil {
+				// panic(token.Error())
+				continue
+			}
+			fmt.Println("已重新连接到MQTT代理服务器并重新订阅主题")
+			break
+		}
+		fmt.Println("重新连接失败，稍后重新尝试...")
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func createClient(opts *mqtt.ClientOptions) mqtt.Client {
 	client := mqtt.NewClient(opts)
+	return client
+}
+
+func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
+	connectionLostHandler = ReconnectMqtt
+	broker := "tcp://" + bsp.BspConfigInstance.MqttIP + ":" + fmt.Sprint(bsp.BspConfigInstance.MqttPort)
+	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
+	opts := createClientOptions()
+	client := createClient(opts)
 
 	// 连接到服务器
 	token := client.Connect()
+
 	if token.Wait() && token.Error() != nil {
 		//Post an device issue to thingsboard server
 		//Create data string map
@@ -37,10 +79,9 @@ func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 		bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
 		panic(token.Error())
 	}
+
 	// TODO: reconnect to mqtt if disconnected
 	mqttClient := util.NewMqtt(&client, bsp.BspConfigInstance.GatewayNodeId)
-
-	mqttCh := make(chan mqtt.Message)
 
 	// 订阅主题
 	token = client.Subscribe(topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
@@ -91,7 +132,7 @@ func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 		// 		util.IotLogErrorStr("mqtt publish channel full when sending config reply")
 		// 	}
 		case <-quit:
-			break
+			return
 		}
 	}
 }

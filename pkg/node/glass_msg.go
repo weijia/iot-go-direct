@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 	"time"
@@ -40,17 +41,17 @@ func getCRC8HighByTable(buf []byte) byte {
 	return val
 }
 
-func GetUpdateGlassColorMsg(gatewayId []byte, nodeId []byte, color string) []byte {
+func GetUpdateGlassColorMsg(nodeId []byte, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
 		return nil
 	}
-	result = append(result, 0)            // package len
-	result = append(result, 1)            // node type 1 gateway
-	result = append(result, 5)            // cmd type
-	result = append(result, gatewayId...) // gateway id must be 6 bytes
+	result = append(result, 0)                                                     // package len
+	result = append(result, 1)                                                     // node type 1 gateway
+	result = append(result, 5)                                                     // cmd type
+	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
 	result = append(result, nodeId...)          // node id
 	result = append(result, byte(len(color)/2)) // param len
