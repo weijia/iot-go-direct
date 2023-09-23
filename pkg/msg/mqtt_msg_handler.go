@@ -96,6 +96,13 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 	case "gateway_upgrade_reply":
 		return nil
 
+	case "get_glass_status_request":
+		var req GetGlassStatusRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			util.IotLogError(err)
+		}
+		return req.handle()
+
 	case "group_update_glass_color_request":
 		var req GroupUpdateGlassColorRequest
 		if err := json.Unmarshal(body, &req); err != nil {

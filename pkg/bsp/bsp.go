@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard"
 	"iot_go/pkg/thingsboard_shared"
+	"iot_go/pkg/util"
 
 	"fmt"
 )
@@ -88,15 +89,6 @@ func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 }
 
-func IsSliceContainsStr(a []string, b string) bool {
-	for _, c := range a {
-		if c == b {
-			return true
-		}
-	}
-	return false
-}
-
 func GetBsp() *VirtualBsp {
 	return &virtualBsp
 }
@@ -123,11 +115,11 @@ func GetLoraClientForNode(nodeId string) *lora_client.LoraClient {
 }
 
 func IsInNodeList1(nodeId string) bool {
-	return IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList1, nodeId)
+	return util.IsStrInSlice(nodeId, BspConfigInstance.BaseConfigParams.NodeList1)
 }
 
 func IsInNodeList2(nodeId string) bool {
-	return IsSliceContainsStr(BspConfigInstance.BaseConfigParams.NodeList2, nodeId)
+	return util.IsStrInSlice(nodeId, BspConfigInstance.BaseConfigParams.NodeList2)
 }
 
 func GetModule0Client() *lora_client.LoraClient {

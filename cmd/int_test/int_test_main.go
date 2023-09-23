@@ -72,7 +72,7 @@ func main() {
 					// TouchNodeList2: []string{"touch3", "touch4"},
 					Custom:    "test_custom",
 					Project:   "test_project",
-					HeartBeat: 30,
+					Heartbeat: 30,
 				},
 				Module1: module1,
 				Module2: module2,

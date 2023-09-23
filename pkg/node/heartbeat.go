@@ -67,7 +67,7 @@ func SendHeartbeatOnce() {
 
 func SendNodeHeartbeatInLoop() {
 	HeartbeatRetryCnt = 3
-	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.HeartBeat) * time.Second)
+	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
 	for {
 		<-ticker1.C
 		SendHeartbeatOnce()

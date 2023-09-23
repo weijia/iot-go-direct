@@ -7,7 +7,7 @@ type BaseConfigParams struct {
 	TouchNodeList2 []string `json:"touch_node_list_2"`
 	Custom         string   `json:"custom"`
 	Project        string   `json:"project"`
-	HeartBeat      int      `json:"heart_beat"`
+	Heartbeat      int      `json:"heart_beat"`
 }
 
 type ConfigParams struct {

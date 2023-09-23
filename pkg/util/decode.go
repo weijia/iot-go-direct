@@ -18,5 +18,6 @@ func DecodeId(i string) []byte {
 }
 
 func GetGlassAreaFromStr(oneChar byte) int {
+	// glass area start from 1 so change to internal index need to -1
 	return int(DecodeHex(string(oneChar))[0]) - 1
 }

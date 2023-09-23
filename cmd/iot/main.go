@@ -53,6 +53,7 @@ func main() {
 
 	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
 	go msg.StartMainMsgLoop(nodeMsgCh, quit)
+	go msg.SendHeartbeatToServer()
 
 	// go node.SendNodeHeartbeatInLoop()
 	// node.SendNodeInitAfterStartup()

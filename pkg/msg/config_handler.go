@@ -24,15 +24,6 @@ func IsModuleParamChanged(config ConfigRequest) bool {
 	return false
 }
 
-func IsStrInSlice(str string, strSlice []string) bool {
-	for _, s := range strSlice {
-		if s == str {
-			return true
-		}
-	}
-	return false
-}
-
 // func AreTwoStrSliceEqual(first []string, second []string) bool {
 // 	if len(first) == 0 && len(second) == 0 {
 //         return true

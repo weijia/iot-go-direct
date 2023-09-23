@@ -115,13 +115,13 @@ func GetBroadcastUpdateGlassColorMsg(gatewayId []byte, color string) []byte {
 	return result
 }
 
-func GetRetrieveColorMsg(gatewayId []byte, nodeId []byte) []byte {
+func GetRetrieveColorMsg(nodeId []byte) []byte {
 	var result []byte
-	result = append(result, 0)            // package len
-	result = append(result, 1)            // node type 1 gateway
-	result = append(result, 9)            // cmd type broadcast
-	result = append(result, gatewayId...) // gateway id must be 6 bytes
-	result = append(result, nodeId...)    // node id
+	result = append(result, 0)                                                     // package len
+	result = append(result, 1)                                                     // node type 1 gateway
+	result = append(result, 9)                                                     // cmd type broadcast
+	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
+	result = append(result, nodeId...)                                             // node id
 
 	result[0] = byte(len(result) + 1)
 	result = append(result, getCRC8HighByTable(result))
