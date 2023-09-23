@@ -106,6 +106,7 @@ func HandleNodeInitReply(nodeInitReply []byte) {
 		}
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
+	util.SendRepliedNodeIdWithoutBlocking(nodeId, InitReplyCh, 5)
 
 	// for i, NodeInitPendingNodeId := range PendingInitReqNodeList {
 	// 	if NodeInitPendingNodeId == nodeId {

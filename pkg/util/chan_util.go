@@ -12,7 +12,7 @@ func SendRepliedNodeIdWithoutBlocking(nodeId string, ch chan<- string, timeoutSe
 		case ch <- nodeId:
 			eventTimer.Stop()
 		case <-eventTimer.C:
-			IotLogInfo(fmt.Sprintf("Timeout sending for node id: %s\n", nodeId))
+			IotLogInfo(fmt.Sprintf("Timeout for notifying node reply received for node id: %s, ch: %p\n", nodeId, ch))
 		}
 	}()
 }
@@ -31,7 +31,7 @@ func IsReplyTimeout(nodeIdStr string, ch <-chan string, timeoutSeconds int) bool
 			// IotLogInfo(fmt.Sprintf("Timeout waiting for node id: %s", nodeIdStr))
 			return true
 		case responseNodeId := <-ch:
-			IotLogInfo(fmt.Sprintf("Reply for node id for index: %d, node id: %s", localIndex, responseNodeId))
+			IotLogInfo(fmt.Sprintf("Reply for node id for index: %d, node id: %s from ch: %p", localIndex, responseNodeId, ch))
 			// IotLogInfo(fmt.Sprintf("Reply for node id: %s", responseNodeId))
 			eventTimer.Stop()
 			return false

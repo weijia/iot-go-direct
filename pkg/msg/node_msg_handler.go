@@ -5,6 +5,7 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
+	"strings"
 	"time"
 )
 
@@ -33,18 +34,26 @@ func getAreaFromColorReport(r byte) int {
 
 func DumpBytes(a []byte) {
 	for i := 0; i < len(a); i++ {
-		fmt.Printf("%d, %d, %02x %c\n", i, a[i], a[i], a[i])
+		fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
+		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
 	}
 	fmt.Printf("\n")
 }
 
 func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	util.IotLogInfo("Received node message")
-	// TODO: Need to check if the message is for this gateway
+
 	DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
 		util.IotLogErrorStr("Checksum incorrect, discard package")
+		return
+	}
+	gatewayId := fmt.Sprintf("%x", msg[REPLY_GATEWAY_ID_START_INDEX:REPLY_GATEWAY_ID_START_INDEX+GATEWAY_ID_LEN])
+
+	// Need to check if the message is for this gateway
+	if !strings.EqualFold(gatewayId, bsp.BspConfigInstance.GatewayNodeId) {
+		util.IotLogInfo(fmt.Sprintf("Received gateway Id: %s is not for this gateway: %s", gatewayId, bsp.BspConfigInstance.GatewayNodeId))
 		return
 	}
 
@@ -123,6 +132,8 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 			nodeState.NodeReportedColor[i*2] = int(msg[15+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[15+i]) & 0xf
 		}
+	default:
+		util.IotLogInfo("Not handled msg, maybe it is sent from gateway")
 	}
 
 }

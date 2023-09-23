@@ -31,6 +31,10 @@ func createClientOptions() *mqtt.ClientOptions {
 func ReconnectMqtt(client mqtt.Client, err error) {
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	fmt.Println("连接丢失:", err.Error())
+	time.Sleep(5 * time.Second)
+	if util.IsQuiting {
+		return
+	}
 	// 在此处添加自动重连逻辑
 	for {
 		// 重新连接到MQTT代理服务器

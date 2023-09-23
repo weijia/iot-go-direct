@@ -68,6 +68,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 	quit <- true
+	util.IsQuiting = true
 
 	bsp.GetBsp().StopAllProcess()
 }
