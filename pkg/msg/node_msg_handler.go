@@ -34,7 +34,8 @@ func getAreaFromColorReport(r byte) int {
 
 func DumpBytes(a []byte) {
 	for i := 0; i < len(a); i++ {
-		fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
+		fmt.Printf("%02x ", a[i])
+		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
 		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
 	}
 	fmt.Printf("\n")
