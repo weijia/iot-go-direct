@@ -63,7 +63,7 @@ func NewLoraRpc(devName string, port int) *LoraRpc {
 // 	return nil
 // }
 
-func StartLoraServiceInBackgrand(devName string, port int, pushHost string) {
+func StartLoraServiceInBackground(devName string, port int, pushHost string) {
 	dev := strings.Split(devName, "/")
 
 	file, err := os.OpenFile(dev[2]+"log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -72,7 +72,7 @@ func StartLoraServiceInBackgrand(devName string, port int, pushHost string) {
 	}
 	defer file.Close()
 
-	// // 设置日志输出到文件
+	// 设置日志输出到文件
 	log.SetOutput(file)
 	StartLoraService(devName, port, pushHost)
 }
@@ -83,10 +83,10 @@ func StartLoraService(devName string, port int, pushHost string) {
 	util.IotLogInfo(fmt.Sprintf("Starting lora service on dev: %s, port: %d\n", devName, port))
 	go lora.PushLoraMsgToRpc(8869, pushHost)
 
-	rolaRpc := NewLoraRpc(devName, port)
-	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
+	loraRpc := NewLoraRpc(devName, port)
+	// The loraRpc object will be copied to RPC procedure instead of sending the original object
 	// So the data changed after Register may be discarded
-	rpc.Register(rolaRpc)
+	rpc.Register(loraRpc)
 	rpc.HandleHTTP()
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("serve error: %v", err))

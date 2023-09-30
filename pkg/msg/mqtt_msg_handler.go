@@ -24,7 +24,7 @@ func GetMsgVar(method string) interface{} {
 	requestMap := map[string]interface{}{
 		"broadcast_update_glass_color_request": BroadcastUpdateGlassColorRequest{},
 		"config":                               ConfigRequest{},
-		"gateway_upgrade_reply":                GatewayUpgradeRequest{},
+		"gateway_upgrade_request":                GatewayUpgradeRequest{},
 		"group_update_glass_color_request":     GroupUpdateGlassColorRequest{},
 		"mqtt_config":                          MqttConfigRequest{},
 		"node_firmware_download_request":       NodeFirmwareDownloadRequest{},
@@ -93,8 +93,12 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 		}
 		configRequest.handle(mqttClient)
 		return nil
-	case "gateway_upgrade_reply":
-		return nil
+	case "gateway_upgrade_request":
+		var req GatewayUpgradeRequest
+		if err := json.Unmarshal(body, &req); err != nil {
+			util.IotLogError(err)
+		}
+		return req.handle()
 
 	case "get_glass_status_request":
 		var req GetGlassStatusRequest

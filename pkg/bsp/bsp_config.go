@@ -19,7 +19,7 @@ type BspConfig struct {
 	NodeStates []NodeState `json:"node_state_list"`
 }
 
-var swVersion = "0.1.0"
+var swVersion = "1.0"
 
 var module0Param = shared.Module{
 	Freq:   4723,

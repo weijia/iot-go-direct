@@ -1,3 +1,3 @@
 package util
 
-var IsQuiting = false
+var IsQuitting = false

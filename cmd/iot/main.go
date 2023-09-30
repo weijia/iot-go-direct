@@ -17,9 +17,9 @@ import (
 )
 
 func init() {
-	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackgrand)
-	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackgrand)
-	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackgrand)
+	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)
+	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackground)
+	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackground)
 	fork.Init()
 }
 
@@ -69,7 +69,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 	quit <- true
-	util.IsQuiting = true
+	util.IsQuitting = true
 
 	bsp.GetBsp().StopAllProcess()
 }

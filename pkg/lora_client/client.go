@@ -40,7 +40,7 @@ func NewLoraClient(port int, host ...string) *LoraClient {
 
 func (client LoraClient) CallWithReconnect(serviceMethod string, args any, reply any) error {
 	err := client.RpcClient.Call(serviceMethod, args, reply)
-	if rpc.ErrShutdown == err && !util.IsQuiting {
+	if rpc.ErrShutdown == err && !util.IsQuitting {
 		client.CreateRpcClientWithRetry()
 		err = client.RpcClient.Call(serviceMethod, args, reply)
 	}
