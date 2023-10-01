@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/thingsboard_shared"
 	"iot_go/pkg/util"
 	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -20,7 +21,7 @@ type BspConfig struct {
 	util.LogConfigParams
 }
 
-var swVersion = "1.0"
+var SwVersion = "1.1"
 
 var module0Param = shared.Module{
 	Freq:   4723,
@@ -41,8 +42,8 @@ var module2Param = shared.Module{
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
 		GatewayNodeId: "F12309150001",
-		HardVersion:   "0.1.0",
-		SoftVersion:   swVersion,
+		HardVersion:   "1.0",
+		SoftVersion:   SwVersion,
 		Custom:        "test",
 		Project:       "test",
 		NodeType:      1,
@@ -98,6 +99,28 @@ func InitConfig() {
 			util.IotLogError(err)
 		}
 	}
+	// Overwrite board related info to config
+	BspConfigInstance.SoftVersion = SwVersion
+	file, err := os.Open("gateway_id.txt")
+	
+	if err == nil {
+		defer file.Close()
+		var data []byte
+		_, err := file.Read(data)
+		if err == nil {
+			s := strings.Replace(string(data), "\n", "", -1)
+			s = strings.Replace(s, "\r", "", -1)
+			s = strings.Replace(s, " ", "", -1)
+			if len(s) == 12 && len(util.DecodeId(s)) == 6 {
+				BspConfigInstance.GatewayNodeId = s
+			} else {
+				util.IotLogErrorStr("gateway_id.txt contain invalid gateway id: "+string(data))
+			}
+		}
+	} else {
+		util.IotLogErrWithStr("Open gateway_id.txt failed", err)
+	}
+
 }
 
 func (bspConfig BspConfig) CommitChanges() {

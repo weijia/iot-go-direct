@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log/slog"
 	"strings"
 
 	"os"
@@ -85,6 +84,7 @@ func main() {
 	// fmt.Println(viper.GetString("msg_type"))
 
 	bsp.InitBoard(loraServiceIp)
+	util.IotLog("Starting main app version: %s", bsp.SwVersion)
 
 	quit := make(chan bool)
 
