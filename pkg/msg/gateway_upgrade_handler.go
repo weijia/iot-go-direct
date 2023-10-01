@@ -25,7 +25,7 @@ var isRebootNeeded = false
 func Download(params shared.GatewayUpgradeParams) error {
 	os.MkdirAll(DOWNLOADING_FOLDER, 0771)
 	targetPath := filepath.Join(DOWNLOADING_FOLDER, filepath.Base(params.SftpInfo.Path))
-	err := util.Download(params.SftpInfo, targetPath)
+	err := util.Download(params.SftpInfo, targetPath, true)
 	if err == nil {
 		finalFilename := "main-" + params.TargetSoftwareVersion
 		os.Rename(targetPath, filepath.Join(FIRMWARE_FOLDER, finalFilename))

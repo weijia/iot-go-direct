@@ -14,5 +14,5 @@ func TestDownload(t *testing.T) {
 	sftpInfo.IP = "115.159.53.168"
 	sftpInfo.Port = 22
 	sftpInfo.Path = "/path/to/file"
-	util.Download(sftpInfo, "/firmware/file")
+	util.Download(sftpInfo, "/firmware/file", true)
 }

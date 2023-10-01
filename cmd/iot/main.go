@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"os"
@@ -47,14 +48,12 @@ func init() {
 			if err == nil {
 				os.Exit(0)
 			} else {
-				util.IotLogErrorStr(fmt.Sprintf("Error execute app, err: %v", err))
+				util.IotLogErrWithStr("Error execute app", err)
 			}
 		}
 	} else {
-		util.IotLogErrorStr(fmt.Sprintf("Error reading the directory: %v", err))
+		util.IotLogErrWithStr("Error reading the directory", err)
 	}
-
-	
 	
 	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)
 	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackground)
