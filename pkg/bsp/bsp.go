@@ -55,7 +55,7 @@ func (virtualBsp VirtualBsp) SafeUploadTelemetry(nodeId string, data interface{}
 
 func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	fmt.Println("Setting Module0 Params", moduleParamsInJson)
+	util.IotLog("Setting Module0 Params", moduleParamsInJson)
 
 	data := map[string]interface{}{
 		"module0": fmt.Sprintf("band: %d, factor: %d, freq: %d",
@@ -67,7 +67,7 @@ func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
 	module1Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	fmt.Printf("Setting Module1 Params: %s\n", moduleParamsInJson)
+	util.IotLog("Setting Module1 Params: %s\n", moduleParamsInJson)
 
 	data := map[string]interface{}{
 		"module1": fmt.Sprintf("band: %d, factor: %d, freq: %d",
@@ -80,7 +80,7 @@ func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
 func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
 	module2Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	fmt.Printf("Setting Module2 Params: %s\n", moduleParamsInJson)
+	util.IotLog("Setting Module2 Params: %s\n", moduleParamsInJson)
 
 	data := map[string]interface{}{
 		"module2": fmt.Sprintf("band: %d, factor: %d, freq: %d",

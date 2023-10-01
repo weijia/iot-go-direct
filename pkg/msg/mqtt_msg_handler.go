@@ -128,6 +128,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			MsgType:       "gateway_reboot_reply",
 			GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 		}
+		isRebootNeeded = true
 		return reply
 	case "update_glass_color_request":
 

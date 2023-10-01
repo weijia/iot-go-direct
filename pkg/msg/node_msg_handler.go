@@ -76,6 +76,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	case UNKNOWN_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
+		
 		node.HandleNodeInitReply(msg)
 
 	case HEARTBEAT_REPLY:

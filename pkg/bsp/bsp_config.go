@@ -17,6 +17,7 @@ type BspConfig struct {
 	thingsboard_shared.DeviceProfile `json:"device_profile"`
 	// The following will be real node state, it may contain nodes that is not sent from server
 	NodeStates []NodeState `json:"node_state_list"`
+	util.LogConfigParams
 }
 
 var swVersion = "1.0"

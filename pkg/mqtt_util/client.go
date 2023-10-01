@@ -2,6 +2,7 @@ package mqtt_util
 
 import (
 	"fmt"
+	"iot_go/pkg/util"
 	"log"
 	"time"
 
@@ -29,14 +30,14 @@ func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(10 * time.Second)
 	opts.SetConnectionLostHandler(func(c mqtt.Client, err error) {
-		fmt.Printf("!!!!!! mqtt connection lost error: %s\n", err.Error())
+		util.IotLog("!!!!!! mqtt connection lost error: %s\n", err.Error())
 	})
 	opts.SetReconnectingHandler(func(c mqtt.Client, options *mqtt.ClientOptions) {
-		fmt.Println("...... mqtt reconnecting ......")
+		util.IotLog("...... mqtt reconnecting ......")
 	})
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		// 连接被建立后的回调函数
-		fmt.Println("Mqtt is connected!")
+		util.IotLog("Mqtt is connected!")
 		easyClient.OnConnected()
 	})
 	// opts.SetConnectionLostHandler(easyClient.ReconnectMqtt)

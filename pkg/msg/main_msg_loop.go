@@ -2,6 +2,8 @@ package msg
 
 import (
 	"fmt"
+	"os/exec"
+
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/mqtt_util"
 	"iot_go/pkg/node"
@@ -31,6 +33,13 @@ func StartMainMsgLoop(nodeMsgCh chan []byte, quit chan bool) {
 		select {
 		case publishingMqttMsg := <-MqttPublishCh:
 			mqttClient.SendToServer(publishingMqttMsg)
+			if isRebootNeeded {
+				cmd := exec.Command("reboot")
+				err := cmd.Run()
+				if err != nil {
+					util.IotLogErrorStr("Execute reboot failed")
+				}
+			}
 		case mqttMsg := <-mqttCh:
 			util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic()))
 			resp := HandleMqttMsg(mqttClient, mqttMsg.Payload())

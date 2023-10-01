@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 
 	"os"
+	"os/exec"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_rpc"
@@ -17,6 +21,41 @@ import (
 )
 
 func init() {
+	entries, err := os.ReadDir(msg.FIRMWARE_FOLDER)
+	var latestVersion float64
+	var latestApp string
+	latestApp = ""
+
+	if err == nil {
+		// Iterate through the directory entries and print their names
+		for _, entry := range entries {
+			filename := entry.Name()
+			fmt.Println(filename)
+			verStr := strings.Replace(filename, "main-", "", -1)
+			verStr = strings.Replace(verStr, ".exe", "", -1)
+			version, err := strconv.ParseFloat(verStr, 32)
+			
+			if err == nil && version > latestVersion {
+				latestVersion = version
+				latestApp = filename
+			}
+		}
+		if latestApp != "" {
+			cmd := exec.Command(filepath.Join(msg.FIRMWARE_FOLDER, latestApp))
+			// Will not return until exit
+			err := cmd.Run()
+			if err == nil {
+				os.Exit(0)
+			} else {
+				util.IotLogErrorStr(fmt.Sprintf("Error execute app, err: %v", err))
+			}
+		}
+	} else {
+		util.IotLogErrorStr(fmt.Sprintf("Error reading the directory: %v", err))
+	}
+
+	
+	
 	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)
 	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackground)
 	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackground)
@@ -41,6 +80,7 @@ func main() {
 	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
+	util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
 
 	bsp.InitConfig()
 	// fmt.Println(viper.GetString("msg_type"))

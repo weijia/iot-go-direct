@@ -15,10 +15,23 @@ type GatewayUpgradeRequest struct {
 	Params shared.GatewayUpgradeParams `json:"params"`
 }
 
-func Download(params shared.SftpInfo) error {
-	os.MkdirAll("firmware", 771)
-	targetPath := "firmware/" + filepath.Base(params.Path)
-	err := util.Download(params, targetPath)
+const (
+	DOWNLOADING_FOLDER = "downloading"
+	FIRMWARE_FOLDER = "apps"
+)
+
+var isRebootNeeded = false
+
+func Download(params shared.GatewayUpgradeParams) error {
+	os.MkdirAll(DOWNLOADING_FOLDER, 0771)
+	targetPath := filepath.Join(DOWNLOADING_FOLDER, filepath.Base(params.SftpInfo.Path))
+	err := util.Download(params.SftpInfo, targetPath)
+	if err == nil {
+		finalFilename := "main-" + params.TargetSoftwareVersion
+		os.Rename(targetPath, filepath.Join(FIRMWARE_FOLDER, finalFilename))
+		os.Chmod(finalFilename, 0755)
+		isRebootNeeded = true
+	}
 	return err
 }
 
@@ -44,11 +57,9 @@ func (req GatewayUpgradeRequest) handle() interface{} {
 			targetSwVer <= localSwVer {
 		reply.State = "error"
 	} else {
-		err := Download(req.Params.SftpInfo)
+		err := Download(req.Params)
 		if err != nil {
 			reply.State = "error," + err.Error()
-		} else {
-
 		}
 	}
 	return reply

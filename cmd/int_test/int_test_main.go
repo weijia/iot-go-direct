@@ -85,7 +85,7 @@ func main() {
 			payload, _ := json.Marshal(configRequest)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
-			fmt.Println("Published message:", string(payload))
+			util.IotLog("Published message:", string(payload))
 			time.Sleep(1 * time.Second)
 		case "config_reply":
 			nodeListRequest := msg.BaseRequest{
@@ -94,7 +94,7 @@ func main() {
 			payload, _ := json.Marshal(nodeListRequest)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
-			fmt.Println("Published message:", string(payload))
+			util.IotLog("Published message:", string(payload))
 			time.Sleep(1 * time.Second)
 		case "node_list_reply":
 			nodeInfoReq := msg.GatewayNodeIdRequest{
@@ -104,7 +104,7 @@ func main() {
 			payload, _ := json.Marshal(nodeInfoReq)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
-			fmt.Println("Published message:", string(payload))
+			util.IotLog("Published message:", string(payload))
 			time.Sleep(1 * time.Second)
 		case "node_info_request":
 			req := msg.BaseRequest{
@@ -113,7 +113,7 @@ func main() {
 			payload, _ := json.Marshal(req)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
-			fmt.Println("Published message:", string(payload))
+			util.IotLog("Published message:", string(payload))
 			time.Sleep(1 * time.Second)
 		case "gateway_reboot_reply":
 			params := []shared.UpdateGlassColorParams{
@@ -134,7 +134,7 @@ func main() {
 			payload, _ := json.Marshal(req)
 			token := client.Publish(publishTopic, 0, false, payload)
 			token.Wait()
-			fmt.Println("Published message:", string(payload))
+			util.IotLog("Published message:", string(payload))
 			time.Sleep(1 * time.Second)
 		}
 	})

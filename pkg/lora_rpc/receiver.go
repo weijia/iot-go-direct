@@ -23,10 +23,10 @@ func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, r
 
 func StartLoraReceiverRpc(recvCh *chan []byte, port int) {
 	recvChannel = recvCh
-	rolaRpc := LoraReceiverRpc{}
-	// The rolaRpc object will be copied to RPC procedure instead of sending the original object
+	loraRpc := LoraReceiverRpc{}
+	// The loraRpc object will be copied to RPC procedure instead of sending the original object
 	// So the data changed after Register may be discarded
-	rpc.Register(rolaRpc)
+	rpc.Register(loraRpc)
 	rpc.HandleHTTP()
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("serve error: %v", err))

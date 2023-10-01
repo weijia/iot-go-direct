@@ -7,11 +7,10 @@ import (
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
-	"log"
 	"net/http"
 	"net/rpc"
-	"os"
 	"strings"
+
 )
 
 type LoraRpc struct {
@@ -66,14 +65,16 @@ func NewLoraRpc(devName string, port int) *LoraRpc {
 func StartLoraServiceInBackground(devName string, port int, pushHost string) {
 	dev := strings.Split(devName, "/")
 
-	file, err := os.OpenFile(dev[2]+"log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		util.IotLogError(err)
-	}
-	defer file.Close()
+	util.ConfigLogFile(dev[2]+"log.txt", bsp.BspConfigInstance.LogConfigParams)
+
+	// file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	// if err != nil {
+	// 	util.IotLogError(err)
+	// }
+	// defer file.Close()
 
 	// 设置日志输出到文件
-	log.SetOutput(file)
+	// log.SetOutput(file)
 	StartLoraService(devName, port, pushHost)
 }
 

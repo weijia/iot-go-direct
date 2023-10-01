@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
+        "gojsonschema",
         "Mqtt",
         "paho",
-        "thingsboard"
+        "spidev",
+        "thingsboard",
+        "xeipuuv"
     ],
     "files.exclude": {
         "**/.git": true,
@@ -11,6 +14,10 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true,
         "**/*.o": true,
         "**/*.a": true,
         "**/go.mod": true,

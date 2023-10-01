@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"fmt"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -28,7 +27,7 @@ func (client Mqtt) SendTo(topic string, data interface{}) {
 	payload, _ := json.Marshal(data)
 	token := (*client.Client).Publish(topic, 0, false, payload)
 	token.Wait()
-	fmt.Println("Published message:", topic, string(payload))
+	IotLog("Published message:", topic, string(payload))
 	time.Sleep(1 * time.Second)
 }
 

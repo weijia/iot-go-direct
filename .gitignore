@@ -9,3 +9,5 @@ lora_service
 *log.txt
 pan3028-app
 *.exe~
+cmd/iot/firmware/
+*.txt
