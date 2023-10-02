@@ -163,7 +163,7 @@ func (loraDev Lora) Send(data []byte) int {
 // 	}
 // }
 
-func PushLoraMsgToRpc(port int, host ...string) {
+func PushLoraMsgToRpc(port int, moduleIndex int, host ...string) {
 	realHost := "127.0.0.1"
 	if len(host) > 0 {
 		realHost = host[0]
@@ -174,9 +174,9 @@ func PushLoraMsgToRpc(port int, host ...string) {
 		// util.IotLogInfo(fmt.Sprintf("Receiving\n"))
 		select {
 		case data := <-recv:
-			// util.IotLogInfo(fmt.Sprintf("Pusing data: %v\n", data))
-			serverRpc.OnReceive(data)
-			util.IotLogInfo(fmt.Sprintf("After pusing data: %v\n", data))
+			// util.IotLogInfo(fmt.Sprintf("Pushing data: %v\n", data))
+			serverRpc.OnReceive(data, moduleIndex)
+			// util.IotLogInfo(fmt.Sprintf("After pushing data: %v\n", data))
 		}
 	}
 	// util.IotLogInfo(fmt.Sprintf("Quitting push msg loop\n"))

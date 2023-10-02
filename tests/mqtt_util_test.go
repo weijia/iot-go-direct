@@ -27,7 +27,7 @@ func TestMqttClient(t *testing.T) {
 		MqttClientId:     "F12309150001",
 	}
 
-	easyClient.SubscribeToMqttServerWithReconnect()
+	easyClient.ConnectAndSubscribe()
 
 	easyClient2 := mqtt_util.MqttEasyClient{
 		MqttParams:       param,
@@ -36,7 +36,7 @@ func TestMqttClient(t *testing.T) {
 		MqttClientId:     "F12309150001",
 	}
 
-	easyClient2.SubscribeToMqttServerWithReconnect()
+	easyClient2.ConnectAndSubscribe()
 
 	time.Sleep(10 * time.Second)
 

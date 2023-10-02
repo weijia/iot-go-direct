@@ -38,9 +38,11 @@ func NewLoraClient(port int, host ...string) *LoraClient {
 	return instance
 }
 
+var IsQuittingSoNoRpcReconnect = false
+
 func (client LoraClient) CallWithReconnect(serviceMethod string, args any, reply any) error {
 	err := client.RpcClient.Call(serviceMethod, args, reply)
-	if rpc.ErrShutdown == err && !util.IsQuitting {
+	if rpc.ErrShutdown == err && !IsQuittingSoNoRpcReconnect {
 		client.CreateRpcClientWithRetry()
 		err = client.RpcClient.Call(serviceMethod, args, reply)
 	}
@@ -93,8 +95,8 @@ func (client LoraClient) ToggleDebug() {
 	client.CallWithReconnect("LoraRpc.ToggleDebug", args, &reply)
 }
 
-func (client LoraClient) OnReceive(data []byte) {
-	args := &lora_shared.LoraData{Data: data}
+func (client LoraClient) OnReceive(data []byte, moduleIndex int) {
+	args := &lora_shared.LoraData{Data: data, ModuleIndex: moduleIndex}
 	var reply lora_shared.ReplyResult
 	// util.IotLogInfo("Before on receive call\n")
 	err := client.CallWithReconnect("LoraReceiverRpc.OnReceive", args, &reply)

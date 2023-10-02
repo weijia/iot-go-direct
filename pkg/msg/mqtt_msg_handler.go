@@ -24,7 +24,7 @@ func GetMsgVar(method string) interface{} {
 	requestMap := map[string]interface{}{
 		"broadcast_update_glass_color_request": BroadcastUpdateGlassColorRequest{},
 		"config":                               ConfigRequest{},
-		"gateway_upgrade_request":                GatewayUpgradeRequest{},
+		"gateway_upgrade_request":              GatewayUpgradeRequest{},
 		"group_update_glass_color_request":     GroupUpdateGlassColorRequest{},
 		"mqtt_config":                          MqttConfigRequest{},
 		"node_firmware_download_request":       NodeFirmwareDownloadRequest{},
@@ -128,7 +128,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			MsgType:       "gateway_reboot_reply",
 			GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 		}
-		isRebootNeeded = true
+		IsRebootNeeded = true
 		return reply
 	case "update_glass_color_request":
 

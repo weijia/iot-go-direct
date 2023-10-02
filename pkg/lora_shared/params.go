@@ -9,4 +9,5 @@ type ReplyResult struct {
 
 type LoraData struct {
 	Data []byte
+	ModuleIndex int // start from 0
 }

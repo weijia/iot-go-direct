@@ -11,6 +11,8 @@ type MqttConfigRequest struct {
 	Params shared.MqttParams `json:"params"`
 }
 
+var IsMsgLoopRestartNeeded = false
+
 func (config MqttConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 	// fmt.Printf("%s", config.Method)
 	bsp.BspConfigInstance.MqttParams.MqttIP = config.Params.MqttIP

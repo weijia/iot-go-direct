@@ -94,6 +94,7 @@ func GetBsp() *VirtualBsp {
 }
 
 func (virtualBsp VirtualBsp) StopAllProcess() {
+	lora_client.IsQuittingSoNoRpcReconnect = true
 	module0Client.Exit()
 	module1Client.Exit()
 	module2Client.Exit()

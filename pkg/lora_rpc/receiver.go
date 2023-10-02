@@ -11,17 +11,17 @@ import (
 type LoraReceiverRpc struct {
 }
 
-var recvChannel *chan []byte
+var recvChannel *chan lora_shared.LoraData
 
 func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
-	// log.Println("RPC: OnReceive called")
-	*recvChannel <- argType.Data
+	// log.Println("RPC:  called")
+	*recvChannel <- argType
 	// log.Println("RPC: after put to channel")
 	reply.Result = 0
 	return nil
 }
 
-func StartLoraReceiverRpc(recvCh *chan []byte, port int) {
+func StartLoraReceiverRpc(recvCh *chan lora_shared.LoraData, port int) {
 	recvChannel = recvCh
 	loraRpc := LoraReceiverRpc{}
 	// The loraRpc object will be copied to RPC procedure instead of sending the original object

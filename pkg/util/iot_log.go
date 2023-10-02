@@ -13,6 +13,10 @@ func IotLog(formatStr string, a ...any) {
 	slog.Info(fmt.Sprintf(formatStr, a...))
 }
 
+func IotLogErrorWithFormatStr(formatStr string, a ...any) {
+	slog.Error(fmt.Sprintf(formatStr, a...))
+}
+
 func IotLogErrWithStr(s string, err error) {
 	AdditionalLog(err)
 	slog.Error(s, err)

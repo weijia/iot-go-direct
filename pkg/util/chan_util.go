@@ -5,6 +5,16 @@ import (
 	"time"
 )
 
+func SendMsgWithoutBlocking(m []byte, ch chan []byte, errMsg string) {
+	go func() {
+		select {
+		case ch <- m:
+		default:
+			IotLogErrorWithFormatStr(errMsg +": %v", m)
+		}
+	}()
+}
+
 func SendRepliedNodeIdWithoutBlocking(nodeId string, ch chan<- string, timeoutSeconds int) {
 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
 	go func() {

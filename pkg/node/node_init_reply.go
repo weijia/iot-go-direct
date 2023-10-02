@@ -47,6 +47,11 @@ const (
 	UPDATE_COLOR_RESULT_FAIL = 0
 )
 
+
+func GetNodeIdStr(msg []byte) string {
+	return fmt.Sprintf("%x", msg[REPLY_NODE_ID_START_INDEX:REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
+}
+
 // type NodeInitReplyParam struct {
 // 	ParamType int `struc:"uint8"`
 // 	ParamValue int `struc:"uint16"`
@@ -106,7 +111,6 @@ func HandleNodeInitReply(nodeInitReply []byte) {
 		}
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
-	util.SendRepliedNodeIdWithoutBlocking(nodeId, InitReplyCh, 5)
 
 	// for i, NodeInitPendingNodeId := range PendingInitReqNodeList {
 	// 	if NodeInitPendingNodeId == nodeId {

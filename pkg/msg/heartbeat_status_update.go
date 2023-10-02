@@ -56,6 +56,6 @@ func SendHeartbeatToServer() {
 			}
 		}
 		u.Status = l
-		MqttPublishCh <- u
+		MqttToServerCh <- u
 	}
 }

@@ -9,8 +9,8 @@ import (
 	"iot_go/pkg/util"
 	"net/http"
 	"net/rpc"
+	"strconv"
 	"strings"
-
 )
 
 type LoraRpc struct {
@@ -56,14 +56,17 @@ func NewLoraRpc(devName string, port int) *LoraRpc {
 	}
 }
 
-// func (loraRpc LoraRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.EmptyArg) error {
-// 	fmt.Printf("RPC: Receive called, Rpc: %p, dev: %p\n", &loraRpc, &loraRpc.LoraDev)
-// 	log.Println("RPC: Receive called")
-// 	return nil
-// }
+var ModuleIndex int
 
 func StartLoraServiceInBackground(devName string, port int, pushHost string) {
 	dev := strings.Split(devName, "/")
+	res := strings.ReplaceAll(dev[2], "spidev", "")
+	devNumFloat , err := strconv.ParseFloat(res, 32)
+	if err != nil {
+		util.IotLogErrWithStr("Parse spi dev num error", err)
+	} else {
+		ModuleIndex = int(devNumFloat)
+	}
 
 	util.ConfigLogFile(dev[2]+"log.txt", bsp.BspConfigInstance.LogConfigParams)
 

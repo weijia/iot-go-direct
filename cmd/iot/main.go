@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"strings"
@@ -12,9 +13,10 @@ import (
 	"strconv"
 
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_client"
 	"iot_go/pkg/lora_rpc"
+	"iot_go/pkg/main_msg_handler"
 	"iot_go/pkg/msg"
-	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 
 	"github.com/kraken-hpc/go-fork"
@@ -34,7 +36,7 @@ func init() {
 			verStr := strings.Replace(filename, "main-", "", -1)
 			verStr = strings.Replace(verStr, ".exe", "", -1)
 			version, err := strconv.ParseFloat(verStr, 32)
-			
+
 			if err == nil && version > latestVersion {
 				latestVersion = version
 				latestApp = filename
@@ -53,7 +55,7 @@ func init() {
 	} else {
 		util.IotLogErrWithStr("Error reading the directory", err)
 	}
-	
+
 	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)
 	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackground)
 	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackground)
@@ -78,37 +80,17 @@ func main() {
 	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, gatewayPushMsgIp); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
 	}
+
 	util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
+	ctx, cancel := context.WithCancel(context.Background())
 
-	bsp.InitConfig()
-	// fmt.Println(viper.GetString("msg_type"))
-
-	bsp.InitBoard(loraServiceIp)
-	util.IotLog("Starting main app version: %s", bsp.SwVersion)
-
-	quit := make(chan bool)
-
-	nodeMsgCh := make(chan []byte, 10)
-
-	go lora_rpc.StartLoraReceiverRpc(&nodeMsgCh, 8869)
-	go msg.StartMainMsgLoop(nodeMsgCh, quit)
-	go msg.SendHeartbeatToServer()
-
-	// go node.SendNodeHeartbeatInLoop()
-	// node.SendNodeInitAfterStartup()
-
-	// 发布消息
-	var initMsg shared.Init
-	initMsg.InitMsgContent = bsp.BspConfigInstance.InitMsgContent
-	initMsg.MsgType = "init"
-	msg.MqttPublishCh <- initMsg
+	go main_msg_handler.InfiniteAppLoop(ctx, loraServiceIp)
 
 	// 捕捉退出信号，断开连接并退出程序
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
-	quit <- true
-	util.IsQuitting = true
+	cancel()
 
 	bsp.GetBsp().StopAllProcess()
 }

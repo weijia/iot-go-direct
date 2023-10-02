@@ -17,10 +17,10 @@ type GatewayUpgradeRequest struct {
 
 const (
 	DOWNLOADING_FOLDER = "downloading"
-	FIRMWARE_FOLDER = "apps"
+	FIRMWARE_FOLDER    = "apps"
 )
 
-var isRebootNeeded = false
+var IsRebootNeeded = false
 
 func Download(params shared.GatewayUpgradeParams) error {
 	os.MkdirAll(DOWNLOADING_FOLDER, 0771)
@@ -30,7 +30,7 @@ func Download(params shared.GatewayUpgradeParams) error {
 		finalFilename := "main-" + params.TargetSoftwareVersion
 		os.Rename(targetPath, filepath.Join(FIRMWARE_FOLDER, finalFilename))
 		os.Chmod(finalFilename, 0755)
-		isRebootNeeded = true
+		IsRebootNeeded = true
 	}
 	return err
 }
@@ -51,10 +51,10 @@ func (req GatewayUpgradeRequest) handle() interface{} {
 		return reply
 	}
 	if req.Params.GatewayNodeId !=
-			bsp.BspConfigInstance.GatewayNodeId ||
-			req.Params.TargetHardwareVersion !=
-				bsp.BspConfigInstance.HardVersion ||
-			targetSwVer <= localSwVer {
+		bsp.BspConfigInstance.GatewayNodeId ||
+		req.Params.TargetHardwareVersion !=
+			bsp.BspConfigInstance.HardVersion ||
+		targetSwVer <= localSwVer {
 		reply.State = "error"
 	} else {
 		err := Download(req.Params)

@@ -90,7 +90,7 @@ func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
 		// Need to send node init req and wait for resp in before freq change
 		go HandleConfigAfterInit(config.Params)
 		// } else {
-		// 	// Send node init req for newly added nodes
+			// Send node init req for newly added nodes
 
 		// }
 	} else {
@@ -129,5 +129,5 @@ func saveConfig(configParams shared.ConfigParams) {
 func HandleConfigAfterInit(configParams shared.ConfigParams) {
 	node.SendNodeInitReq(configParams)
 	saveConfig(configParams)
-	MqttPublishCh <- getConfigReply()
+	MqttToServerCh <- getConfigReply()
 }

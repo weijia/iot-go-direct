@@ -30,7 +30,7 @@ func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(10 * time.Second)
 	opts.SetConnectionLostHandler(func(c mqtt.Client, err error) {
-		util.IotLog("!!!!!! mqtt connection lost error: %s\n", err.Error())
+		util.IotLogErrWithStr("!!!!!! mqtt connection lost error", err)
 	})
 	opts.SetReconnectingHandler(func(c mqtt.Client, options *mqtt.ClientOptions) {
 		util.IotLog("...... mqtt reconnecting ......")
@@ -80,35 +80,35 @@ func (easyClient *MqttEasyClient) ConnectAndSubscribe() error {
 	return nil
 }
 
-func (easyClient *MqttEasyClient) ReconnectMqtt(client mqtt.Client, err error) {
-	log.Printf("Connetion lost because of: %v for %p\n", err, easyClient)
-	if easyClient.IsReconnecting {
-		log.Printf("Already reconnecting, for %p, client: %p should equal to %p\n", easyClient, &client, &easyClient.Client)
-		return
-	}
-	easyClient.IsReconnecting = true
-	// 在此处添加自动重连逻辑
-	for {
-		err := easyClient.ConnectAndSubscribe()
-		if err != nil {
-			log.Printf("重新连接失败, reason: %v，稍后重新尝试...\n", err)
-			time.Sleep(15 * time.Second)
-		} else {
-			easyClient.IsReconnecting = false
-			break
-		}
-	}
-}
+// func (easyClient *MqttEasyClient) ReconnectMqtt(client mqtt.Client, err error) {
+// 	log.Printf("Connection lost because of: %v for %p\n", err, easyClient)
+// 	if easyClient.IsReconnecting {
+// 		log.Printf("Already reconnecting, for %p, client: %p should equal to %p\n", easyClient, &client, &easyClient.Client)
+// 		return
+// 	}
+// 	easyClient.IsReconnecting = true
+// 	// 在此处添加自动重连逻辑
+// 	for {
+// 		err := easyClient.ConnectAndSubscribe()
+// 		if err != nil {
+// 			log.Printf("重新连接失败, reason: %v，稍后重新尝试...\n", err)
+// 			time.Sleep(15 * time.Second)
+// 		} else {
+// 			easyClient.IsReconnecting = false
+// 			break
+// 		}
+// 	}
+// }
 
-func (easyClient *MqttEasyClient) SubscribeToMqttServerWithReconnect() *mqtt.Client {
-	for {
-		err := easyClient.ConnectAndSubscribe()
-		if err != nil {
-			log.Printf("Connect and subscribe err: %v\n", err)
-		} else {
-			log.Printf("已连接到MQTT代理服务器并订阅主题\n")
-			break
-		}
-	}
-	return &easyClient.Client
-}
+// func (easyClient *MqttEasyClient) SubscribeToMqttServerWithReconnect() *mqtt.Client {
+// 	for {
+// 		err := easyClient.ConnectAndSubscribe()
+// 		if err != nil {
+// 			log.Printf("Connect and subscribe err: %v\n", err)
+// 		} else {
+// 			log.Printf("已连接到MQTT代理服务器并订阅主题\n")
+// 			break
+// 		}
+// 	}
+// 	return &easyClient.Client
+// }

@@ -3,6 +3,8 @@ package msg
 import (
 	"fmt"
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_module"
+	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 	"strings"
@@ -33,21 +35,39 @@ func getAreaFromColorReport(r byte) int {
 }
 
 func DumpBytes(a []byte) {
+	res := ""
 	for i := 0; i < len(a); i++ {
-		fmt.Printf("%02x ", a[i])
+		res += fmt.Sprintf("%02x ", a[i])
 		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
 		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
 	}
-	fmt.Printf("\n")
+	util.IotLog("%s", res)
 }
 
-func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
-	util.IotLogInfo("Received node message")
 
+var Module0 = lora_module.LoraModule{
+	SendingCh: make(chan []byte, 10),
+	ReceivingCh: make(chan string, 10),
+	LoraClient: bsp.GetModule0Client(),
+}
+var Module1 = lora_module.LoraModule{
+	SendingCh: make(chan []byte, 10),
+	ReceivingCh: make(chan string, 10),
+	LoraClient: bsp.GetModule0Client(),
+}
+var Module2 = lora_module.LoraModule{
+	SendingCh: make(chan []byte, 10),
+	ReceivingCh: make(chan string, 10),
+	LoraClient: bsp.GetModule0Client(),
+}
+
+func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) {
+	util.IotLogInfo("Received node message")
+	msg := msgRaw.Data
 	DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
-		util.IotLogErrorStr("Checksum incorrect, discard package")
+		util.IotLogErrorWithFormatStr("Checksum incorrect, discard package: %v", msg)
 		return
 	}
 	gatewayId := fmt.Sprintf("%x", msg[REPLY_GATEWAY_ID_START_INDEX:REPLY_GATEWAY_ID_START_INDEX+GATEWAY_ID_LEN])
@@ -59,10 +79,10 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 	}
 
 	// Extract byte 10 to 14 as node id from byte slice msg
-	nodeId := fmt.Sprintf("%x", msg[REPLY_NODE_ID_START_INDEX:REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
+	nodeId := node.GetNodeIdStr(msg)
 	nodeState := bsp.GetNodeState(nodeId)
 	if nodeState == nil {
-		util.IotLogInfo(fmt.Sprintf("Received reply for unknown node: %s", nodeId))
+		util.IotLogErrorWithFormatStr(fmt.Sprintf("Received reply for unknown node: %s", nodeId))
 		return
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
@@ -72,12 +92,20 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s", nodeId))
 		node.HandleNodeInitReply(msg)
+		util.SendRepliedNodeIdWithoutBlocking(nodeId, node.InitReplyCh, 5)
 
 	case UNKNOWN_NODE_REPLY:
-		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
-		
 		node.HandleNodeInitReply(msg)
+		if !bsp.IsInNodeList1(nodeId) && !bsp.IsInNodeList2(nodeId) {
+			var unknownNodeList []string
+			unknownNodeList = append(unknownNodeList, nodeId)
+			reply := UnknownNode{
+				MsgType:         "unknown_node",
+				UnknownNodeList: unknownNodeList,
+			}
+			MqttPublishCh <- reply
+		}
 
 	case HEARTBEAT_REPLY:
 		util.IotLogInfo("Received heartbeat reply")
@@ -123,7 +151,7 @@ func HandleNodeMsg(msg []byte, mqttCh chan interface{}) {
 				node.StatesForPendingColorUpdate =
 					append(node.StatesForPendingColorUpdate[:pendingUpdateIndex],
 						node.StatesForPendingColorUpdate[pendingUpdateIndex+1:]...)
-				mqttCh <- state.Reply
+				MqttPublishCh <- state.Reply
 			}
 		}
 
