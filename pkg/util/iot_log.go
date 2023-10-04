@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	"github.com/natefinch/lumberjack"
 )
@@ -54,8 +55,10 @@ type LogConfigParams struct {
 }
 
 func ConfigLogFile(logFilename string, params LogConfigParams) {
+	logTargetFolder := filepath.Join(GetAppRoot(), "logs")
+	logTarget := filepath.Join(logTargetFolder, logFilename)
 	r := &lumberjack.Logger{
-		Filename:   "./logs/" + logFilename,
+		Filename:   logTarget,
 		MaxSize:    params.MaxSize,    //日志最大的大小（M）
 		MaxBackups: params.MaxBackups, //备份个数
 		MaxAge:     params.MaxAge,     //最大保存天数（day）
