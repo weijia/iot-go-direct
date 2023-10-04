@@ -13,6 +13,8 @@ type NodeState struct {
 	SwVer       int           `json:"software_version"`
 	RunningArea int           `json:"running_area"`
 	ModuleParam shared.Module `json:"module_param"`
+	RSSI float64 `json:"rssi"`
+	SNR float64 `json:"snr"`
 }
 
 func GetOrCreateNodeState(nodeId string) *NodeState {

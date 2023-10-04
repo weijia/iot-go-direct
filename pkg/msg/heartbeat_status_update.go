@@ -1,11 +1,7 @@
 package msg
 
 import (
-	"context"
 	"fmt"
-	"iot_go/pkg/bsp"
-	"iot_go/pkg/node"
-	"time"
 )
 
 type HeartbeatStatusUpdate struct {
@@ -19,6 +15,8 @@ type HeartbeatStatus struct {
 	HardVersion string `json:"hard_version"`
 	SoftVersion string `json:"soft_version"`
 	RunArea     int    `json:"run_area"`
+	RSSI float64 `json:"rssi"`
+	SNR float64 `json:"snr"`
 }
 
 func GetColorStrFromSlice(colorSlice [8]int) string {

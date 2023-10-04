@@ -1,4 +1,4 @@
-package msg
+package shared
 
 type GlassStatusUpdate struct {
 	MsgType       string        `json:"msg_type"`

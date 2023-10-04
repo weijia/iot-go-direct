@@ -14,7 +14,7 @@ type ColorParams struct {
 	ColorParams string `json:"color"`
 }
 
-func (request BroadcastUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
+func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 	broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
 		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		request.Params.ColorParams)

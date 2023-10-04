@@ -79,6 +79,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 
 	// Wait for mqtt subscribe done
 	wg.Wait()
+	mainMsgHandler.MqttEasyClient.Wg = nil // Do not need to set Wg again for reconnect
 
 	// 发布消息
 	var initMsg shared.Init
@@ -86,7 +87,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	initMsg.MsgType = "init"
 	mainMsgHandler.MqttToServerCh <- initMsg
 
-	ticker := time.NewTicker(time.Second * 60)
+	ticker := time.NewTicker(time.Second * util.TO_SERVER_HEARTBEAT_SECONDS)
 	u := msg.HeartbeatStatusUpdate{
 		MsgType:       "heartbeat_status_update",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
@@ -110,7 +111,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
-			reply := msg.HandleMqttMsg(ctx, mqttClient, mqttMsg.Payload())
+			reply := msg.HandleMqttMsg(ctx, mainMsgHandler.MqttToServerCh, mqttMsg.Payload())
 			if reply != nil {
 				util.SendMsgWithoutBlockingCommon(reply, mainMsgHandler.MqttToServerCh,
 					fmt.Sprintf("Sending to mqtt server failed: %v", reply))
@@ -150,6 +151,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						HardVersion: fmt.Sprintf("%x", state.HwVer),
 						SoftVersion: fmt.Sprintf("%x", state.SwVer),
 						RunArea:     state.RunningArea,
+						RSSI: state.RSSI,
+						SNR: state.SNR,
 					}
 					l = append(l, s)
 				}

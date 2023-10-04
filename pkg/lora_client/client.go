@@ -95,11 +95,10 @@ func (client LoraClient) ToggleDebug() {
 	client.CallWithReconnect("LoraRpc.ToggleDebug", args, &reply)
 }
 
-func (client LoraClient) OnReceive(data []byte, moduleIndex int) {
-	args := &lora_shared.LoraData{Data: data, ModuleIndex: moduleIndex}
+func (client LoraClient) OnReceive(data lora_shared.LoraData) {
 	var reply lora_shared.ReplyResult
 	// util.IotLogInfo("Before on receive call\n")
-	err := client.CallWithReconnect("LoraReceiverRpc.OnReceive", args, &reply)
+	err := client.CallWithReconnect("LoraReceiverRpc.OnReceive", data, &reply)
 	if err != nil {
 		util.IotLogInfo("Error in on receive call\n")
 		util.IotLogError(err)

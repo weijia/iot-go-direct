@@ -8,6 +8,8 @@ type ReplyResult struct {
 }
 
 type LoraData struct {
-	Data []byte
+	Data        []byte
 	ModuleIndex int // start from 0
+	RSSI        float64
+	SNR         float64
 }

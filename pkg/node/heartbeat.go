@@ -20,9 +20,9 @@ func GetHeartBeatMsg(nodeIdStr string) []byte {
 	return result
 }
 
-var HeartbeatRetryCnt = 1
+// var HeartbeatRetryCnt = 1
 var heartbeatTimer = time.NewTimer(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
-var HeartbeatCh = make(chan string)
+// var HeartbeatCh = make(chan string)
 
 // func waitUntilReplyOrTimeout(nodeIdStr string) {
 // 	heartbeatTimer.Reset(util.HEARTBEAT_REPLY_TIMEOUT * time.Second)
@@ -84,7 +84,7 @@ type NodeMsgReq struct {
 }
 
 func GetReplyOrTimeout(ch chan NodeMsgReply) NodeMsgReply {
-	eventTimer := time.NewTimer(time.Duration(20) * time.Second)
+	eventTimer := time.NewTimer(time.Duration(util.NODE_MSG_REPLY_TIMEOUT_SECONDS) * time.Second)
 	reply := NodeMsgReply{
 		Data: nil,
 		IsTimeout: true,

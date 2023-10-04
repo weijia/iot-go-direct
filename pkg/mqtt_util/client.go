@@ -57,7 +57,9 @@ func (easyClient *MqttEasyClient) Subscribe() error {
 		return token.Error()
 	}
 	log.Printf("Subscribed to topic %s\n", easyClient.Topic)
-	easyClient.Wg.Done()
+	if easyClient.Wg != nil {
+		easyClient.Wg.Done()
+	}
 	return nil
 }
 

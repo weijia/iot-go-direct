@@ -16,7 +16,7 @@ type GroupUpdateGlassColorParams struct {
 	Color     string   `json:"color"`
 }
 
-func (request GroupUpdateGlassColorRequest) handle(mqttClient *util.Mqtt) interface{} {
+func (request GroupUpdateGlassColorRequest) handle() interface{} {
 	invalidNodeList := []string{}
 	finalNodeList1 := [][]byte{}
 	finalNodeList2 := [][]byte{}

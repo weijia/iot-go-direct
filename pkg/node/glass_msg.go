@@ -115,13 +115,13 @@ func GetBroadcastUpdateGlassColorMsg(gatewayId []byte, color string) []byte {
 	return result
 }
 
-func GetRetrieveColorMsg(nodeId []byte) []byte {
+func GetRetrieveColorMsg(nodeIdStr string) []byte {
 	var result []byte
 	result = append(result, 0)                                                     // package len
 	result = append(result, 1)                                                     // node type 1 gateway
 	result = append(result, 9)                                                     // cmd type broadcast
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
-	result = append(result, nodeId...)                                             // node id
+	result = append(result, util.DecodeId(nodeIdStr)...)                                             // node id
 
 	result[0] = byte(len(result) + 1)
 	result = append(result, getCRC8HighByTable(result))
@@ -149,13 +149,18 @@ var StatesForPendingColorUpdate []ColorUpdateState
 
 var ColorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
 
-func getReportedGlassColor(msg []byte) []byte {
+func GetReportedGlassColor(msg []byte) []byte {
 	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN+1 : len(msg)-1]
 }
 
-// func HandleNodeColorUpdateReply(msg []byte) {
-// 	reportedColors := getReportedGlassColor(msg)
-// 	for i := 0; i < len(reportedColors); i++ {
-// 		nodeState.NodeReportedColor[getAreaFromColorReport(reportedColors[i])] = int(reportedColors[i] & 0xf)
-// 	}
-// }
+func GetColorWithArea(msg []byte) string {
+	reportedColors := GetReportedGlassColor(msg)
+	res := ""
+	for i := 0; i < 4; i++ {
+		res += fmt.Sprintf("%x", i*2+1)
+		res+= fmt.Sprintf("%x", (reportedColors[i]&0xf0)>>4)
+		res += fmt.Sprintf("%x", i*2+2)
+		res += fmt.Sprintf("%x", (reportedColors[i]&0xf))
+	}
+	return res
+}

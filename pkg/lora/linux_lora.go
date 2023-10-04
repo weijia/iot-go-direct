@@ -27,7 +27,7 @@ import (
 var quit = make(chan bool)
 var quitCompleted = make(chan bool)
 var send = make(chan []byte)
-var recv = make(chan []byte, 10)
+var recv = make(chan lora_shared.LoraData, 10)
 var isLoopRunning = false
 
 func (loraDev Lora) InitLora(module shared.Module) int {
@@ -91,8 +91,14 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
+		args := lora_shared.LoraData{
+			Data: byteSlice,
+			RSSI: float64(C.RSSI),
+			SNR: float64(SNR),
+		}
+
 		select {
-		case recv <- byteSlice:
+		case recv <- args:
 		default:
 			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel, recv channel full\n")
 		}
@@ -175,7 +181,8 @@ func PushLoraMsgToRpc(port int, moduleIndex int, host ...string) {
 		select {
 		case data := <-recv:
 			// util.IotLogInfo(fmt.Sprintf("Pushing data: %v\n", data))
-			serverRpc.OnReceive(data, moduleIndex)
+			data.ModuleIndex = moduleIndex
+			serverRpc.OnReceive(data)
 			// util.IotLogInfo(fmt.Sprintf("After pushing data: %v\n", data))
 		}
 	}
