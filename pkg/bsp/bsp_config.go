@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/thingsboard_shared"
 	"iot_go/pkg/util"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -101,7 +102,8 @@ func InitConfig() {
 	}
 	// Overwrite board related info to config
 	BspConfigInstance.SoftVersion = SwVersion
-	file, err := os.Open("gateway_id.txt")
+	gatewayIdFilePath := filepath.Join(util.GetAppRoot(), "gateway_id.txt")
+	file, err := os.Open(gatewayIdFilePath)
 	
 	if err == nil {
 		defer file.Close()

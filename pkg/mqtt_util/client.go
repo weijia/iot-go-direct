@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"iot_go/pkg/util"
 	"log"
+	"sync"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -16,6 +17,7 @@ type MqttEasyClient struct {
 	ReceivingChannel *chan mqtt.Message
 	Client           mqtt.Client
 	IsReconnecting   bool
+	Wg *sync.WaitGroup
 }
 
 func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
@@ -55,6 +57,7 @@ func (easyClient *MqttEasyClient) Subscribe() error {
 		return token.Error()
 	}
 	log.Printf("Subscribed to topic %s\n", easyClient.Topic)
+	easyClient.Wg.Done()
 	return nil
 }
 
@@ -72,6 +75,7 @@ func (easyClient *MqttEasyClient) ConnectAndSubscribe() error {
 		opts := easyClient.createClientOptions()
 		easyClient.createClient(opts)
 	}
+	easyClient.Wg.Add(1)
 	token := easyClient.Client.Connect()
 
 	if token.Wait() && token.Error() != nil {

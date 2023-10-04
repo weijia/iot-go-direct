@@ -2,7 +2,6 @@ package lora_module
 
 import (
 	"context"
-	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
@@ -12,19 +11,19 @@ import (
 var Module0 = LoraModule{
 	SendingCh:   make(chan node.NodeMsgReq, 10),
 	ReceivingCh: make(chan []byte, 10),
-	LoraClient:  bsp.GetModule0Client(),
+	// LoraClient:  bsp.GetModule0Client(), // client only available after board init
 	LoraIndex:   0,
 }
 var Module1 = LoraModule{
 	SendingCh:   make(chan node.NodeMsgReq, 10),
 	ReceivingCh: make(chan []byte, 10),
-	LoraClient:  bsp.GetModule0Client(),
+	// LoraClient:  bsp.GetModule1Client(),
 	LoraIndex:   1,
 }
 var Module2 = LoraModule{
 	SendingCh:   make(chan node.NodeMsgReq, 10),
 	ReceivingCh: make(chan []byte, 10),
-	LoraClient:  bsp.GetModule0Client(),
+	// LoraClient:  bsp.GetModule2Client(),
 	LoraIndex:   2,
 }
 

@@ -28,35 +28,3 @@ func GetColorStrFromSlice(colorSlice [8]int) string {
 	}
 	return res
 }
-
-func SendHeartbeatToServer(ctx context.Context, MqttToServerCh chan interface{}) {
-	// Create a ticker with 50 ms = 0.05 seconds
-	ticker := time.NewTicker(time.Second * 60)
-	u := HeartbeatStatusUpdate{
-		MsgType:       "heartbeat_status_update",
-		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
-	}
-	for {
-		<-ticker.C
-		currentTimestamp := time.Now().Unix()
-		var l []HeartbeatStatus
-		for _, state := range bsp.BspConfigInstance.NodeStates {
-			if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
-				color := GetColorStrFromSlice(state.NodeReportedColor)
-				if state.LastMsgTimestamp < currentTimestamp-int64(bsp.BspConfigInstance.Heartbeat) {
-					color = node.SetColorForNodeAsInvalid(color)
-				}
-				s := HeartbeatStatus{
-					NodeId:      state.NodeId,
-					Color:       color,
-					HardVersion: fmt.Sprintf("%x", state.HwVer),
-					SoftVersion: fmt.Sprintf("%x", state.SwVer),
-					RunArea:     state.RunningArea,
-				}
-				l = append(l, s)
-			}
-		}
-		u.Status = l
-		MqttToServerCh <- u
-	}
-}
