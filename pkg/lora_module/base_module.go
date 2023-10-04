@@ -2,45 +2,76 @@ package lora_module
 
 import (
 	"context"
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 	"time"
 )
 
-type LoraModule struct {
-	SendingCh chan []byte
-	ReceivingCh chan string
-	// WaitingReplyTimer *time.Timer
-	LoraClient *lora_client.LoraClient
+var Module0 = LoraModule{
+	SendingCh:   make(chan node.NodeMsgReq, 10),
+	ReceivingCh: make(chan []byte, 10),
+	LoraClient:  bsp.GetModule0Client(),
+	LoraIndex:   0,
+}
+var Module1 = LoraModule{
+	SendingCh:   make(chan node.NodeMsgReq, 10),
+	ReceivingCh: make(chan []byte, 10),
+	LoraClient:  bsp.GetModule0Client(),
+	LoraIndex:   1,
+}
+var Module2 = LoraModule{
+	SendingCh:   make(chan node.NodeMsgReq, 10),
+	ReceivingCh: make(chan []byte, 10),
+	LoraClient:  bsp.GetModule0Client(),
+	LoraIndex:   2,
 }
 
+var ModuleList = [3]LoraModule{
+	Module0, Module1, Module2,
+}
+
+type LoraModule struct {
+	SendingCh   chan node.NodeMsgReq
+	ReceivingCh chan []byte
+	// WaitingReplyTimer *time.Timer
+	LoraClient *lora_client.LoraClient
+	LoraIndex  int //LoraIndex starts from 0
+}
 
 func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			util.IotLogInfo("Cancel of context called, quitting LoraModule.MsgLoop")
+			return
 		case m := <-loraModule.SendingCh:
-			cmd := m[node.REPLY_CMD_START_INDEX]
+			cmd := m.Data[node.REPLY_CMD_START_INDEX]
 			if cmd == node.CONFIG_NODE_REQ {
-				loraModule.LoraClient.Send(m)
-				loraModule.IsReplyTimeout(node.GetNodeIdStr(m), 3)
+				loraModule.LoraClient.Send(m.Data)
+				isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), 3)
+				reply := node.NodeMsgReply{
+					Data:      msg,
+					IsTimeout: isTimeout,
+				}
+				*m.ReplyCh <- reply
 			}
 		}
 	}
 }
 
-func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int) bool {
+func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int) (bool, []byte) {
 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
 	for {
 		select {
 		case <-eventTimer.C:
-			return true
-		case responseNodeId := <-loraModule.ReceivingCh:
+			return true, nil
+		case nodeReply := <-loraModule.ReceivingCh:
+			responseNodeId := node.GetNodeIdStr(nodeReply)
 			if responseNodeId == nodeIdStr {
 				eventTimer.Stop()
-				return false
+				return false, nodeReply
 			} else {
 				util.IotLogErrorWithFormatStr("Unexpected node message when waiting for node reply")
 			}

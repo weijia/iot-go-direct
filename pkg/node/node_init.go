@@ -1,21 +1,18 @@
 package node
 
 import (
-	"fmt"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_client"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 )
 
-// TODO: append prefix 0 to gatewayId and nodeId
-func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) []byte {
+func GetNodeInitMsg(nodeIdStr string, moduleParam shared.Module) []byte {
 	var result []byte
-	result = append(result, 0)            // package len
-	result = append(result, 1)            // node type 1 gateway
-	result = append(result, 3)            // cmd type 1 node init
-	result = append(result, gatewayId...) // gateway id
-	result = append(result, nodeId...)    // nod
+	result = append(result, 0)                                                     // package len
+	result = append(result, 1)                                                     // node type 1 gateway
+	result = append(result, 3)                                                     // cmd type 1 node init
+	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id
+	result = append(result, util.DecodeId(nodeIdStr)...)                           // node id
 
 	result = append(result, 3) // param num
 
@@ -36,11 +33,10 @@ func GetNodeInitMsg(gatewayId []byte, nodeId []byte, moduleParam shared.Module) 
 	return result
 }
 
-func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam shared.Module) {
-	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v", nodeId, moduelParam))
-	client.Send(GetNodeInitMsg(
-		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId), util.DecodeId(nodeId), moduelParam))
-}
+// func SendNodeInit(client *lora_client.LoraClient, nodeIdStr string, moduleParam shared.Module) {
+// 	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v", nodeIdStr, moduleParam))
+// 	client.Send(GetNodeInitMsg(nodeIdStr, moduleParam))
+// }
 
 // func SendNodeInitAfterStartup() {
 // 	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
@@ -51,28 +47,38 @@ func SendNodeInit(client *lora_client.LoraClient, nodeId string, moduelParam sha
 // 	}
 // }
 
-var InitReplyCh = make(chan string)
+// var InitReplyCh = make(chan string)
 
-func SendNodeInitReq(configParam shared.ConfigParams) {
-	// For node already in node list, send init msg in working freq, otherwise send it in public freq
-	for _, nodeId := range configParam.NodeList1 {
-		client := bsp.GetLoraClientForNode(nodeId)
-		if client != nil {
-			SendNodeInit(client, nodeId, configParam.Module1)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-		} else {
-			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module1)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-		}
+// func SendNodeInitReq(configParam shared.ConfigParams) {
+// 	// For node already in node list, send init msg in working freq, otherwise send it in public freq
+// 	for _, nodeId := range configParam.NodeList1 {
+// 		client := bsp.GetLoraClientForNode(nodeId)
+// 		if client != nil {
+// 			SendNodeInit(client, nodeId, configParam.Module1)
+// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+// 		} else {
+// 			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module1)
+// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+// 		}
+// 	}
+// 	for _, nodeId := range configParam.NodeList2 {
+// 		client := bsp.GetLoraClientForNode(nodeId)
+// 		if client != nil {
+// 			SendNodeInit(client, nodeId, configParam.Module2)
+// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+// 		} else {
+// 			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module2)
+// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
+// 		}
+// 	}
+// }
+
+func SendNodeInitForNode(nodeIdStr string, param shared.Module, sendingCh *chan NodeMsgReq) NodeMsgReply {
+	ch := make(chan NodeMsgReply)
+	msgReq := NodeMsgReq{
+		Data:    GetNodeInitMsg(nodeIdStr, param),
+		ReplyCh: &ch,
 	}
-	for _, nodeId := range configParam.NodeList2 {
-		client := bsp.GetLoraClientForNode(nodeId)
-		if client != nil {
-			SendNodeInit(client, nodeId, configParam.Module2)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-		} else {
-			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module2)
-			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-		}
-	}
+	*sendingCh <- msgReq
+	return GetReplyOrTimeout(ch)
 }

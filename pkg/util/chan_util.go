@@ -5,12 +5,22 @@ import (
 	"time"
 )
 
-func SendMsgWithoutBlocking(m []byte, ch chan []byte, errMsg string) {
+func SendMsgWithoutBlockingCommon(m interface{}, ch chan interface{}, errMsg string) {
 	go func() {
 		select {
 		case ch <- m:
 		default:
-			IotLogErrorWithFormatStr(errMsg +": %v", m)
+			IotLogErrorWithFormatStr(errMsg+": %v", m)
+		}
+	}()
+}
+
+func SendBytesMsgWithoutBlocking(m []byte, ch chan []byte, errMsg string) {
+	go func() {
+		select {
+		case ch <- m:
+		default:
+			IotLogErrorWithFormatStr(errMsg+": %v", m)
 		}
 	}()
 }

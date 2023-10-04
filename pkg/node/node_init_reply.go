@@ -47,7 +47,6 @@ const (
 	UPDATE_COLOR_RESULT_FAIL = 0
 )
 
-
 func GetNodeIdStr(msg []byte) string {
 	return fmt.Sprintf("%x", msg[REPLY_NODE_ID_START_INDEX:REPLY_NODE_ID_START_INDEX+NODE_ID_LEN])
 }
@@ -78,12 +77,12 @@ var ConfigReqCh = make(chan shared.ConfigParams)
 // var NodeConfigTimer = time.NewTimer(NODE_INIT_REPLY_TIMEOUT_SECONDS * time.Second)
 // var CancelFuncForNodeInitReplyTimeout context.CancelFunc
 
-func HandleNodeInitReply(nodeInitReply []byte) {
+func UpdateNodeStateForInitReply(nodeInitReply []byte) {
 	util.IotLogInfo(fmt.Sprintf("Got init reply: %v\n", nodeInitReply))
 	nodeId := GetNodeIdFromMsg(nodeInitReply)
 
 	// Update node state in bsp
-	nodeState := bsp.GetNodeState(nodeId)
+	nodeState := bsp.GetOrCreateNodeState(nodeId)
 	if nodeState == nil {
 		nodeState = &bsp.NodeState{}
 		bsp.BspConfigInstance.NodeStates = append(bsp.BspConfigInstance.NodeStates, *nodeState)

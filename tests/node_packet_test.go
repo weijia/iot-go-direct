@@ -27,7 +27,7 @@ func TestChecksum(t *testing.T) {
 
 func TestNodeInit(t *testing.T) {
 	m := shared.Module{Freq: 470, Band: 250, Factor: 9}
-	data := node.GetNodeInitMsg(util.DecodeId("000000F23456"), util.DecodeId("1234"), m)
+	data := node.GetNodeInitMsg("01020304", m)
 	msg.DumpBytes(data)
 	// asset check result using go
 	if node.IsChecksumCorrect(data) {

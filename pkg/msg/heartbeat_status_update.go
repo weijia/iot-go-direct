@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/node"
@@ -28,11 +29,11 @@ func GetColorStrFromSlice(colorSlice [8]int) string {
 	return res
 }
 
-func SendHeartbeatToServer() {
+func SendHeartbeatToServer(ctx context.Context, MqttToServerCh chan interface{}) {
 	// Create a ticker with 50 ms = 0.05 seconds
 	ticker := time.NewTicker(time.Second * 60)
 	u := HeartbeatStatusUpdate{
-		MsgType:       "heatbeat_status_update",
+		MsgType:       "heartbeat_status_update",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 	}
 	for {

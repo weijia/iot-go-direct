@@ -15,7 +15,7 @@ type NodeState struct {
 	ModuleParam shared.Module `json:"module_param"`
 }
 
-func GetNodeState(nodeId string) *NodeState {
+func GetOrCreateNodeState(nodeId string) *NodeState {
 	for index := range BspConfigInstance.NodeStates {
 		if BspConfigInstance.NodeStates[index].NodeId == nodeId {
 			return &BspConfigInstance.NodeStates[index]

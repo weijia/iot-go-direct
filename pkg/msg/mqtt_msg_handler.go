@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -56,7 +57,7 @@ func ValidateMsg(schemaStr string, data string) bool {
 	}
 }
 
-func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
+func HandleMqttMsg(ctx context.Context, mqttClient *util.Mqtt, body []byte) interface{} {
 	var baseRequest BaseRequest
 	if err := json.Unmarshal(body, &baseRequest); err != nil {
 		util.IotLogError(err)
@@ -91,7 +92,7 @@ func HandleMqttMsg(mqttClient *util.Mqtt, body []byte) interface{} {
 			util.IotLogError(err)
 			return nil
 		}
-		configRequest.handle(mqttClient)
+		configRequest.handle(ctx)
 		return nil
 	case "gateway_upgrade_request":
 		var req GatewayUpgradeRequest

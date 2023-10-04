@@ -1,6 +1,7 @@
 package iot_go_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -16,6 +17,6 @@ func TestNodeInfoMsg(t *testing.T) {
 		},
 	}
 	json_bytes, _ := json.Marshal(&node_info_request)
-	reply := msg.HandleMqttMsg(nil, json_bytes)
+	reply := msg.HandleMqttMsg(context.TODO(), nil, json_bytes)
 	msg.DumpMsg(reply)
 }

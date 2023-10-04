@@ -1,6 +1,7 @@
 package iot_go_test
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -26,6 +27,6 @@ func TestConfigMsg(t *testing.T) {
 	}
 	config_json_bytes, _ := json.Marshal(config)
 	var mqtt util.Mqtt
-	reply := msg.HandleMqttMsg(&mqtt, config_json_bytes)
+	reply := msg.HandleMqttMsg(context.TODO(), &mqtt, config_json_bytes)
 	msg.DumpMsg(reply)
 }

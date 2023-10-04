@@ -13,7 +13,6 @@ import (
 	"strconv"
 
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_client"
 	"iot_go/pkg/lora_rpc"
 	"iot_go/pkg/main_msg_handler"
 	"iot_go/pkg/msg"

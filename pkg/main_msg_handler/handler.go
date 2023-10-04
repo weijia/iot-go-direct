@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_module"
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/mqtt_util"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/node"
+	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 	"os/exec"
 
@@ -31,6 +33,7 @@ func InfiniteAppLoop(ctx context.Context, loraServiceIp string) {
 		}
 		h.TopLevelMsgLoop(ctx, loraServiceIp)
 		msg.IsMsgLoopRestartNeeded = false
+		msg.IsInitDone = false
 	}
 }
 
@@ -41,10 +44,6 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 
 	bsp.InitBoard(loraServiceIp)
 	util.IotLog("Starting main app version: %s", bsp.SwVersion)
-	
-	go msg.Module0.MsgLoop(ctx)
-	go msg.Module1.MsgLoop(ctx)
-	go msg.Module2.MsgLoop(ctx)
 
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	mainMsgHandler.MqttEasyClient = &mqtt_util.MqttEasyClient{
@@ -61,10 +60,24 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 
 	ctx, cancel := context.WithCancel(ctx)
 	
+	go lora_module.Module0.MsgLoop(ctx)
+	go lora_module.Module1.MsgLoop(ctx)
+	go lora_module.Module2.MsgLoop(ctx)
+
+	go msg.SendHeartbeatToServer(ctx, mainMsgHandler.MqttToServerCh)
+
+	// 发布消息
+	var initMsg shared.Init
+	initMsg.InitMsgContent = bsp.BspConfigInstance.InitMsgContent
+	initMsg.MsgType = "init"
+	mainMsgHandler.MqttToServerCh <- initMsg
+
 	for {
 		select {
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
 			mqttClient.SendToServer(publishingMqttMsg)
+			// We put the restart here instead of after handling mqtt msg
+			// so we will only restart after msg published to server
 			if msg.IsRebootNeeded {
 				cmd := exec.Command("reboot")
 				err := cmd.Run()
@@ -77,14 +90,10 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
-			util.IotLogInfo(fmt.Sprintf("Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic()))
-			reply := msg.HandleMqttMsg(mqttClient, mqttMsg.Payload())
+			reply := msg.HandleMqttMsg(ctx, mqttClient, mqttMsg.Payload())
 			if reply != nil {
-				select {
-				case mainMsgHandler.MqttToServerCh <- reply:
-				default:
-					util.IotLogErrorStr("mqtt publish channel full when sending normal mqtt reply")
-				}
+				util.SendMsgWithoutBlockingCommon(reply, mainMsgHandler.MqttToServerCh,
+						fmt.Sprintf("Sending to mqtt server failed: %v", reply))
 			}
 		case nodeMsg := <-mainMsgHandler.NodeMsgCh:
 			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
@@ -106,6 +115,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			}
 
 		case <-ctx.Done():
+			cancel()
 			return
 		}
 	}

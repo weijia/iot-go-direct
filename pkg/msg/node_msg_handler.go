@@ -44,24 +44,9 @@ func DumpBytes(a []byte) {
 	util.IotLog("%s", res)
 }
 
-
-var Module0 = lora_module.LoraModule{
-	SendingCh: make(chan []byte, 10),
-	ReceivingCh: make(chan string, 10),
-	LoraClient: bsp.GetModule0Client(),
-}
-var Module1 = lora_module.LoraModule{
-	SendingCh: make(chan []byte, 10),
-	ReceivingCh: make(chan string, 10),
-	LoraClient: bsp.GetModule0Client(),
-}
-var Module2 = lora_module.LoraModule{
-	SendingCh: make(chan []byte, 10),
-	ReceivingCh: make(chan string, 10),
-	LoraClient: bsp.GetModule0Client(),
-}
-
 func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) {
+	// Application's data change will only happen in this routine to ensure no
+	// concurrent data changes in different routines
 	util.IotLogInfo("Received node message")
 	msg := msgRaw.Data
 	DumpBytes(msg)
@@ -80,9 +65,9 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 
 	// Extract byte 10 to 14 as node id from byte slice msg
 	nodeId := node.GetNodeIdStr(msg)
-	nodeState := bsp.GetNodeState(nodeId)
+	nodeState := bsp.GetOrCreateNodeState(nodeId)
 	if nodeState == nil {
-		util.IotLogErrorWithFormatStr(fmt.Sprintf("Received reply for unknown node: %s", nodeId))
+		util.IotLogErrorWithFormatStr("Received msg bug can not create/get node state: %s", nodeId)
 		return
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
@@ -91,12 +76,13 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 	case CONFIG_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s", nodeId))
-		node.HandleNodeInitReply(msg)
-		util.SendRepliedNodeIdWithoutBlocking(nodeId, node.InitReplyCh, 5)
+		node.UpdateNodeStateForInitReply(msg)
+		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh, 
+			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UNKNOWN_NODE_REPLY:
 		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
-		node.HandleNodeInitReply(msg)
+		node.UpdateNodeStateForInitReply(msg)
 		if !bsp.IsInNodeList1(nodeId) && !bsp.IsInNodeList2(nodeId) {
 			var unknownNodeList []string
 			unknownNodeList = append(unknownNodeList, nodeId)
@@ -109,12 +95,14 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 
 	case HEARTBEAT_REPLY:
 		util.IotLogInfo("Received heartbeat reply")
+		util.IotLog("Before update according to heartbeat: %v", nodeState.NodeReportedColor)
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf
 		}
-
-		util.SendRepliedNodeIdWithoutBlocking(nodeId, node.HeartbeatCh, 10)
+		util.IotLog("After update according to heartbeat: %v", nodeState.NodeReportedColor)
+		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh, 
+			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UPDATE_GLASS_COLOR_REPLY:
 		util.IotLogInfo("Received update glass color reply")

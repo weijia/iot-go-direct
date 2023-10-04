@@ -1,10 +1,13 @@
 package msg
 
 import (
+	"context"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/node"
+	"iot_go/pkg/lora_module"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
+	"sync"
+	"time"
 )
 
 type ConfigRequest struct {
@@ -58,68 +61,74 @@ func IsModuleParamChanged(config ConfigRequest) bool {
 var IsInitDone = false
 var IsInitOngoing = false
 
-func InitAccordingToConfig(config ConfigRequest) {
-	IsInitOngoing = true
-	// Send heartbeat to nodes once
-	node.SendHeartbeatOnce()
-	// Send node init to nodes that does not respond
-	for _, nodeId := range bsp.BspConfigInstance.NodeList1 {
-		nodeState := bsp.GetNodeState(nodeId)
-		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
-			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module1)
-			util.IsReplyTimeout(nodeId, node.InitReplyCh, 5)
-		}
-	}
-	for _, nodeId := range bsp.BspConfigInstance.NodeList2 {
-		nodeState := bsp.GetNodeState(nodeId)
-		if nodeState.LastMsgTimestamp < node.HeartbeatStartTime {
-			node.SendNodeInit(bsp.GetModule0Client(), nodeId, config.Params.Module2)
-			util.IsReplyTimeout(nodeId, node.InitReplyCh, 5)
-		}
-	}
-	IsInitOngoing = false
-	IsInitDone = true
-	go node.SendNodeHeartbeatInLoop()
-	// TODO: Add node init reply 40 msg handler
+func SendHeartbeatOnce(ctx context.Context, wg *sync.WaitGroup) {
+	// Send heartbeat to Module1
+	go lora_module.Module1.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList1, wg)
+	// Send heartbeat to Module2
+	go lora_module.Module2.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList2, wg)
+	// Not responding node will receive node init in public freq in above steps
 }
 
-func (config ConfigRequest) handle(mqttClient *util.Mqtt) interface{} {
+func SendNodeHeartbeatInLoop(ctx context.Context) {
+	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
+	for {
+		select{
+		case <- ctx.Done():
+			return
+		case <-ticker1.C:
+			SendHeartbeatOnce(ctx, nil)
+		}
+	}
+}
+
+func InitAccordingToConfig(ctx context.Context) {
+	IsInitOngoing = true
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+	SendHeartbeatOnce(ctx, &wg)
+	// Wait for above 2 activities to complete
+	wg.Wait()
+
+	IsInitOngoing = false
+	IsInitDone = true
+	go SendNodeHeartbeatInLoop(ctx)
+}
+
+func (config ConfigRequest) handle(ctx context.Context) interface{} {
 	if IsInitDone {
+		go HandleConfigAfterInit(config.Params)
 		// TODO: if freq is not changed, we do not need to re init lora
 		// if IsModuleParamChanged(config) {
 		// Need to send node init req and wait for resp in before freq change
-		go HandleConfigAfterInit(config.Params)
+		return getConfigReply()
 		// } else {
-			// Send node init req for newly added nodes
+		// Send node init req for newly added nodes
 
 		// }
 	} else {
 		// Init is not done
 		if IsInitOngoing {
 			//Ignore config if init config is already ongoing
+			util.IotLogErrorStr("Receive init msg from server when init started already")
 			return nil
 		} else {
 			saveConfig(config.Params)
-			go InitAccordingToConfig(config)
+			go InitAccordingToConfig(ctx)
 			return getConfigReply()
 		}
 	}
-	return nil
 }
 
 func getConfigReply() interface{} {
 	var gatewayNodeIdReply GatewayNodeIdReply
 	gatewayNodeIdReply.MsgType = "config_reply"
 	gatewayNodeIdReply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
-	node.IsProcessingConfigReq = false
+	// node.IsProcessingConfigReq = false
 	return gatewayNodeIdReply
 }
 
 func saveConfig(configParams shared.ConfigParams) {
-	bspInstance := bsp.GetBsp()
-	bspInstance.SetModule1Params(configParams.Module1)
-	bspInstance.SetModule2Params(configParams.Module2)
-
 	bsp.BspConfigInstance.InitMsgContent.Module1 = configParams.Module1
 	bsp.BspConfigInstance.InitMsgContent.Module2 = configParams.Module2
 	bsp.BspConfigInstance.BaseConfigParams = configParams.BaseConfigParams
@@ -127,7 +136,36 @@ func saveConfig(configParams shared.ConfigParams) {
 }
 
 func HandleConfigAfterInit(configParams shared.ConfigParams) {
-	node.SendNodeInitReq(configParams)
+	needSendInitForModule0 := make(map[string]shared.Module)
+	needSendInitForModule1 := make(map[string]shared.Module)
+	needSendInitForModule2 := make(map[string]shared.Module)
+	for _, nodeIdStr := range configParams.NodeList1 {
+		if bsp.IsInNodeList1(nodeIdStr) {
+			needSendInitForModule1[nodeIdStr] = configParams.Module1
+		} else if bsp.IsInNodeList2(nodeIdStr) {
+			needSendInitForModule2[nodeIdStr] = configParams.Module1
+		} else {
+			needSendInitForModule0[nodeIdStr] = configParams.Module1
+		}
+	}
+	for _, nodeIdStr := range configParams.NodeList2 {
+		if bsp.IsInNodeList1(nodeIdStr) {
+			needSendInitForModule1[nodeIdStr] = configParams.Module2
+		} else if bsp.IsInNodeList2(nodeIdStr) {
+			needSendInitForModule2[nodeIdStr] = configParams.Module2
+		} else {
+			needSendInitForModule0[nodeIdStr] = configParams.Module2
+		}
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go lora_module.Module0.SendNodeInitForList(needSendInitForModule0, &wg)
+	go lora_module.Module1.SendNodeInitForList(needSendInitForModule1, &wg)
+	go lora_module.Module2.SendNodeInitForList(needSendInitForModule2, &wg)
+	wg.Wait()
+
 	saveConfig(configParams)
-	MqttToServerCh <- getConfigReply()
+	bsp.GetBsp().SetModule1Params(configParams.Module1)
+	bsp.GetBsp().SetModule2Params(configParams.Module2)
 }

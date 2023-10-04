@@ -1,9 +1,7 @@
 package node
 
 import (
-	"fmt"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_client"
 	"iot_go/pkg/util"
 	"time"
 )
@@ -42,34 +40,70 @@ var HeartbeatCh = make(chan string)
 // 	}
 // }
 
-func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string) {
-	for _, nodeIdStr := range nodeList {
-		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s", nodeIdStr))
-		for i := 0; i < HeartbeatRetryCnt; i++ {
-			client.Send(GetHeartBeatMsg(nodeIdStr))
-			if util.IsReplyTimeout(nodeIdStr, HeartbeatCh, util.HEARTBEAT_REPLY_TIMEOUT) {
-				util.IotLogInfo(fmt.Sprintf("Heartbeat reply timeout for: %s", nodeIdStr))
-			} else {
-				break
-			}
-		}
-	}
+// func sendHeartbeatForNodeList(client *lora_client.LoraClient, nodeList []string) {
+// 	for _, nodeIdStr := range nodeList {
+// 		util.IotLogInfo(fmt.Sprintf("Sending heartbeat for: %s", nodeIdStr))
+// 		for i := 0; i < HeartbeatRetryCnt; i++ {
+// 			client.Send(GetHeartBeatMsg(nodeIdStr))
+// 			if util.IsReplyTimeout(nodeIdStr, HeartbeatCh, util.HEARTBEAT_REPLY_TIMEOUT) {
+// 				util.IotLogInfo(fmt.Sprintf("Heartbeat reply timeout for: %s", nodeIdStr))
+// 			} else {
+// 				break
+// 			}
+// 		}
+// 	}
+// }
+
+// var HeartbeatStartTime int64
+
+// func SendHeartbeatOnce() {
+// 	util.IotLogInfo("Sending a round of heartbeats")
+// 	HeartbeatStartTime = time.Now().Unix()
+// 	sendHeartbeatForNodeList(bsp.GetModule1Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList1)
+// 	sendHeartbeatForNodeList(bsp.GetModule2Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList2)
+// }
+
+// func SendNodeHeartbeatInLoop() {
+// 	HeartbeatRetryCnt = 3
+// 	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
+// 	for {
+// 		<-ticker1.C
+// 		SendHeartbeatOnce()
+// 	}
+// }
+
+
+type NodeMsgReply struct {
+	Data []byte
+	IsTimeout bool
 }
 
-var HeartbeatStartTime int64
-
-func SendHeartbeatOnce() {
-	util.IotLogInfo("Sending a round of heartbeats")
-	HeartbeatStartTime = time.Now().Unix()
-	sendHeartbeatForNodeList(bsp.GetModule1Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList1)
-	sendHeartbeatForNodeList(bsp.GetModule2Client(), bsp.BspConfigInstance.BaseConfigParams.NodeList2)
+type NodeMsgReq struct {
+	Data []byte
+	ReplyCh *chan NodeMsgReply
 }
 
-func SendNodeHeartbeatInLoop() {
-	HeartbeatRetryCnt = 3
-	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
-	for {
-		<-ticker1.C
-		SendHeartbeatOnce()
+func GetReplyOrTimeout(ch chan NodeMsgReply) NodeMsgReply {
+	eventTimer := time.NewTimer(time.Duration(20) * time.Second)
+	reply := NodeMsgReply{
+		Data: nil,
+		IsTimeout: true,
 	}
+	select {
+	case reply = <- ch:
+		eventTimer.Stop()
+	case <-eventTimer.C:
+		util.IotLogErrorStr("Timeout for waiting for Module to reply")
+	}
+	return reply
+}
+
+func SendHeartbeatForNode(nodeIdStr string, sendingCh *chan NodeMsgReq) NodeMsgReply {
+	ch := make(chan NodeMsgReply)
+	msgReq := NodeMsgReq{
+		Data: GetHeartBeatMsg(nodeIdStr),
+		ReplyCh: &ch,
+	}
+	*sendingCh <- msgReq
+	return GetReplyOrTimeout(ch)
 }
