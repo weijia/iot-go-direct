@@ -2,6 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_module"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 )
@@ -32,9 +33,9 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 	}
 	if len(finalNodeList1) > 0 {
 		groupMsg := node.GetGroupUpdateGlassColorMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 			finalNodeList1, group.Color)
-		bsp.GetModule1Client().Send(groupMsg)
+		// bsp.GetModule1Client().Send(groupMsg)
+		lora_module.Module1.Send(groupMsg)
 	}
 
 	for _, nodeId := range group.NodeList2 {
@@ -46,9 +47,9 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 	}
 	if len(finalNodeList2) > 0 {
 		groupMsg := node.GetGroupUpdateGlassColorMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 			finalNodeList2, group.Color)
-		bsp.GetModule2Client().Send(groupMsg)
+		// bsp.GetModule2Client().Send(groupMsg)
+		lora_module.Module1.Send(groupMsg)
 	}
 
 	var reply GroupUpdateGlassColorReply

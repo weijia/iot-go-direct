@@ -42,6 +42,6 @@ func (lora Lora) Receive() []byte {
 func (lora Lora) ToggleDebug() {
 }
 
-func PushLoraMsgToRpc(pushPort int, pushHost ...string) {
+func PushLoraMsgToRpc(pushPort int, moduleIndex int, pushHost string) {
 	util.IotLogInfo("Started dummy windows push msg RPC\n")
 }

@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"fmt"
 	"iot_go/pkg/lora_client"
+	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 	"log"
@@ -94,7 +95,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		args := lora_shared.LoraData{
 			Data: byteSlice,
 			RSSI: float64(C.RSSI),
-			SNR: float64(SNR),
+			SNR:  float64(C.SNR),
 		}
 
 		select {

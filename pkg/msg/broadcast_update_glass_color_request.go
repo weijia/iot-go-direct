@@ -2,6 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
+	"iot_go/pkg/lora_module"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
 )
@@ -18,8 +19,10 @@ func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 	broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
 		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		request.Params.ColorParams)
-	bsp.GetModule1Client().Send(broadcastMsg)
-	bsp.GetModule2Client().Send(broadcastMsg)
+	// bsp.GetModule1Client().Send(broadcastMsg)
+	// bsp.GetModule2Client().Send(broadcastMsg)
+	lora_module.Module1.Send(broadcastMsg)
+	lora_module.Module2.Send(broadcastMsg)
 	reply := GatewayNodeIdReply{
 		MsgType:       "gateway_reboot_reply",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,

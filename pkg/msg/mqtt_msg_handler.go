@@ -131,17 +131,14 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 		IsRebootNeeded = true
 		return reply
 	case "update_glass_color_request":
-
 		if !ValidateMsg(update_color_schema, string(body)) {
 			return nil
 		}
-
 		var req UpdateGlassColorRequest
-
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		req.handle()
+		req.handle(mqttToServer)
 	}
 	return nil
 }

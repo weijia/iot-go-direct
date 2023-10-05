@@ -120,22 +120,22 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
 		case timeoutNodeId := <-mainMsgHandler.TimeoutNodeIdCh:
 			bsp.GetOrCreateNodeState(timeoutNodeId)
-		case reply := <-node.ColorUpdateRequestTimeoutCh:
-			// Find the correct reply in statesForPendingColorUpdate and send reply if exists
-			for index, state := range node.StatesForPendingColorUpdate {
-				util.IotLogInfo(fmt.Sprintf("data in slice: %p, data from ch: %p", &state.Reply, reply))
-				if &state.Reply == reply {
-					select {
-					case mainMsgHandler.MqttToServerCh <- reply:
-					default:
-						util.IotLogErrorStr("mqtt publish channel full when sending color update reply")
-					}
-					// Remove current element from statesForPendingColorUpdate
-					node.StatesForPendingColorUpdate = append(
-						node.StatesForPendingColorUpdate[:index], node.StatesForPendingColorUpdate[index+1:]...)
-					break
-				}
-			}
+		// case reply := <-node.ColorUpdateRequestTimeoutCh:
+		// 	// Find the correct reply in statesForPendingColorUpdate and send reply if exists
+		// 	for index, state := range node.StatesForPendingColorUpdate {
+		// 		util.IotLogInfo(fmt.Sprintf("data in slice: %p, data from ch: %p", &state.Reply, reply))
+		// 		if &state.Reply == reply {
+		// 			select {
+		// 			case mainMsgHandler.MqttToServerCh <- reply:
+		// 			default:
+		// 				util.IotLogErrorStr("mqtt publish channel full when sending color update reply")
+		// 			}
+		// 			// Remove current element from statesForPendingColorUpdate
+		// 			node.StatesForPendingColorUpdate = append(
+		// 				node.StatesForPendingColorUpdate[:index], node.StatesForPendingColorUpdate[index+1:]...)
+		// 			break
+		// 		}
+		// 	}
 		case <-ticker.C:
 			currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}

@@ -22,7 +22,7 @@ type BspConfig struct {
 	util.LogConfigParams
 }
 
-var SwVersion = "1.1"
+var SwVersion = util.APP_VERSION
 
 var module0Param = shared.Module{
 	Freq:   4723,

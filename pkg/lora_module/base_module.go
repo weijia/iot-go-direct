@@ -46,8 +46,8 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 			util.IotLogInfo("Cancel of context called, quitting LoraModule.MsgLoop")
 			return
 		case m := <-loraModule.SendingCh:
-			cmd := m.Data[node.REPLY_CMD_START_INDEX]
-			if cmd == node.CONFIG_NODE_REQ {
+			// cmd := m.Data[node.REPLY_CMD_START_INDEX]
+			// if cmd == node.CONFIG_NODE_REQ {
 				loraModule.LoraClient.Send(m.Data)
 				isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), 3)
 				reply := node.NodeMsgReply{
@@ -55,10 +55,12 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 					IsTimeout: isTimeout,
 				}
 				*m.ReplyCh <- reply
-			}
+			// }
 		}
 	}
 }
+
+
 
 func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int) (bool, []byte) {
 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
@@ -76,4 +78,12 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 			}
 		}
 	}
+}
+
+func (loraModule LoraModule) Send(data []byte) {
+	msgReq := node.NodeMsgReq{
+		Data:    data,
+		ReplyCh: nil,
+	}
+	loraModule.SendingCh <- msgReq
 }

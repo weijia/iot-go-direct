@@ -41,7 +41,7 @@ func getCRC8HighByTable(buf []byte) byte {
 	return val
 }
 
-func GetUpdateGlassColorMsg(nodeId []byte, color string) []byte {
+func GetUpdateGlassColorMsg(nodeIdStr string, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {
@@ -53,7 +53,7 @@ func GetUpdateGlassColorMsg(nodeId []byte, color string) []byte {
 	result = append(result, 5)                                                     // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
-	result = append(result, nodeId...)          // node id
+	result = append(result, util.DecodeId(nodeIdStr)...)          // node id
 	result = append(result, byte(len(color)/2)) // param len
 	result = append(result, data...)            // color
 	result[0] = byte(len(result) + 1)
@@ -70,7 +70,7 @@ func IsChecksumCorrect(msg []byte) bool {
 	return calculatedChecksum == checksum
 }
 
-func GetGroupUpdateGlassColorMsg(gatewayId []byte, nodeIdList [][]byte, color string) []byte {
+func GetGroupUpdateGlassColorMsg(nodeIdList [][]byte, color string) []byte {
 	var result []byte
 	data, err := hex.DecodeString(color)
 	if err != nil {
@@ -80,7 +80,7 @@ func GetGroupUpdateGlassColorMsg(gatewayId []byte, nodeIdList [][]byte, color st
 	result = append(result, 0)            // package len
 	result = append(result, 1)            // node type 1 gateway
 	result = append(result, 7)            // cmd type group control
-	result = append(result, gatewayId...) // gateway id must be 6 bytes
+	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
 	result = append(result, byte(len(nodeIdList))) // num of node
 	for i := 0; i < len(nodeIdList); i++ {
@@ -163,4 +163,12 @@ func GetColorWithArea(msg []byte) string {
 		res += fmt.Sprintf("%x", (reportedColors[i]&0xf))
 	}
 	return res
+}
+
+func IsColorUpdateSuccess(msg []byte) bool {
+	if msg[UPDATE_GLASS_COLOR_RESULT_INDEX] == 1 {
+		return true
+	} else {
+		return false
+	}
 }

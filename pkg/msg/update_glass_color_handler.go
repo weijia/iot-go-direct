@@ -1,14 +1,12 @@
 package msg
 
 import (
-	"context"
-	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
+	"iot_go/pkg/lora_module"
 	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
-	"iot_go/pkg/util"
-	"time"
+	"sync"
 )
 
 type UpdateGlassColorRequest struct {
@@ -18,51 +16,50 @@ type UpdateGlassColorRequest struct {
 
 func SetSingleGlassColor(client *lora_client.LoraClient, nodeId string, color string) {
 	c := node.GetUpdateGlassColorMsg(
-		util.DecodeId(nodeId), color)
+		nodeId, color)
 	client.Send(c)
 }
 
-func (request UpdateGlassColorRequest) handle() {
+func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 	var reply shared.UpdateGlassColorReply
 
 	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
 	reply.MsgType = "update_glass_color_reply"
 
-	// Generate a map between node Id and lora client
-	// loraClientMap := make(map[string]*lora_client.LoraClient)
-	updateGlassColorParams := request.Params
+	colorUpdateForModule1 := make(map[string]shared.UpdateGlassColorParams)
+	colorUpdateForModule2 := make(map[string]shared.UpdateGlassColorParams)
+	reply.Status = make([]shared.UpdateGlassColorParams, 0, len(request.Params))
 
-	ctx, cancel := context.WithCancel(context.Background())
-
-	state := node.ColorUpdateState{
-		Reply:      reply,
-		Timer:      time.NewTimer(120 * time.Second),
-		CancelFunc: &cancel,
-	}
-
-	for _, param := range updateGlassColorParams {
-		client := bsp.GetLoraClientForNode(param.NodeId)
-		if client == nil {
-			util.IotLogErrorStr(fmt.Sprintf("Node: %s does not exists", param.NodeId))
-			param.Color = node.SetColorForNodeAsInvalid(param.Color)
-			state.Reply.Status = append(state.Reply.Status, param)
+	for _, param := range request.Params {
+		if bsp.IsInNodeList1(param.NodeId) {
+			colorUpdateForModule1[param.NodeId] = param
+		} else if bsp.IsInNodeList2(param.NodeId) {
+			colorUpdateForModule2[param.NodeId] = param
 		} else {
-			state.Reply.Status = append(state.Reply.Status, param)
-			SetSingleGlassColor(client, param.NodeId, param.Color)
-			state.PendingNodes = append(state.PendingNodes, param.NodeId)
+			reply.Status = append(reply.Status, shared.UpdateGlassColorParams{
+				NodeId: param.NodeId,
+				Color: node.SetColorForNodeAsInvalid(param.Color),
+			})
 		}
-		bsp.GetBsp().SafeUploadTelemetry(param.NodeId+"-requesting", param.Color)
+	}
+	var wg sync.WaitGroup
+	if len(colorUpdateForModule1) > 0 {
+		wg.Add(1)
+		go lora_module.Module1.UpdateGlassColorForList(colorUpdateForModule1, &wg)
+	}
+	if len(colorUpdateForModule2) > 0 {
+		wg.Add(1)
+		go lora_module.Module1.UpdateGlassColorForList(colorUpdateForModule2, &wg)
+	}
+	
+	wg.Wait()
+
+	for _, param := range colorUpdateForModule1 {
+		reply.Status = append(reply.Status, param)
+	}
+	for _, param := range colorUpdateForModule2 {
+		reply.Status = append(reply.Status, param)
 	}
 
-	node.StatesForPendingColorUpdate = append(node.StatesForPendingColorUpdate, state)
-	// Send reply pointer to requestTimeoutCh after 120 seconds
-	// TODO: Maybe we need to retry before actual 120 second timeout
-	go func() {
-		select {
-		case <-ctx.Done():
-			return
-		case <-state.Timer.C:
-			node.ColorUpdateRequestTimeoutCh <- &state.Reply
-		}
-	}()
+	mqttToServer <- reply
 }
