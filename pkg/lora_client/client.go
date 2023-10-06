@@ -16,11 +16,15 @@ type LoraClient struct {
 }
 
 func (client *LoraClient) CreateRpcClientWithRetry() {
+	retry := 0
 	var err error
 	for {
 		client.RpcClient, err = rpc.DialHTTP("tcp", client.Address)
 		if err != nil {
-			log.Println("dialing:", err)
+			if retry > 100 {
+				util.IotLogErrWithStr("dialing:", err)
+			}
+			retry += 1
 		} else {
 			break
 		}

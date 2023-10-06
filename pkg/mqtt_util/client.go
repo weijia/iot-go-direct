@@ -17,7 +17,7 @@ type MqttEasyClient struct {
 	ReceivingChannel *chan mqtt.Message
 	Client           mqtt.Client
 	IsReconnecting   bool
-	Wg *sync.WaitGroup
+	Wg               *sync.WaitGroup
 }
 
 func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
@@ -68,7 +68,7 @@ func (easyClient *MqttEasyClient) OnConnected() {
 }
 
 func (easyClient *MqttEasyClient) createClient(opts *mqtt.ClientOptions) {
-	log.Printf("Creating client for %p\n", easyClient)
+	util.IotLog("Creating client for %p\n", easyClient)
 	easyClient.Client = mqtt.NewClient(opts)
 }
 

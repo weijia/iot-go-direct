@@ -62,7 +62,8 @@ const CONFIG_FILE_NAME = "iot_go.json"
 
 func InitConfig() {
 	// TODO: Change default value to 120.xx.x.x etc
-	BspConfigInstance.MqttParams.MqttIP = "app.kosglass.com"
+	// BspConfigInstance.MqttParams.MqttIP = "app.kosglass.com"
+	BspConfigInstance.MqttParams.MqttIP = "120.79.55.61"
 	// BspConfigInstance.MqttParams.MqttIP = "115.159.53.168"
 	BspConfigInstance.MqttParams.MqttPort = 1883
 	BspConfigInstance.MqttParams.MqttUserName = "l8juew73i2t17wavzthg"
@@ -110,9 +111,11 @@ func InitConfig() {
 		var data []byte
 		_, err := file.Read(data)
 		if err == nil {
+			util.IotLog(string(data))
 			s := strings.Replace(string(data), "\n", "", -1)
 			s = strings.Replace(s, "\r", "", -1)
 			s = strings.Replace(s, " ", "", -1)
+			util.IotLog("Len: %d", len(s))
 			if len(s) == 12 && len(util.DecodeId(s)) == 6 {
 				BspConfigInstance.GatewayNodeId = s
 			} else {
