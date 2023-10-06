@@ -23,14 +23,19 @@ const (
 var IsRebootNeeded = false
 
 func Download(params shared.GatewayUpgradeParams) error {
-	
+
 	targetPath := filepath.Join(util.GetOrCreateDownloadingFolder(), filepath.Base(params.SftpInfo.Path))
 	err := util.Download(params.SftpInfo, targetPath, true)
 	if err == nil {
 		finalFilename := "main-" + params.TargetSoftwareVersion
-		os.Rename(targetPath, filepath.Join(util.GetOrCreateAppFolder(), finalFilename))
-		os.Chmod(finalFilename, 0755)
-		IsRebootNeeded = true
+		finalFullPath := filepath.Join(util.GetOrCreateAppFolder(), finalFilename)
+		os.Rename(targetPath, finalFullPath)
+		err := os.Chmod(finalFullPath, 0755)
+		if err != nil {
+			util.IotLogErrWithStr("Chmod error:", err)
+		} else {
+			IsRebootNeeded = true
+		}
 	}
 	return err
 }

@@ -2,7 +2,6 @@ package lora_client
 
 import (
 	"fmt"
-	"log"
 	"net/rpc"
 
 	"iot_go/pkg/lora_shared"
@@ -60,7 +59,7 @@ func (client LoraClient) InitLora(module shared.Module) {
 	var reply lora_shared.ReplyResult
 	err := client.CallWithReconnect("LoraRpc.InitLora", module, &reply)
 	if err != nil {
-		log.Println("Lora.InitLora error:", err)
+		util.IotLogErrWithStr("Lora.InitLora error:", err)
 	}
 }
 
@@ -69,16 +68,17 @@ func (client LoraClient) Exit() {
 	var reply lora_shared.ReplyResult
 	err := client.CallWithReconnect("LoraRpc.Exit", args, &reply)
 	if err != nil {
-		log.Println("LoraRpc.Exit error:", err)
+		util.IotLogErrWithStr("LoraRpc.Exit error:", err)
 	}
 }
 
 func (client LoraClient) Send(data []byte) {
 	args := &lora_shared.LoraData{Data: data}
+	util.IotLog("Sending data: %v", data)
 	var reply lora_shared.ReplyResult
 	err := client.CallWithReconnect("LoraRpc.Send", args, &reply)
 	if err != nil {
-		log.Println("LoraRpc.Send error:", err)
+		util.IotLogErrWithStr("LoraRpc.Send error:", err)
 	}
 }
 
@@ -87,12 +87,12 @@ func (client LoraClient) Receive() []byte {
 	var reply lora_shared.LoraData
 	err := client.CallWithReconnect("LoraRpc.Receive", args, &reply)
 	if err != nil {
-		log.Println("LoraRpc.Receive error:", err)
+		util.IotLogErrWithStr("LoraRpc.Receive error:", err)
 	}
 	for i := 0; i < len(reply.Data); i++ {
-		log.Printf("0x%x", reply.Data[i])
+		util.IotLog("0x%x", reply.Data[i])
 	}
-	log.Printf("\n")
+	util.IotLog("\n")
 	return reply.Data
 }
 
