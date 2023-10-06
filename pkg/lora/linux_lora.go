@@ -155,7 +155,7 @@ func (loraDev Lora) Send(data []byte) int {
 	select {
 	case send <- data:
 	default:
-		util.IotLogInfo(fmt.Sprintf("Send buffer full, please check the reason, %v\n", data))
+		util.IotLogInfo(fmt.Sprintf("Send buffer full, this may possiblly due to receive RPC is not started. please check the reason, %v\n", data))
 		return -1
 	}
 	return 0

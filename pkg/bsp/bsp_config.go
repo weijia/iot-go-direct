@@ -25,7 +25,7 @@ type BspConfig struct {
 var SwVersion = util.APP_VERSION
 
 var module0Param = shared.Module{
-	Freq:   4723,
+	Freq:   4734,
 	Band:   250,
 	Factor: 9,
 }
@@ -104,7 +104,7 @@ func InitConfig() {
 	BspConfigInstance.SoftVersion = SwVersion
 	gatewayIdFilePath := filepath.Join(util.GetAppRoot(), "gateway_id.txt")
 	file, err := os.Open(gatewayIdFilePath)
-	
+
 	if err == nil {
 		defer file.Close()
 		var data []byte
@@ -116,7 +116,7 @@ func InitConfig() {
 			if len(s) == 12 && len(util.DecodeId(s)) == 6 {
 				BspConfigInstance.GatewayNodeId = s
 			} else {
-				util.IotLogErrorStr("gateway_id.txt contain invalid gateway id: "+string(data))
+				util.IotLogErrorStr("gateway_id.txt contain invalid gateway id: " + string(data))
 			}
 		}
 	} else {

@@ -14,12 +14,15 @@ type LoraReceiverRpc struct {
 var recvChannel *chan lora_shared.LoraData
 
 func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
-	// log.Println("RPC:  called")
+	// util.IotLog("RPC:  called")
 	*recvChannel <- argType
 	// log.Println("RPC: after put to channel")
+	// util.IotLog("-------------------Received lora msg: %v", argType)
 	reply.Result = 0
 	return nil
 }
+
+var ReceivingServer *http.Server
 
 func StartLoraReceiverRpc(recvCh *chan lora_shared.LoraData, port int) {
 	recvChannel = recvCh
@@ -28,7 +31,8 @@ func StartLoraReceiverRpc(recvCh *chan lora_shared.LoraData, port int) {
 	// So the data changed after Register may be discarded
 	rpc.Register(loraRpc)
 	rpc.HandleHTTP()
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+	ReceivingServer = &http.Server{Addr: fmt.Sprintf(":%d", port)}
+	if err := ReceivingServer.ListenAndServe(); err != nil {
 		util.IotLogErrorStr(fmt.Sprintf("serve error: %v", err))
 	}
 }

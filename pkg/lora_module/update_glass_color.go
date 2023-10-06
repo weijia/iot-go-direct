@@ -7,13 +7,13 @@ import (
 )
 
 func (loraModule LoraModule) SendAndGetReplyOrTimeout(data []byte) (bool, []byte) {
-	ch := make(chan node.NodeMsgReply)
+	ch := make(chan node.NodeMsgReply, 5)
 	msgReq := node.NodeMsgReq{
 		Data:    data,
 		ReplyCh: &ch,
 	}
-	loraModule.SendingCh <- msgReq
-	n := node.GetReplyOrTimeout(ch)
+	*loraModule.SendingToNodeCh <- msgReq
+	n := node.GetReplyOrTimeout(&ch)
 	if !n.IsTimeout {
 		return false, n.Data
 	}
@@ -29,7 +29,7 @@ func (loraModule LoraModule) UpdateGlassColorForList(
 		if isTimeout || !node.IsColorUpdateSuccess(reply) {
 			colorUpdateParam[nodeIdStr] = shared.UpdateGlassColorParams{
 				NodeId: nodeIdStr,
-				Color: node.SetColorForNodeAsInvalid(param.Color),
+				Color:  node.SetColorForNodeAsInvalid(param.Color),
 			}
 		}
 	}

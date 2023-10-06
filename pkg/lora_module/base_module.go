@@ -8,23 +8,31 @@ import (
 	"time"
 )
 
+var module0SendingToNodeCh = make(chan node.NodeMsgReq, 10)
+var module1SendingToNodeCh = make(chan node.NodeMsgReq, 10)
+var module2SendingToNodeCh = make(chan node.NodeMsgReq, 10)
+
+var module0ReceivingCh = make(chan []byte, 10)
+var module1ReceivingCh = make(chan []byte, 10)
+var module2ReceivingCh = make(chan []byte, 10)
+
 var Module0 = LoraModule{
-	SendingCh:   make(chan node.NodeMsgReq, 10),
-	ReceivingCh: make(chan []byte, 10),
+	SendingToNodeCh: &module0SendingToNodeCh,
+	ReceivingCh:     &module0ReceivingCh,
 	// LoraClient:  bsp.GetModule0Client(), // client only available after board init
-	LoraIndex:   0,
+	LoraIndex: 0,
 }
 var Module1 = LoraModule{
-	SendingCh:   make(chan node.NodeMsgReq, 10),
-	ReceivingCh: make(chan []byte, 10),
+	SendingToNodeCh: &module1SendingToNodeCh,
+	ReceivingCh:     &module1ReceivingCh,
 	// LoraClient:  bsp.GetModule1Client(),
-	LoraIndex:   1,
+	LoraIndex: 1,
 }
 var Module2 = LoraModule{
-	SendingCh:   make(chan node.NodeMsgReq, 10),
-	ReceivingCh: make(chan []byte, 10),
+	SendingToNodeCh: &module2SendingToNodeCh,
+	ReceivingCh:     &module2ReceivingCh,
 	// LoraClient:  bsp.GetModule2Client(),
-	LoraIndex:   2,
+	LoraIndex: 2,
 }
 
 var ModuleList = [3]LoraModule{
@@ -32,8 +40,8 @@ var ModuleList = [3]LoraModule{
 }
 
 type LoraModule struct {
-	SendingCh   chan node.NodeMsgReq
-	ReceivingCh chan []byte
+	SendingToNodeCh *chan node.NodeMsgReq
+	ReceivingCh     *chan []byte
 	// WaitingReplyTimer *time.Timer
 	LoraClient *lora_client.LoraClient
 	LoraIndex  int //LoraIndex starts from 0
@@ -45,30 +53,33 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 		case <-ctx.Done():
 			util.IotLogInfo("Cancel of context called, quitting LoraModule.MsgLoop")
 			return
-		case m := <-loraModule.SendingCh:
+		case m := <-*loraModule.SendingToNodeCh:
 			// cmd := m.Data[node.REPLY_CMD_START_INDEX]
 			// if cmd == node.CONFIG_NODE_REQ {
-				loraModule.LoraClient.Send(m.Data)
-				isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), 3)
-				reply := node.NodeMsgReply{
-					Data:      msg,
-					IsTimeout: isTimeout,
-				}
-				*m.ReplyCh <- reply
+			// util.IotLog("Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
+			loraModule.LoraClient.Send(m.Data)
+			isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
+			// util.IotLog("Bottom level wait for reply got: %v, %v", isTimeout, msg)
+			reply := node.NodeMsgReply{
+				Data:      msg,
+				IsTimeout: isTimeout,
+			}
+			*m.ReplyCh <- reply
 			// }
 		}
+		// util.IotLogInfo("Lora Module loop running")
 	}
 }
-
-
 
 func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int) (bool, []byte) {
 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
 	for {
 		select {
 		case <-eventTimer.C:
+			// util.IotLog("Is reply timeout return due to timeout")
 			return true, nil
-		case nodeReply := <-loraModule.ReceivingCh:
+		case nodeReply := <-*loraModule.ReceivingCh:
+			// util.IotLog("Received node msg from ch %p", loraModule.ReceivingCh)
 			responseNodeId := node.GetNodeIdStr(nodeReply)
 			if responseNodeId == nodeIdStr {
 				eventTimer.Stop()
@@ -85,5 +96,5 @@ func (loraModule LoraModule) Send(data []byte) {
 		Data:    data,
 		ReplyCh: nil,
 	}
-	loraModule.SendingCh <- msgReq
+	*loraModule.SendingToNodeCh <- msgReq
 }

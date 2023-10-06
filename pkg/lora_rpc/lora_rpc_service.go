@@ -62,11 +62,11 @@ func GetModuleIndexFromDevName(devName string) int {
 	moduleIndex := 0
 	dev := strings.Split(devName, "/")
 	res := strings.ReplaceAll(dev[2], "spidev", "")
-	devNumFloat , err := strconv.ParseFloat(res, 32)
+	devNumFloat, err := strconv.ParseFloat(res, 32)
 	if err != nil {
 		util.IotLogErrWithStr("Parse spi dev num error", err)
 	} else {
-		moduleIndex = int(devNumFloat)
+		moduleIndex = int(devNumFloat - 1)
 	}
 	return moduleIndex
 }
@@ -74,8 +74,8 @@ func GetModuleIndexFromDevName(devName string) int {
 func StartLoraServiceInBackground(devName string, port int, pushHost string) {
 	moduleIndex := GetModuleIndexFromDevName(devName)
 
-	util.ConfigLogFile(fmt.Sprintf("%d-log.txt", moduleIndex), 
-			bsp.BspConfigInstance.LogConfigParams)
+	util.ConfigLogFile(fmt.Sprintf("%d-log.txt", moduleIndex),
+		bsp.BspConfigInstance.LogConfigParams)
 
 	// file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	// if err != nil {
@@ -91,8 +91,9 @@ func StartLoraServiceInBackground(devName string, port int, pushHost string) {
 func StartLoraService(devName string, port int, pushHost string) {
 	bsp.InitConfig()
 
-	util.IotLogInfo(fmt.Sprintf("Starting lora service on dev: %s, port: %d\n", devName, port))
-	go lora.PushLoraMsgToRpc(8869, GetModuleIndexFromDevName(devName), pushHost)
+	moduleIndex := GetModuleIndexFromDevName(devName)
+	util.IotLogInfo(fmt.Sprintf("Starting lora service for module index: %d on dev: %s, port: %d\n", moduleIndex, devName, port))
+	go lora.PushLoraMsgToRpc(8869, moduleIndex, pushHost)
 
 	loraRpc := NewLoraRpc(devName, port)
 	// The loraRpc object will be copied to RPC procedure instead of sending the original object

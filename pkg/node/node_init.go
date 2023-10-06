@@ -33,52 +33,12 @@ func GetNodeInitMsg(nodeIdStr string, moduleParam shared.Module) []byte {
 	return result
 }
 
-// func SendNodeInit(client *lora_client.LoraClient, nodeIdStr string, moduleParam shared.Module) {
-// 	util.IotLogInfo(fmt.Sprintf("Sending node init msg to %s with param: %v", nodeIdStr, moduleParam))
-// 	client.Send(GetNodeInitMsg(nodeIdStr, moduleParam))
-// }
-
-// func SendNodeInitAfterStartup() {
-// 	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList1 {
-// 		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
-// 	}
-// 	for _, value := range bsp.BspConfigInstance.BaseConfigParams.NodeList2 {
-// 		SendNodeInit(bsp.GetModule0Client(), value, bsp.BspConfigInstance.InitMsgContent.Module1)
-// 	}
-// }
-
-// var InitReplyCh = make(chan string)
-
-// func SendNodeInitReq(configParam shared.ConfigParams) {
-// 	// For node already in node list, send init msg in working freq, otherwise send it in public freq
-// 	for _, nodeId := range configParam.NodeList1 {
-// 		client := bsp.GetLoraClientForNode(nodeId)
-// 		if client != nil {
-// 			SendNodeInit(client, nodeId, configParam.Module1)
-// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-// 		} else {
-// 			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module1)
-// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-// 		}
-// 	}
-// 	for _, nodeId := range configParam.NodeList2 {
-// 		client := bsp.GetLoraClientForNode(nodeId)
-// 		if client != nil {
-// 			SendNodeInit(client, nodeId, configParam.Module2)
-// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-// 		} else {
-// 			SendNodeInit(bsp.GetModule0Client(), nodeId, configParam.Module2)
-// 			util.IsReplyTimeout(nodeId, InitReplyCh, 5)
-// 		}
-// 	}
-// }
-
 func SendNodeInitForNode(nodeIdStr string, param shared.Module, sendingCh *chan NodeMsgReq) NodeMsgReply {
-	ch := make(chan NodeMsgReply)
+	ch := make(chan NodeMsgReply, 5)
 	msgReq := NodeMsgReq{
 		Data:    GetNodeInitMsg(nodeIdStr, param),
 		ReplyCh: &ch,
 	}
 	*sendingCh <- msgReq
-	return GetReplyOrTimeout(ch)
+	return GetReplyOrTimeout(&ch)
 }

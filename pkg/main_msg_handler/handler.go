@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_module"
+	"iot_go/pkg/lora_rpc"
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/mqtt_util"
 	"iot_go/pkg/msg"
@@ -37,13 +38,21 @@ func InfiniteAppLoop(ctx context.Context, loraServiceIp string) {
 		h.TopLevelMsgLoop(ctx, loraServiceIp)
 		msg.IsMsgLoopRestartNeeded = false
 		msg.IsInitDone = false
+		ctx, cancel := context.WithTimeout(context.Background(), 10)
+		defer cancel()
+		err := lora_rpc.ReceivingServer.Shutdown(ctx)
+		if err != nil {
+			util.IotLogErrorStr("shutting down: " + err.Error())
+		} else {
+			util.IotLog("shutdown processed successfully")
+		}
 	}
 }
 
 func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraServiceIp string) {
 	util.IotLog("Starting main app version: %s", bsp.SwVersion)
 
-	// The application data structure can only be changed in this routine to 
+	// The application data structure can only be changed in this routine to
 	// avoid concurrent data change issue
 	bsp.InitConfig()
 
@@ -76,6 +85,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	go lora_module.Module0.MsgLoop(ctx)
 	go lora_module.Module1.MsgLoop(ctx)
 	go lora_module.Module2.MsgLoop(ctx)
+	go lora_rpc.StartLoraReceiverRpc(&mainMsgHandler.NodeMsgCh, 8869)
 
 	// Wait for mqtt subscribe done
 	wg.Wait()
@@ -151,8 +161,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						HardVersion: fmt.Sprintf("%x", state.HwVer),
 						SoftVersion: fmt.Sprintf("%x", state.SwVer),
 						RunArea:     state.RunningArea,
-						RSSI: state.RSSI,
-						SNR: state.SNR,
+						RSSI:        state.RSSI,
+						SNR:         state.SNR,
 					}
 					l = append(l, s)
 				}

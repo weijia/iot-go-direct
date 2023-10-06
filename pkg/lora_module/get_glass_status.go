@@ -16,14 +16,14 @@ func (loraModule LoraModule) InitiateGetGlassStatusReq(
 		NodeId: nodeIdStr,
 		Color:  "1f2f3f4f5f6f7f8f",
 	}
-	ch := make(chan node.NodeMsgReply)
+	ch := make(chan node.NodeMsgReply, 5)
 	msgReq := node.NodeMsgReq{
 		Data:    node.GetRetrieveColorMsg(nodeIdStr),
 		ReplyCh: &ch,
 	}
 	for i := 0; i < util.GET_GLASS_STATUS_MAX_RETRY; i++ {
-		loraModule.SendingCh <- msgReq
-		n := node.GetReplyOrTimeout(ch)
+		*loraModule.SendingToNodeCh <- msgReq
+		n := node.GetReplyOrTimeout(&ch)
 		if !n.IsTimeout {
 			reply.Status[0].Color = node.GetColorWithArea(n.Data)
 			break

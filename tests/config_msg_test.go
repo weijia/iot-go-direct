@@ -8,7 +8,6 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/shared"
-	"iot_go/pkg/util"
 )
 
 func TestConfigMsg(t *testing.T) {
@@ -26,7 +25,7 @@ func TestConfigMsg(t *testing.T) {
 		Params: params,
 	}
 	config_json_bytes, _ := json.Marshal(config)
-	var mqtt util.Mqtt
-	reply := msg.HandleMqttMsg(context.TODO(), &mqtt, config_json_bytes)
+	var mqtt chan interface{}
+	reply := msg.HandleMqttMsg(context.TODO(), mqtt, config_json_bytes)
 	msg.DumpMsg(reply)
 }

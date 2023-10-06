@@ -6,7 +6,6 @@ import (
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/node"
-	"iot_go/pkg/util"
 	"time"
 )
 
@@ -70,8 +69,7 @@ func main() {
 		// b := []byte{'g', 'o', 'l', 'a', 'n', 'g'}
 
 		b := node.GetNodeInitMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-			util.DecodeId("01020304"), bsp.BspConfigInstance.InitMsgContent.Module1)
+			"01020304", bsp.BspConfigInstance.InitMsgContent.Module1)
 		// h := node.GetHeartBeatMsg(
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"))
