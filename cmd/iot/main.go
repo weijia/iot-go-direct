@@ -68,6 +68,7 @@ func main() {
 	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
 	flag.StringVar(&pushHost, "p", "127.0.0.1", "Lora msg push host server")
 	loraServiceIp := loraHost
+	flag.Parse()
 	// loraServiceIp := "192.168.1.20"
 	gatewayPushMsgIp := pushHost
 	// gatewayPushMsgIp := "192.168.1.18"

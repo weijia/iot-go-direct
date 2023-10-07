@@ -1,6 +1,7 @@
 package bsp
 
 import (
+	"bufio"
 	"encoding/json"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard_shared"
@@ -108,11 +109,10 @@ func InitConfig() {
 
 	if err == nil {
 		defer file.Close()
-		var data []byte
-		_, err := file.Read(data)
-		if err == nil {
-			util.IotLog(string(data))
-			s := strings.Replace(string(data), "\n", "", -1)
+		r := bufio.NewReader(file)
+		line, _, e := r.ReadLine()
+		if e == nil {
+			s := strings.Replace(string(line), "\n", "", -1)
 			s = strings.Replace(s, "\r", "", -1)
 			s = strings.Replace(s, " ", "", -1)
 			util.IotLog("Len: %d", len(s))

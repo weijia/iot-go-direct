@@ -14,12 +14,10 @@ import "C"
 
 import (
 	"bytes"
-	"fmt"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/lora_shared"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
-	"log"
 	"os"
 	"time"
 	"unsafe"
@@ -47,7 +45,7 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	if isOK != 0 {
 		return isOK
 	}
-	log.Println("rf_init OK\n")
+	util.IotLogInfo("rf_init OK")
 	freq := module.Freq * 100 * 1000
 	C.set_freq(C.int(freq))
 	/*
@@ -63,11 +61,11 @@ func (loraDev Lora) InitLora(module shared.Module) int {
 	}
 	C.set_band(C.int(bandMap[module.Band]))
 	C.set_factor(C.int(module.Factor))
-	util.IotLogInfo(fmt.Sprintf("freq: %d, band: %d, factor: %d\n", freq, module.Band, module.Factor))
+	util.IotLog("freq: %d, band: %d, factor: %d", freq, module.Band, module.Factor)
 
 	res := int(C.rf_set_syncword(0x12)) // 0x3>0: select page, 0x12->0xf: sync word
 	if res != 0 {
-		fmt.Printf("-------------rf_set_syncword return non OK\n")
+		util.IotLogInfo("-------------rf_set_syncword return non OK")
 	}
 	C.rf_set_default_para()
 	// C.rf_enter_continous_rx()
@@ -101,7 +99,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		select {
 		case recv <- args:
 		default:
-			log.Printf("Lora.CopyFromBufferIfExists: Failed to send data to recv channel, recv channel full\n")
+			util.IotLogErrorStr("Lora.CopyFromBufferIfExists: Failed to send data to recv channel, recv channel full")
 		}
 	}
 }
@@ -123,10 +121,10 @@ func (loraDev Lora) MsgLoop() {
 			// Ref: https://packagewjx.github.io/2018/09/19/cgo-cstring-ram-leak/
 			cBufferNeedToFree := C.CBytes(data)
 			defer C.free(unsafe.Pointer(cBufferNeedToFree))
-			fmt.Printf("Lora.Send: Sending len: %d\n", len(data))
+			util.IotLog("Lora.Send: Sending len: %d\n", len(data))
 			res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
 			if res != 0 {
-				fmt.Printf("Lora.Send: Error sending: %d\n", res)
+				util.IotLogErrorWithFormatStr("Lora.Send: Error sending: %d\n", res)
 			}
 		case <-ticker.C:
 			// case <-time.After(time.Second * 1):
@@ -155,7 +153,7 @@ func (loraDev Lora) Send(data []byte) int {
 	select {
 	case send <- data:
 	default:
-		util.IotLogInfo(fmt.Sprintf("Send buffer full, this may possiblly due to receive RPC is not started. please check the reason, %v\n", data))
+		util.IotLog("Send buffer full, this may possiblly due to receive RPC is not started. please check the reason, %v\n", data)
 		return -1
 	}
 	return 0
@@ -176,7 +174,7 @@ func PushLoraMsgToRpc(port int, moduleIndex int, host ...string) {
 		realHost = host[0]
 	}
 	var serverRpc = lora_client.NewLoraClient(port, realHost)
-	util.IotLogInfo(fmt.Sprintf("Connected to lora receive service: %s:%d", realHost, port))
+	util.IotLog("Connected to lora receive service: %s:%d", realHost, port)
 	for {
 		// util.IotLogInfo(fmt.Sprintf("Receiving\n"))
 		select {
