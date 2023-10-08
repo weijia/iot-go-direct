@@ -13,5 +13,5 @@ arm-linux-gnueabihf-ar rcs pkg\lora\libpan3028.a pan3028.o pan3028_port.o spi-30
 rem go build -a -v
 
 go build -a -v  -ldflags="-s -w" cmd/iot/main.go
-go build -a -v  -ldflags="-s -w" cmd/lora_service/lora_service.go
+@REM go build -a -v  -ldflags="-s -w" cmd/lora_service/lora_service.go
 sync.bat

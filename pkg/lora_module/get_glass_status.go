@@ -12,22 +12,14 @@ func (loraModule LoraModule) InitiateGetGlassStatusReq(
 	var reply shared.GlassStatusUpdate
 	reply.MsgType = "glass_status_update"
 	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
-	reply.Status[0] = shared.GlassStatus{
+	reply.Status = append(reply.Status, shared.GlassStatus{
 		NodeId: nodeIdStr,
 		Color:  "1f2f3f4f5f6f7f8f",
-	}
-	ch := make(chan node.NodeMsgReply, 5)
-	msgReq := node.NodeMsgReq{
-		Data:    node.GetRetrieveColorMsg(nodeIdStr),
-		ReplyCh: &ch,
-	}
-	for i := 0; i < util.GET_GLASS_STATUS_MAX_RETRY; i++ {
-		*loraModule.SendingToNodeCh <- msgReq
-		n := node.GetReplyOrTimeout(&ch)
-		if !n.IsTimeout {
-			reply.Status[0].Color = node.GetColorWithArea(n.Data)
-			break
-		}
+	})
+
+	data := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetRetrieveColorMsg(nodeIdStr), util.GET_GLASS_STATUS_MAX_RETRY)
+	if data != nil {
+		reply.Status[0].Color = node.GetColorWithArea(data)
 	}
 	mqttToServer <- reply
 }

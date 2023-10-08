@@ -31,7 +31,7 @@ func init() {
 		// Iterate through the directory entries and print their names
 		for _, entry := range entries {
 			filename := entry.Name()
-			fmt.Println(filename)
+			util.IotLog("Checking app file: %s", filename)
 			verStr := strings.Replace(filename, "main-", "", -1)
 			verStr = strings.Replace(verStr, ".exe", "", -1)
 			version, err := strconv.ParseFloat(verStr, 32)
@@ -41,8 +41,14 @@ func init() {
 				latestApp = filename
 			}
 		}
-		if latestApp != "" {
-			cmd := exec.Command(filepath.Join(msg.FIRMWARE_FOLDER, latestApp))
+		appPath, errGetExecutable := os.Executable()
+		curAppName := filepath.Base(appPath)
+		latestAppFullPath := filepath.Join(msg.FIRMWARE_FOLDER, latestApp)
+		if errGetExecutable == nil && latestApp != "" && curAppName != latestApp {
+			util.IotLog("Starting: %s from curAppName: %s", latestApp, curAppName)
+			cmd := exec.Command(latestAppFullPath)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
 			// Will not return until exit
 			err := cmd.Run()
 			if err == nil {

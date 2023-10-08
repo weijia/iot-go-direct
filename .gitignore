@@ -11,3 +11,4 @@ pan3028-app
 *.exe~
 cmd/iot/firmware/
 *.txt
+cmd/iot/apps/*

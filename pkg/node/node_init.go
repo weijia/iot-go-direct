@@ -32,13 +32,3 @@ func GetNodeInitMsg(nodeIdStr string, moduleParam shared.Module) []byte {
 	result = append(result, getCRC8HighByTable(result))
 	return result
 }
-
-func SendNodeInitForNode(nodeIdStr string, param shared.Module, sendingCh *chan NodeMsgReq) NodeMsgReply {
-	ch := make(chan NodeMsgReply, 5)
-	msgReq := NodeMsgReq{
-		Data:    GetNodeInitMsg(nodeIdStr, param),
-		ReplyCh: &ch,
-	}
-	*sendingCh <- msgReq
-	return GetReplyOrTimeout(&ch)
-}

@@ -53,9 +53,9 @@ func GetUpdateGlassColorMsg(nodeIdStr string, color string) []byte {
 	result = append(result, 5)                                                     // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
-	result = append(result, util.DecodeId(nodeIdStr)...)          // node id
-	result = append(result, byte(len(color)/2)) // param len
-	result = append(result, data...)            // color
+	result = append(result, util.DecodeId(nodeIdStr)...) // node id
+	result = append(result, byte(len(color)/2))          // param len
+	result = append(result, data...)                     // color
 	result[0] = byte(len(result) + 1)
 	result = append(result, getCRC8HighByTable(result))
 	return result
@@ -77,9 +77,9 @@ func GetGroupUpdateGlassColorMsg(nodeIdList [][]byte, color string) []byte {
 		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
 		return nil
 	}
-	result = append(result, 0)            // package len
-	result = append(result, 1)            // node type 1 gateway
-	result = append(result, 7)            // cmd type group control
+	result = append(result, 0)                                                     // package len
+	result = append(result, 1)                                                     // node type 1 gateway
+	result = append(result, 7)                                                     // cmd type group control
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
 	result = append(result, byte(len(nodeIdList))) // num of node
@@ -121,7 +121,7 @@ func GetRetrieveColorMsg(nodeIdStr string) []byte {
 	result = append(result, 1)                                                     // node type 1 gateway
 	result = append(result, 9)                                                     // cmd type broadcast
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
-	result = append(result, util.DecodeId(nodeIdStr)...)                                             // node id
+	result = append(result, util.DecodeId(nodeIdStr)...)                           // node id
 
 	result[0] = byte(len(result) + 1)
 	result = append(result, getCRC8HighByTable(result))
@@ -150,7 +150,7 @@ var StatesForPendingColorUpdate []ColorUpdateState
 var ColorUpdateRequestTimeoutCh = make(chan *shared.UpdateGlassColorReply)
 
 func GetReportedGlassColor(msg []byte) []byte {
-	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN+1 : len(msg)-1]
+	return msg[REPLY_NODE_ID_START_INDEX+NODE_ID_LEN : len(msg)-1]
 }
 
 func GetColorWithArea(msg []byte) string {
@@ -158,9 +158,9 @@ func GetColorWithArea(msg []byte) string {
 	res := ""
 	for i := 0; i < 4; i++ {
 		res += fmt.Sprintf("%x", i*2+1)
-		res+= fmt.Sprintf("%x", (reportedColors[i]&0xf0)>>4)
+		res += fmt.Sprintf("%x", (reportedColors[i]&0xf0)>>4)
 		res += fmt.Sprintf("%x", i*2+2)
-		res += fmt.Sprintf("%x", (reportedColors[i]&0xf))
+		res += fmt.Sprintf("%x", (reportedColors[i] & 0xf))
 	}
 	return res
 }

@@ -3,6 +3,7 @@ package lora_module
 import (
 	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 	"sync"
 )
 
@@ -11,7 +12,7 @@ func (loraModule LoraModule) SendNodeInitForList(
 	nodeParam map[string]shared.Module,
 	wg *sync.WaitGroup) {
 	for nodeIdStr, param := range nodeParam {
-		node.SendNodeInitForNode(nodeIdStr, param, loraModule.SendingToNodeCh)
+		loraModule.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, param), util.NODE_INIT_RETRY_CNT)
 	}
 	wg.Done()
 }

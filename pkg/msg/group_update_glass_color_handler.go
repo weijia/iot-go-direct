@@ -35,7 +35,7 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 		groupMsg := node.GetGroupUpdateGlassColorMsg(
 			finalNodeList1, group.Color)
 		// bsp.GetModule1Client().Send(groupMsg)
-		lora_module.Module1.Send(groupMsg)
+		lora_module.Module1.SendWithoutReply(groupMsg)
 	}
 
 	for _, nodeId := range group.NodeList2 {
@@ -49,7 +49,7 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 		groupMsg := node.GetGroupUpdateGlassColorMsg(
 			finalNodeList2, group.Color)
 		// bsp.GetModule2Client().Send(groupMsg)
-		lora_module.Module1.Send(groupMsg)
+		lora_module.Module1.SendWithoutReply(groupMsg)
 	}
 
 	var reply GroupUpdateGlassColorReply

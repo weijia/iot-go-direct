@@ -22,6 +22,9 @@ const (
 
 var IsRebootNeeded = false
 
+// TODO: If we force the application to call another app even no other version exists, we can use this flag to upgrade without reboot
+var IsQuitAppNeeded = false
+
 func Download(params shared.GatewayUpgradeParams) error {
 
 	targetPath := filepath.Join(util.GetOrCreateDownloadingFolder(), filepath.Base(params.SftpInfo.Path))

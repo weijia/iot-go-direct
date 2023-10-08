@@ -21,8 +21,8 @@ func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 		request.Params.ColorParams)
 	// bsp.GetModule1Client().Send(broadcastMsg)
 	// bsp.GetModule2Client().Send(broadcastMsg)
-	lora_module.Module1.Send(broadcastMsg)
-	lora_module.Module2.Send(broadcastMsg)
+	lora_module.Module1.SendWithoutReply(broadcastMsg)
+	lora_module.Module2.SendWithoutReply(broadcastMsg)
 	reply := GatewayNodeIdReply{
 		MsgType:       "gateway_reboot_reply",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,

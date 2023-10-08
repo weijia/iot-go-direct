@@ -21,7 +21,8 @@
         "**/*.o": true,
         "**/*.a": true,
         "**/go.mod": true,
-        "**/*.exe": true
+        "**/*.exe": true,
+        "logs": true
     },
     "explorerExclude.backup": {},
     "triggerTaskOnSave.tasks": {

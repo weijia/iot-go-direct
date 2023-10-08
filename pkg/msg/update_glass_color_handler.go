@@ -6,6 +6,7 @@ import (
 	"iot_go/pkg/lora_module"
 	"iot_go/pkg/node"
 	"iot_go/pkg/shared"
+	"iot_go/pkg/util"
 	"sync"
 )
 
@@ -38,7 +39,7 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 		} else {
 			reply.Status = append(reply.Status, shared.UpdateGlassColorParams{
 				NodeId: param.NodeId,
-				Color: node.SetColorForNodeAsInvalid(param.Color),
+				Color:  node.SetColorForNodeAsInvalid(param.Color),
 			})
 		}
 	}
@@ -51,7 +52,7 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 		wg.Add(1)
 		go lora_module.Module1.UpdateGlassColorForList(colorUpdateForModule2, &wg)
 	}
-	
+
 	wg.Wait()
 
 	for _, param := range colorUpdateForModule1 {
@@ -59,6 +60,14 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 	}
 	for _, param := range colorUpdateForModule2 {
 		reply.Status = append(reply.Status, param)
+	}
+
+	for _, singleNodeState := range reply.Status {
+		nodeState := bsp.GetOrCreateNodeState(singleNodeState.NodeId)
+		for i := 0; i < len(singleNodeState.Color)/2; i++ {
+			nodeState.NodeReportedColor[util.GetGlassAreaFromStr(singleNodeState.Color[i*2])] =
+				int(singleNodeState.Color[i*2+1])
+		}
 	}
 
 	mqttToServer <- reply

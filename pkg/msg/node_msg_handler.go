@@ -108,53 +108,20 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UPDATE_GLASS_COLOR_REPLY:
-		util.IotLogInfo("Received is update glass color reply")
-		// node.HandleNodeColorUpdateReply(msg)
-		for pendingUpdateIndex := len(node.StatesForPendingColorUpdate) - 1; pendingUpdateIndex >= 0; pendingUpdateIndex-- {
-			state := node.StatesForPendingColorUpdate[pendingUpdateIndex]
-			for _, singleNodeState := range state.Reply.Status {
-				if singleNodeState.NodeId == nodeId {
-					// "params":[
-					// {
-					// 	"node_id":"FD000001",
-					// 	"color":"1223"
-					// },
-					if int(msg[node.REPLY_PAYLOAD_START_INDEX]) == node.UPDATE_COLOR_RESULT_OK {
-						for i := 0; i < len(singleNodeState.Color)/2; i++ {
-							nodeState.NodeReportedColor[util.GetGlassAreaFromStr(singleNodeState.Color[i*2])] =
-								int(singleNodeState.Color[i*2+1])
-						}
-					} else {
-						singleNodeState.Color = node.SetColorForNodeAsInvalid(singleNodeState.Color)
-					}
-					// Remove pending node, will only remove one, so we can remove when using range
-					for pendingNodeIndex, pendingNodeId := range state.PendingNodes {
-						if pendingNodeId == nodeId {
-							state.PendingNodes = append(state.PendingNodes[:pendingNodeIndex],
-								state.PendingNodes[pendingNodeIndex+1:]...)
-							break
-						}
-					}
-				}
-			}
-			if len(state.PendingNodes) == 0 {
-				// Remove the state if all pending nodes sent reply
-				node.StatesForPendingColorUpdate =
-					append(node.StatesForPendingColorUpdate[:pendingUpdateIndex],
-						node.StatesForPendingColorUpdate[pendingUpdateIndex+1:]...)
-				MqttPublishCh <- state.Reply
-			}
-		}
+		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
+			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case GET_GLASS_STATE_REPLY:
 		// TODO: complete the real handling
 		util.IotLogInfo("Received is get glass state reply")
 		for i := 0; i < 4; i++ {
-			nodeState.NodeReportedColor[i*2] = int(msg[15+i]) & 0xf0 >> 4
-			nodeState.NodeReportedColor[i*2+1] = int(msg[15+i]) & 0xf
+			nodeState.NodeReportedColor[i*2] = int(msg[node.REPLY_PAYLOAD_START_INDEX+i]) & 0xf0 >> 4
+			nodeState.NodeReportedColor[i*2+1] = int(msg[node.REPLY_PAYLOAD_START_INDEX+i]) & 0xf
 		}
+		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
+			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 	default:
-		util.IotLogInfo("Not handled msg, maybe it is sent from gateway")
+		util.IotLogErrorStr("Not handled msg, maybe it is sent from gateway")
 	}
 
 }
