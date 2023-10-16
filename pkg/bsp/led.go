@@ -18,7 +18,7 @@ func WriteLedFile(devName string, value int) {
 	defer file.Close()
 
 	// 要写入的数据
-	data := []byte(fmt.Sprint("%d", value))
+	data := []byte(fmt.Sprintf("%d", value))
 
 	// 将数据写入设备文件
 	_, err = file.Write(data)

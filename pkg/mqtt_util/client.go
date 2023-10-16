@@ -2,6 +2,7 @@ package mqtt_util
 
 import (
 	"fmt"
+	"iot_go/pkg/bsp"
 	"iot_go/pkg/util"
 	"log"
 	"sync"
@@ -33,6 +34,7 @@ func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
 	opts.SetMaxReconnectInterval(10 * time.Second)
 	opts.SetConnectionLostHandler(func(c mqtt.Client, err error) {
 		util.IotLogErrWithStr("!!!!!! mqtt connection lost error", err)
+		bsp.TurnOffLed("sys-led-net")
 	})
 	opts.SetReconnectingHandler(func(c mqtt.Client, options *mqtt.ClientOptions) {
 		util.IotLog("...... mqtt reconnecting ......")
@@ -41,6 +43,7 @@ func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
 		// 连接被建立后的回调函数
 		util.IotLog("Mqtt is connected!")
 		easyClient.OnConnected()
+		bsp.TurnOnLed("sys-led-net")
 	})
 	// opts.SetConnectionLostHandler(easyClient.ReconnectMqtt)
 	return opts
@@ -64,6 +67,7 @@ func (easyClient *MqttEasyClient) Subscribe() error {
 }
 
 func (easyClient *MqttEasyClient) OnConnected() {
+	util.IotLog("Connected, subscribe to topic...")
 	easyClient.Subscribe()
 }
 
@@ -78,6 +82,7 @@ func (easyClient *MqttEasyClient) ConnectAndSubscribe() error {
 		easyClient.createClient(opts)
 	}
 	easyClient.Wg.Add(1)
+	util.IotLog("Connecting...")
 	token := easyClient.Client.Connect()
 
 	if token.Wait() && token.Error() != nil {
