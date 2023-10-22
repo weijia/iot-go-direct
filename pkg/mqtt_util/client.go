@@ -13,12 +13,12 @@ import (
 
 type MqttEasyClient struct {
 	MqttParams
-	MqttClientId     string
-	Topic            string
-	ReceivingChannel *chan mqtt.Message
-	Client           mqtt.Client
-	IsReconnecting   bool
-	Wg               *sync.WaitGroup
+	MqttClientId                   string
+	Topic                          string
+	ReceivingChannel               *chan mqtt.Message
+	Client                         mqtt.Client
+	IsReconnecting                 bool
+	IsMqttConnectionReadyWaitGroup *sync.WaitGroup
 }
 
 func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
@@ -60,8 +60,8 @@ func (easyClient *MqttEasyClient) Subscribe() error {
 		return token.Error()
 	}
 	log.Printf("Subscribed to topic %s\n", easyClient.Topic)
-	if easyClient.Wg != nil {
-		easyClient.Wg.Done()
+	if easyClient.IsMqttConnectionReadyWaitGroup != nil {
+		easyClient.IsMqttConnectionReadyWaitGroup.Done()
 	}
 	return nil
 }
@@ -81,15 +81,24 @@ func (easyClient *MqttEasyClient) ConnectAndSubscribe() error {
 		opts := easyClient.createClientOptions()
 		easyClient.createClient(opts)
 	}
-	easyClient.Wg.Add(1)
-	util.IotLog("Connecting...")
-	token := easyClient.Client.Connect()
+	retryCnt := 0
+	for {
+		util.IotLog("Connecting...")
+		token := easyClient.Client.Connect()
 
-	if token.Wait() && token.Error() != nil {
-		// Connect to server error
-		return token.Error()
+		if token.Wait() && token.Error() != nil {
+			// Connect to server error
+			util.IotLogErrWithStr("First connect error, need to retry", token.Error())
+			// return token.Error()
+			retryCnt += 1
+			if retryCnt > 100 {
+				log.Fatal("Can not connect to server after retry 100 times")
+			}
+		} else {
+			easyClient.IsMqttConnectionReadyWaitGroup.Add(1)
+			return nil
+		}
 	}
-	return nil
 }
 
 // func (easyClient *MqttEasyClient) ReconnectMqtt(client mqtt.Client, err error) {

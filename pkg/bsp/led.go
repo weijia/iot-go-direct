@@ -2,6 +2,7 @@ package bsp
 
 import (
 	"fmt"
+	"iot_go/pkg/util"
 	"os"
 	"path/filepath"
 )
@@ -27,8 +28,7 @@ func WriteLedFile(devName string, value int) {
 		panic(err)
 	}
 
-	println("数据已写入设备文件:", devPath)
-
+	util.IotLog("数据已写入设备文件: %s, value: %d", devPath, value)
 }
 
 func TurnOnLed(devName string) {

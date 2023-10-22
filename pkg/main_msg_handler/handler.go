@@ -51,12 +51,12 @@ func InfiniteAppLoop(ctx context.Context, loraServiceIp string) {
 
 func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraServiceIp string) {
 	util.IotLog("Starting main app version: %s", bsp.SwVersion)
-	netLedCh := make(chan int)
+	runLedCh := make(chan int)
 
-	netLed := bsp.LedManager{
+	runLed := bsp.LedManager{
 		DeviceName:  "sys-led-run",
 		Timeout:     util.TO_SERVER_HEARTBEAT_SECONDS * 2,
-		HeartbeatCh: &netLedCh,
+		HeartbeatCh: &runLedCh,
 	}
 
 	// The application data structure can only be changed in this routine to
@@ -75,11 +75,11 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	var wg sync.WaitGroup
 	mainMsgHandler.MqttEasyClient = &mqtt_util.MqttEasyClient{
-		MqttParams:       mqtt_util.MqttParams(bsp.BspConfigInstance.MqttParams),
-		ReceivingChannel: &mainMsgHandler.MqttFromServerCh,
-		Topic:            topic,
-		MqttClientId:     bsp.BspConfigInstance.GatewayNodeId,
-		Wg:               &wg,
+		MqttParams:                     mqtt_util.MqttParams(bsp.BspConfigInstance.MqttParams),
+		ReceivingChannel:               &mainMsgHandler.MqttFromServerCh,
+		Topic:                          topic,
+		MqttClientId:                   bsp.BspConfigInstance.GatewayNodeId,
+		IsMqttConnectionReadyWaitGroup: &wg,
 	}
 
 	mainMsgHandler.MqttEasyClient.ConnectAndSubscribe()
@@ -89,7 +89,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	go netLed.LedMsgLoop(ctx)
+	go runLed.LedMsgLoop(ctx)
 
 	go lora_module.Module0.MsgLoop(ctx)
 	go lora_module.Module1.MsgLoop(ctx)
@@ -98,7 +98,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 
 	// Wait for mqtt subscribe done
 	wg.Wait()
-	mainMsgHandler.MqttEasyClient.Wg = nil // Do not need to set Wg again for reconnect
+	mainMsgHandler.MqttEasyClient.IsMqttConnectionReadyWaitGroup = nil // Do not need to set Wg again for reconnect
 
 	// 发布消息
 	var initMsg shared.Init
@@ -116,7 +116,9 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 		select {
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
 			mqttClient.SendToServer(publishingMqttMsg)
-			netLedCh <- 1
+			// util.IotLogInfo("Sent mqtt msg to server")
+			runLedCh <- 1
+			// util.IotLogInfo("Sent run led heartbeat")
 			// We put the restart here instead of after handling mqtt msg
 			// so we will only restart after msg published to server
 			if msg.IsRebootNeeded {
@@ -132,7 +134,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
 			reply := msg.HandleMqttMsg(ctx, mainMsgHandler.MqttToServerCh, mqttMsg.Payload())
-			netLedCh <- 1
+			runLedCh <- 1
 			if reply != nil {
 				util.SendMsgWithoutBlockingCommon(reply, mainMsgHandler.MqttToServerCh,
 					fmt.Sprintf("Sending to mqtt server ch failed: %v", reply))
@@ -180,6 +182,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			}
 			u.Status = l
 			mqttClient.SendToServer(u)
+			runLedCh <- 1
 		case <-ctx.Done():
 			cancel()
 			return

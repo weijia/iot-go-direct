@@ -26,8 +26,11 @@ func (client Mqtt) SendTo(topic string, data interface{}) {
 	payload, _ := json.Marshal(data)
 	token := (*client.Client).Publish(topic, 0, false, payload)
 	token.Wait()
-	IotLog("Published message: %s, %s", topic, string(payload))
-	// time.Sleep(1 * time.Second)
+	if token.Error() != nil {
+		IotLogErrWithStr("Publish error", token.Error())
+	} else {
+		IotLog("Published message: %s, %s", topic, string(payload))
+	}
 }
 
 func (client Mqtt) SendToServer(data interface{}) {
