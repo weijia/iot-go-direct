@@ -138,7 +138,7 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 		if err := json.Unmarshal(body, &req); err != nil {
 			util.IotLogError(err)
 		}
-		req.handle(mqttToServer)
+		go req.handle(mqttToServer)
 	}
 	return nil
 }

@@ -12,7 +12,7 @@ func (loraModule LoraModule) UpdateGlassColorForList(
 	for nodeIdStr, param := range colorUpdateParam {
 		c := node.GetUpdateGlassColorMsg(
 			nodeIdStr, param.Color)
-		reply := loraModule.SendNodeMsgWithRetryOrTimeout(c, util.UPDATE_GLASS_COLOR_RETRY_CNT)
+		reply := loraModule.SendNodeMsgWithRetryOrTimeout(c, util.UPDATE_GLASS_COLOR_RETRY_CNT, node.UPDATE_GLASS_COLOR_REPLY)
 		if reply == nil || !node.IsColorUpdateSuccess(reply) {
 			colorUpdateParam[nodeIdStr] = shared.UpdateGlassColorParams{
 				NodeId: nodeIdStr,

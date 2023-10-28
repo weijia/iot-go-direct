@@ -59,13 +59,15 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 			// util.IotLog("Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
 			loraModule.LoraClient.Send(m.Data)
 			isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
-			// util.IotLog("Bottom level wait for reply got: %v, %v", isTimeout, msg)
 			reply := NodeMsgReply{
 				Data:      msg,
 				IsTimeout: isTimeout,
 			}
-			*m.ReplyCh <- reply
-			close(*m.ReplyCh)
+			// util.IotLog("Bottom level wait for reply got is timeout: %v, msg: %v, send to reply ch: %p", isTimeout, msg, m.ReplyCh)
+			if m.ReplyCh != nil {
+				*m.ReplyCh <- reply
+				close(*m.ReplyCh)
+			}
 			// }
 		}
 		// util.IotLogInfo("Lora Module loop running")
@@ -110,6 +112,7 @@ func GetReplyOrTimeout(ch *chan NodeMsgReply) NodeMsgReply {
 	}
 	select {
 	case reply = <-*ch:
+		// util.IotLog("Got reply from base module msg loop: %v", reply)
 		eventTimer.Stop()
 		// util.IotLog("GetReplyOrTimeout received reply from level1, returning: %v", reply)
 	case <-eventTimer.C:
@@ -126,18 +129,22 @@ func (loraModule LoraModule) SendWithoutReply(data []byte) {
 	*loraModule.SendingToNodeCh <- msgReq
 }
 
-func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt int) []byte {
+func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt int, expectedMsgType int) []byte {
 	for i := 0; i < retryCnt; i++ {
 		ch := make(chan NodeMsgReply)
 		msgReq := NodeMsgReq{
 			Data:    msg,
 			ReplyCh: &ch,
 		}
+		// util.IotLog("Before sending to sendingToNodeCh")
 		*loraModule.SendingToNodeCh <- msgReq
+		// util.IotLog("After sending to sendingToNodeCh")
 		n := GetReplyOrTimeout(&ch)
-		if !n.IsTimeout {
+		if !n.IsTimeout && n.Data[node.REPLY_CMD_START_INDEX] == byte(expectedMsgType) {
+			// util.IotLog("Is not timeout, returning data: %v", n.Data)
 			return n.Data
 		}
+		util.IotLog("Timeout, retry sending msg: %v", msg)
 	}
 	return nil
 }

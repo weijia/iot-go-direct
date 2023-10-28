@@ -22,7 +22,8 @@ import (
 )
 
 func init() {
-	entries, err := os.ReadDir(msg.FIRMWARE_FOLDER)
+	appStorePath := filepath.Join(util.GetAppRoot(), msg.FIRMWARE_FOLDER)
+	entries, err := os.ReadDir(appStorePath)
 	var latestVersion float64
 	var latestApp string
 	latestApp = ""
@@ -43,7 +44,7 @@ func init() {
 		}
 		appPath, errGetExecutable := os.Executable()
 		curAppName := filepath.Base(appPath)
-		latestAppFullPath := filepath.Join(msg.FIRMWARE_FOLDER, latestApp)
+		latestAppFullPath := filepath.Join(appStorePath, latestApp)
 		if errGetExecutable == nil && latestApp != "" && curAppName != latestApp {
 			util.IotLog("Starting: %s from curAppName: %s", latestApp, curAppName)
 			cmd := exec.Command(latestAppFullPath)
@@ -58,7 +59,7 @@ func init() {
 			}
 		}
 	} else {
-		util.IotLogErrWithStr("Error reading the directory", err)
+		util.IotLogErrorWithFormatStr("Error reading app store folder: %s with err: %v", appStorePath, err)
 	}
 
 	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)

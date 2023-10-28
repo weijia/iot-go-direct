@@ -77,14 +77,17 @@ func InitConfig() {
 	viper.SetConfigType("json")
 	viper.AddConfigPath(util.GetAppRoot())
 	err := viper.ReadInConfig()
+	appRoot := util.GetAppRoot()
+	configFilePath := filepath.Join(appRoot, CONFIG_FILE_NAME)
 
 	if err != nil {
+		util.IotLogErrWithStr("vip read config error", err)
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
 		// BspConfigInstance.ConfigParams.Module1 = module1Param
 		// BspConfigInstance.ConfigParams.Module2 = module2Param
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
-		err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
+		err2 := os.WriteFile(configFilePath, defaultLocalConfig, 0666) //写入文件(字节数组)
 		if err2 != nil {
 			util.IotLogError(err2)
 		}
@@ -95,7 +98,7 @@ func InitConfig() {
 		}
 		viper.WriteConfig()
 	}
-	data, err := os.ReadFile(CONFIG_FILE_NAME)
+	data, err := os.ReadFile(configFilePath)
 	if err == nil && data != nil {
 		err = json.Unmarshal(data, &BspConfigInstance)
 		if err != nil {
@@ -104,7 +107,7 @@ func InitConfig() {
 	}
 	// Overwrite board related info to config
 	BspConfigInstance.SoftVersion = SwVersion
-	gatewayIdFilePath := filepath.Join(util.GetAppRoot(), "gateway_id.txt")
+	gatewayIdFilePath := filepath.Join(appRoot, "gateway_id.txt")
 	file, err := os.Open(gatewayIdFilePath)
 
 	if err == nil {

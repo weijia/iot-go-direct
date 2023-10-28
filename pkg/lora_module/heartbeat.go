@@ -26,7 +26,7 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 	}
 	for _, nodeIdStr := range nodeList {
 		util.IotLog("Sending heartbeat for %s", nodeIdStr)
-		reply := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetHeartBeatMsg(nodeIdStr), util.HEARTBEAT_RETRY_CNT)
+		reply := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetHeartBeatMsg(nodeIdStr), util.HEARTBEAT_RETRY_CNT, node.HEARTBEAT_REPLY)
 		// util.IotLog("SendHeartbeatForNode returned timeout & data: %v", reply)
 		if reply == nil {
 			if TimeoutNodeIdCh != nil {
@@ -34,7 +34,7 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 			}
 			util.IotLogErrorWithFormatStr("Heartbeat for %s no reply, will set node "+
 				"status as offline and send node init for it on public freq", nodeIdStr)
-			loraModule.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT)
+			loraModule.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.HEARTBEAT_REPLY)
 		}
 	}
 	if wg != nil {

@@ -10,7 +10,7 @@ func GetNodeInitMsg(nodeIdStr string, moduleParam shared.Module) []byte {
 	var result []byte
 	result = append(result, 0)                                                     // package len
 	result = append(result, 1)                                                     // node type 1 gateway
-	result = append(result, 3)                                                     // cmd type 1 node init
+	result = append(result, CONFIG_NODE_REQ)                                       // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id
 	result = append(result, util.DecodeId(nodeIdStr)...)                           // node id
 

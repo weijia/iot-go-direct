@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -63,7 +64,7 @@ func (req GatewayUpgradeRequest) handle() interface{} {
 		req.Params.TargetHardwareVersion !=
 			bsp.BspConfigInstance.HardVersion ||
 		targetSwVer <= localSwVer {
-		reply.State = "error"
+		reply.State = fmt.Sprintf("error, target: %f is less than current version: %f", targetSwVer, localSwVer)
 	} else {
 		err := Download(req.Params)
 		if err != nil {

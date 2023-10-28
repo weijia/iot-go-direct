@@ -2,14 +2,14 @@ package util
 
 import (
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 )
 
 const (
 	DOWNLOADING_FOLDER = "downloading"
 	FIRMWARE_FOLDER    = "apps"
-	CONFIG_FILE_NAME = "iot_go.json"
+	CONFIG_FILE_NAME   = "iot_go.json"
 )
 
 func GetAppRoot() string {
@@ -20,7 +20,7 @@ func GetAppRoot() string {
 		return "./"
 	}
 	executableDir := filepath.Dir(appPath)
-	IotLog("%s", executableDir)
+	IotLog("Root path: %s", executableDir)
 	appRoot := executableDir
 	if strings.Contains(executableDir, FIRMWARE_FOLDER) {
 		appRoot = filepath.Dir(executableDir)

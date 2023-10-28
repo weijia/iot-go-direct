@@ -50,7 +50,7 @@ func GetUpdateGlassColorMsg(nodeIdStr string, color string) []byte {
 	}
 	result = append(result, 0)                                                     // package len
 	result = append(result, 1)                                                     // node type 1 gateway
-	result = append(result, 5)                                                     // cmd type
+	result = append(result, UPDATE_GLASS_COLOR_REQ)                                // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
 	result = append(result, util.DecodeId(nodeIdStr)...) // node id
@@ -79,7 +79,7 @@ func GetGroupUpdateGlassColorMsg(nodeIdList [][]byte, color string) []byte {
 	}
 	result = append(result, 0)                                                     // package len
 	result = append(result, 1)                                                     // node type 1 gateway
-	result = append(result, 7)                                                     // cmd type group control
+	result = append(result, GROUP_UPDATE_COLOR_REQ)                                // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 
 	result = append(result, byte(len(nodeIdList))) // num of node
@@ -102,10 +102,10 @@ func GetBroadcastUpdateGlassColorMsg(gatewayId []byte, color string) []byte {
 		util.IotLogErrorStr(fmt.Sprintf("Color value invalid: %s\n", color))
 		return nil
 	}
-	result = append(result, 0)            // package len
-	result = append(result, 1)            // node type 1 gateway
-	result = append(result, 8)            // cmd type broadcast
-	result = append(result, gatewayId...) // gateway id must be 6 bytes
+	result = append(result, 0)                          // package len
+	result = append(result, 1)                          // node type 1 gateway
+	result = append(result, BROADCAST_UPDATE_COLOR_REQ) // cmd type
+	result = append(result, gatewayId...)               // gateway id must be 6 bytes
 
 	result = append(result, byte(len(color)/2)) // param len
 	result = append(result, data...)            // color
@@ -119,7 +119,7 @@ func GetRetrieveColorMsg(nodeIdStr string) []byte {
 	var result []byte
 	result = append(result, 0)                                                     // package len
 	result = append(result, 1)                                                     // node type 1 gateway
-	result = append(result, 9)                                                     // cmd type broadcast
+	result = append(result, GET_GLASS_STATE_REQ)                                   // cmd type
 	result = append(result, util.DecodeId(bsp.BspConfigInstance.GatewayNodeId)...) // gateway id must be 6 bytes
 	result = append(result, util.DecodeId(nodeIdStr)...)                           // node id
 
@@ -166,6 +166,7 @@ func GetColorWithArea(msg []byte) string {
 }
 
 func IsColorUpdateSuccess(msg []byte) bool {
+	util.IotLog("Update result: %v, %d, %d, %v", msg, msg[UPDATE_GLASS_COLOR_RESULT_INDEX], UPDATE_GLASS_COLOR_RESULT_INDEX, msg[UPDATE_GLASS_COLOR_RESULT_INDEX] == 1)
 	if msg[UPDATE_GLASS_COLOR_RESULT_INDEX] == 1 {
 		return true
 	} else {

@@ -28,7 +28,7 @@ func WriteLedFile(devName string, value int) {
 		panic(err)
 	}
 
-	util.IotLog("数据已写入设备文件: %s, value: %d", devPath, value)
+	util.IotLog("Write to LED device: %s, value: %d", devPath, value)
 }
 
 func TurnOnLed(devName string) {

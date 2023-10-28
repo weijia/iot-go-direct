@@ -12,7 +12,7 @@ func (loraModule LoraModule) SendNodeInitForList(
 	nodeParam map[string]shared.Module,
 	wg *sync.WaitGroup) {
 	for nodeIdStr, param := range nodeParam {
-		loraModule.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, param), util.NODE_INIT_RETRY_CNT)
+		loraModule.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, param), util.NODE_INIT_RETRY_CNT, node.CONFIG_NODE_REPLY)
 	}
 	wg.Done()
 }

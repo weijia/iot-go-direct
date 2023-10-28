@@ -30,26 +30,26 @@ const (
 	HEARTBEAT_COLOR_POS_START_INDEX = REPLY_NODE_ID_START_INDEX + NODE_ID_LEN // 13
 )
 
-func getAreaFromColorReport(r byte) int {
-	return (int(r)&0xf0)>>4 - 1
-}
+// func getAreaFromColorReport(r byte) int {
+// 	return (int(r)&0xf0)>>4 - 1
+// }
 
-func DumpBytes(a []byte) {
-	res := ""
-	for i := 0; i < len(a); i++ {
-		res += fmt.Sprintf("%02x ", a[i])
-		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
-		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
-	}
-	util.IotLog("%s", res)
-}
+// func DumpBytes(a []byte) {
+// 	res := ""
+// 	for i := 0; i < len(a); i++ {
+// 		res += fmt.Sprintf("%02x ", a[i])
+// 		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
+// 		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
+// 	}
+// 	util.IotLog("%s", res)
+// }
 
 func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) {
 	// Application's data change will only happen in this routine to ensure no
 	// concurrent data changes in different routines
-	util.IotLog("Received node message from module index: %d", msgRaw.ModuleIndex)
+	util.IotLog("Received node message from module index: %d, %v", msgRaw.ModuleIndex, msgRaw.Data)
 	msg := msgRaw.Data
-	DumpBytes(msg)
+	// DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
 		util.IotLogErrorWithFormatStr("Checksum incorrect, discard package: %v", msg)
@@ -108,6 +108,8 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UPDATE_GLASS_COLOR_REPLY:
+		util.IotLogInfo("Received is glass color update reply")
+		util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
 			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
 

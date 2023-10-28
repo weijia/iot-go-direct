@@ -1,6 +1,7 @@
 package msg
 
 import (
+	"encoding/hex"
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/lora_module"
@@ -32,16 +33,22 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 	reply.Status = make([]shared.UpdateGlassColorParams, 0, len(request.Params))
 
 	for _, param := range request.Params {
-		if bsp.IsInNodeList1(param.NodeId) {
-			colorUpdateForModule1[param.NodeId] = param
-		} else if bsp.IsInNodeList2(param.NodeId) {
-			colorUpdateForModule2[param.NodeId] = param
-		} else {
-			reply.Status = append(reply.Status, shared.UpdateGlassColorParams{
-				NodeId: param.NodeId,
-				Color:  node.SetColorForNodeAsInvalid(param.Color),
-			})
+		_, err := hex.DecodeString(param.Color)
+		if err == nil {
+			if bsp.IsInNodeList1(param.NodeId) {
+				colorUpdateForModule1[param.NodeId] = param
+				continue
+			}
+			if bsp.IsInNodeList2(param.NodeId) {
+				colorUpdateForModule2[param.NodeId] = param
+				continue
+			}
 		}
+
+		reply.Status = append(reply.Status, shared.UpdateGlassColorParams{
+			NodeId: param.NodeId,
+			Color:  node.SetColorForNodeAsInvalid(param.Color),
+		})
 	}
 	var wg sync.WaitGroup
 	if len(colorUpdateForModule1) > 0 {
