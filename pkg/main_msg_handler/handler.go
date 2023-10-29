@@ -164,6 +164,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			l := []msg.HeartbeatStatus{}
 			for _, state := range bsp.BspConfigInstance.NodeStates {
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
+					util.IotLog("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
 					if state.LastMsgTimestamp < currentTimestamp-int64(bsp.BspConfigInstance.Heartbeat) {
 						color = node.SetColorForNodeAsInvalid(color)
