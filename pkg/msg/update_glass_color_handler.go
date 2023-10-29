@@ -75,6 +75,7 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 			nodeState.NodeReportedColor[util.GetGlassAreaFromStr(singleNodeState.Color[i*2])] =
 				int(singleNodeState.Color[i*2+1])
 		}
+		util.IotLog("Updated state: %v, %v", nodeState, bsp.BspConfigInstance.NodeStates)
 	}
 
 	mqttToServer <- reply

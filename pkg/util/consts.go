@@ -9,6 +9,6 @@ const (
 	HEARTBEAT_RETRY_CNT                                    = 3
 	UPDATE_GLASS_COLOR_RETRY_CNT                           = 1
 	NODE_INIT_RETRY_CNT                                    = 3
-	APP_VERSION                                            = "2.10"
+	APP_VERSION                                            = "2.11"
 	// MAX_HEARTBEAT_RETRY_CNT        = 9999
 )

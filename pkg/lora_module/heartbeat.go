@@ -34,7 +34,7 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 			}
 			util.IotLogErrorWithFormatStr("Heartbeat for %s no reply, will set node "+
 				"status as offline and send node init for it on public freq", nodeIdStr)
-			Module0.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.HEARTBEAT_REPLY)
+			Module0.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.CONFIG_NODE_REPLY)
 		}
 	}
 	if wg != nil {
