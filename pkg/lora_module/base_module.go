@@ -112,7 +112,7 @@ func GetReplyOrTimeout(ch *chan NodeMsgReply) NodeMsgReply {
 	}
 	select {
 	case reply = <-*ch:
-		// util.IotLog("Got reply from base module msg loop: %v", reply)
+		util.IotLog("Got reply from base module msg loop: %v", reply)
 		eventTimer.Stop()
 		// util.IotLog("GetReplyOrTimeout received reply from level1, returning: %v", reply)
 	case <-eventTimer.C:
@@ -140,11 +140,16 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt 
 		*loraModule.SendingToNodeCh <- msgReq
 		// util.IotLog("After sending to sendingToNodeCh")
 		n := GetReplyOrTimeout(&ch)
-		if !n.IsTimeout && n.Data[node.REPLY_CMD_START_INDEX] == byte(expectedMsgType) {
-			// util.IotLog("Is not timeout, returning data: %v", n.Data)
-			return n.Data
+		if !n.IsTimeout {
+			if n.Data[node.REPLY_CMD_START_INDEX] == byte(expectedMsgType) {
+				// util.IotLog("Is not timeout, returning data: %v", n.Data)
+				return n.Data
+			} else {
+				util.IotLog("Received reply: %v, cmd: %d, expected: %d", n.Data, n.Data[node.REPLY_CMD_START_INDEX], expectedMsgType)
+			}
+		} else {
+			util.IotLog("Timeout, retry sending msg: %v", msg)
 		}
-		util.IotLog("Timeout, retry sending msg: %v", msg)
 	}
 	return nil
 }

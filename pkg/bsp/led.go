@@ -2,7 +2,6 @@ package bsp
 
 import (
 	"fmt"
-	"iot_go/pkg/util"
 	"os"
 	"path/filepath"
 )
@@ -28,7 +27,7 @@ func WriteLedFile(devName string, value int) {
 		panic(err)
 	}
 
-	util.IotLog("Write to LED device: %s, value: %d", devPath, value)
+	// util.IotLog("Write to LED device: %s, value: %d", devPath, value)
 }
 
 func TurnOnLed(devName string) {

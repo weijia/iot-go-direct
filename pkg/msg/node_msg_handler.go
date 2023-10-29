@@ -78,7 +78,7 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s", nodeId))
 		node.UpdateNodeStateForInitReply(msg)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Send received node reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UNKNOWN_NODE_REPLY:
 		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
@@ -105,13 +105,13 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		// util.IotLog("After update according to heartbeat: %v", nodeState.NodeReportedColor)
 		// util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Send received heartbeat reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UPDATE_GLASS_COLOR_REPLY:
 		util.IotLogInfo("Received is glass color update reply")
 		util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Send received update glass color reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case GET_GLASS_STATE_REPLY:
 		// TODO: complete the real handling
@@ -121,7 +121,7 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 			nodeState.NodeReportedColor[i*2+1] = int(msg[node.REPLY_PAYLOAD_START_INDEX+i]) & 0xf
 		}
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send msg %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Send received glass state reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 	default:
 		util.IotLogErrorStr("Not handled msg, maybe it is sent from gateway")
 	}

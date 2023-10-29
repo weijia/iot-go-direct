@@ -132,6 +132,14 @@ func saveConfig(configParams shared.ConfigParams) {
 	bsp.BspConfigInstance.InitMsgContent.Module1 = configParams.Module1
 	bsp.BspConfigInstance.InitMsgContent.Module2 = configParams.Module2
 	bsp.BspConfigInstance.BaseConfigParams = configParams.BaseConfigParams
+	if bsp.BspConfigInstance.Heartbeat <=0 {
+		bsp.BspConfigInstance.Heartbeat = 20
+	}
+	// TODO: update work around for list 2 empty
+	if bsp.BspConfigInstance.BaseConfigParams.NodeList2[0] == "        " {
+		bsp.BspConfigInstance.BaseConfigParams.NodeList2 = 
+			bsp.BspConfigInstance.BaseConfigParams.NodeList2[:0]
+	}
 	bsp.BspConfigInstance.CommitChanges()
 }
 

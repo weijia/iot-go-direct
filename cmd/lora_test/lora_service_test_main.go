@@ -70,7 +70,7 @@ func main() {
 
 		b := node.GetNodeInitMsg(
 			"01020304", bsp.BspConfigInstance.InitMsgContent.Module1)
-		// h := node.GetHeartBeatMsg(
+		// h := node.GetHeartbeatMsg(
 		// 	bsp.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
 		// 	bsp.DecodeId("01020304"))
 		// c := node.GetUpdateGlassColorMsg(

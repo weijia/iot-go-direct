@@ -11,7 +11,7 @@ type FixedIotConfig struct {
 	GatewayNodeId string
 	HardVersion   string
 	Ccid          string
-	HeartBeat     int
+	Heartbeat     int
 }
 
 func (fixedIotConfig FixedIotConfig) GetBroker() string {
@@ -34,6 +34,6 @@ func (fixedIotConfig FixedIotConfig) GetCcid() string {
 	return fixedIotConfig.Ccid
 }
 
-func (fixedIotConfig FixedIotConfig) GetHeartBeat() int {
-	return fixedIotConfig.HeartBeat
+func (fixedIotConfig FixedIotConfig) GetHeartbeat() int {
+	return fixedIotConfig.Heartbeat
 }

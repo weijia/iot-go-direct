@@ -9,7 +9,7 @@ type NodeInfoContent struct {
 	NodeType      int    `json:"node_type"`
 	Rssi          int    `json:"rssi"`
 	Ccid          string `json:"ccid"`
-	HeartBeat     int    `json:"heart_beat"`
+	Heartbeat     int    `json:"heart_beat"`
 	Module1       Module `json:"module1"`
 	Module2       Module `json:"module2"`
 }
