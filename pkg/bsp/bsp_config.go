@@ -26,12 +26,12 @@ type BspConfig struct {
 var SwVersion = util.APP_VERSION
 
 var module0Param = shared.Module{
-	Freq:   4734,
+	Freq:   4723,
 	Band:   250,
 	Factor: 9,
 }
 var module1Param = shared.Module{
-	Freq:   4723,
+	Freq:   4734,
 	Band:   250,
 	Factor: 9,
 }

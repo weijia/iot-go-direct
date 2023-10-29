@@ -55,7 +55,7 @@ func (virtualBsp VirtualBsp) SafeUploadTelemetry(nodeId string, data interface{}
 
 func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
-	util.IotLog("Setting Module0 Params", moduleParamsInJson)
+	util.IotLog("Setting Module0 Params: %v", moduleParamsInJson)
 
 	data := map[string]interface{}{
 		"module0": fmt.Sprintf("band: %d, factor: %d, freq: %d",

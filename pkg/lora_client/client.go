@@ -57,6 +57,7 @@ func (client LoraClient) CallWithReconnect(serviceMethod string, args any, reply
 
 func (client LoraClient) InitLora(module shared.Module) {
 	var reply lora_shared.ReplyResult
+	util.IotLog("Initiate Lora req: %v, %s", module, client.Address)
 	err := client.CallWithReconnect("LoraRpc.InitLora", module, &reply)
 	if err != nil {
 		util.IotLogErrWithStr("Lora.InitLora error:", err)
