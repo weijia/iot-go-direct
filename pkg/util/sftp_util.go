@@ -22,7 +22,7 @@ func Download(sftpInfo shared.SftpInfo, localPath string, isDownloading bool) er
 	// 连接到远程SSH服务器
 	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", sftpInfo.IP, sftpInfo.Port), config)
 	if err != nil {
-		IotLogErrorStr(fmt.Sprintf("无法连接到SSH服务器：%v", err))
+		IotLogErrorStr(fmt.Sprintf("无法连接到SSH服务器: %v", err))
 		return err
 	}
 	defer conn.Close()
@@ -30,7 +30,7 @@ func Download(sftpInfo shared.SftpInfo, localPath string, isDownloading bool) er
 	// 创建SFTP客户端
 	client, err := sftp.NewClient(conn)
 	if err != nil {
-		IotLogErrorStr(fmt.Sprintf("无法创建SFTP客户端：%v", err))
+		IotLogErrorStr(fmt.Sprintf("无法创建SFTP客户端: %v", err))
 		return err
 	}
 	defer client.Close()
@@ -73,7 +73,7 @@ func Download(sftpInfo shared.SftpInfo, localPath string, isDownloading bool) er
 		}
 
 		var srcReader io.Reader
-		
+
 		if fileInfo.IsDir() {
 			// Read the contents of the directory
 			entries, err := os.ReadDir(localFilePath)
@@ -87,7 +87,7 @@ func Download(sftpInfo shared.SftpInfo, localPath string, isDownloading bool) er
 			for _, entry := range entries {
 				filenameList += entry.Name() + "\n"
 			}
-    		srcReader = strings.NewReader(filenameList)
+			srcReader = strings.NewReader(filenameList)
 		} else {
 			localFile, err := os.Open(localFilePath)
 			if err != nil {
@@ -99,7 +99,7 @@ func Download(sftpInfo shared.SftpInfo, localPath string, isDownloading bool) er
 		}
 
 		// 创建远程文件
-		remoteFile, err := client.Create(remoteFilePath)
+		remoteFile, err := client.Create("/home/ota/upgrade/upload")
 		if err != nil {
 			IotLogError(err)
 			return err

@@ -6,7 +6,7 @@ type GatewayUpgradeParams struct {
 	TargetSoftwareVersion string `json:"target_software_version"`
 	NodeType              int    `json:"node_type"`
 	Crc8                  int    `json:"crc8"`
-
+	IsUpload              int    `json:"is_upload"`
 	SftpInfo
 	// IP                    string `json:"ip"`
 	// Port                  int    `json:"port"`

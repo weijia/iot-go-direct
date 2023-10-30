@@ -49,6 +49,14 @@ func (req GatewayUpgradeRequest) handle() interface{} {
 	reply.MsgType = "gateway_upgrade_reply"
 	reply.GatewayUpgradeParams = req.Params
 	reply.State = "OK"
+
+	if req.Params.IsUpload != 0 {
+		err := util.Download(req.Params.SftpInfo, req.Params.SftpInfo.Path, false)
+		if err != nil {
+			reply.State = "error," + err.Error()
+		}
+	}
+
 	targetSwVer, err := strconv.ParseFloat(req.Params.TargetSoftwareVersion, 32)
 	if err != nil {
 		reply.State = "error, " + err.Error()
