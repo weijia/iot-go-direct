@@ -129,8 +129,13 @@ func GetRetrieveColorMsg(nodeIdStr string) []byte {
 }
 
 func SetColorForNodeAsInvalid(color string) string {
+	strLen := len(color)
+	if strLen%2 != 0 {
+		util.IotLogErrorWithFormatStr("Invalid color string: %s", color)
+		strLen -= 1
+	}
 	// set every second character as "f" for color
-	for i := 0; i < len(color); i++ {
+	for i := 0; i < strLen; i++ {
 		if i%2 == 0 {
 			color = color[:i+1] + "f" + color[i+2:]
 		}

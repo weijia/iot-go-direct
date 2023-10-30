@@ -9,6 +9,7 @@ func DecodeHex(i string) []byte {
 	b, err := hex.DecodeString(i)
 	if err != nil {
 		IotLogError(err)
+		b = []byte{}
 	}
 	return b
 }
