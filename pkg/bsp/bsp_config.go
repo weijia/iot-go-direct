@@ -132,9 +132,11 @@ func InitConfig() {
 }
 
 func (bspConfig BspConfig) CommitChanges() {
+	appRoot := util.GetAppRoot()
+	configFilePath := filepath.Join(appRoot, CONFIG_FILE_NAME)
 	defaultLocalConfig, _ := json.MarshalIndent(bspConfig, "", "    ")
 	/*******************  使用 ioutil.WriteFile 写入文件 *****************/
-	err2 := os.WriteFile(CONFIG_FILE_NAME, defaultLocalConfig, 0666) //写入文件(字节数组)
+	err2 := os.WriteFile(configFilePath, defaultLocalConfig, 0666) //写入文件(字节数组)
 	if err2 != nil {
 		util.IotLogError(err2)
 	}

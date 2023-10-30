@@ -9,6 +9,7 @@ import (
 
 func (loraModule LoraModule) UpdateGlassColorForList(
 	colorUpdateParam map[string]shared.UpdateGlassColorParams, wg *sync.WaitGroup) {
+	loraModule.Mutex.Lock()
 	for nodeIdStr, param := range colorUpdateParam {
 		c := node.GetUpdateGlassColorMsg(
 			nodeIdStr, param.Color)
@@ -20,5 +21,6 @@ func (loraModule LoraModule) UpdateGlassColorForList(
 			}
 		}
 	}
+	loraModule.Mutex.Unlock()
 	wg.Done()
 }

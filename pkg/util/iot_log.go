@@ -57,6 +57,15 @@ type LogConfigParams struct {
 func ConfigLogFile(logFilename string, params LogConfigParams) {
 	logTargetFolder := filepath.Join(GetAppRoot(), "logs")
 	logTarget := filepath.Join(logTargetFolder, logFilename)
+	maxSize := params.MaxSize
+	if maxSize == 0 {
+		maxSize = 5
+	}
+	maxBackups := params.MaxBackups
+	if maxBackups == 0 {
+		maxBackups = 10
+	}
+	IotLog("Max backupsize: %d, max backups: %d", maxSize, maxBackups)
 	r := &lumberjack.Logger{
 		Filename:   logTarget,
 		MaxSize:    params.MaxSize,    //日志最大的大小（M）
