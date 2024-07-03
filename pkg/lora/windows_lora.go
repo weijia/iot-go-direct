@@ -1,4 +1,4 @@
-//go:build !arm
+//go:build windows
 
 package lora
 

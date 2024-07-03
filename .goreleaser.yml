@@ -4,10 +4,7 @@ builds:
     main: ./cmd/iot/main.go
     goos:
       - linux
-      - windows
     goarch:
-      - amd64
-      - arm64
       - arm
     env:
       - CGO_ENABLED=1
@@ -21,6 +18,16 @@ builds:
       - -mod=readonly
     ldflags:
       - -s -w -X main.version={{.Version}}
+      
+  - binary: iot_go
+    main: ./cmd/iot/main.go
+    goos:
+      - windows
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+
 before:
   hooks:
     - echo "Running pre-build hook"
