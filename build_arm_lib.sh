@@ -1,4 +1,9 @@
 #!/bin/bash
+path
+ls
+ls /sysroot/linux/armhf/usr/lib/arm-linux-gnueabihf/
+ls /sysroot/linux/armhf/opt/
+find . arm-linux-gnueabihf-gcc
 export CC=arm-linux-gnueabihf-gcc
 arm-linux-gnueabihf-gcc -c -o pan3028.o pan3028-app\pan3028.c 
 arm-linux-gnueabihf-gcc -c -o pan3028_port.o pan3028-app\pan3028_port.c
