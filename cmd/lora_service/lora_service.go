@@ -15,9 +15,7 @@ func main() {
 	// 用户
 	var devName string
 	var pushHost string
-	// // 密码
-	// var password string
-	// // 主机名
+
 	// var host string
 	// 端口号
 	var port int

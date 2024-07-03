@@ -1,35 +1,32 @@
 {
-    "cSpell.words": [
-        "gojsonschema",
-        "Mqtt",
-        "paho",
-        "spidev",
-        "thingsboard",
-        "xeipuuv"
-    ],
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "**/.classpath": true,
-        "**/.project": true,
-        "**/.settings": true,
-        "**/.factorypath": true,
-        "**/*.o": true,
-        "**/*.a": true,
-        "**/go.mod": true,
-        "**/*.exe": true,
-        "logs": true
-    },
-    "explorerExclude.backup": {},
-    "triggerTaskOnSave.tasks": {
-        "build": [
-            "int_test_main.go",
-            "*.h",
-            "*.c",
-        ],
-    }
+  "cSpell.words": [
+    "gojsonschema",
+    "Mqtt",
+    "paho",
+    "spidev",
+    "thingsboard",
+    "xeipuuv"
+  ],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true,
+    "**/*.o": true,
+    "**/*.a": true,
+    "**/go.mod": true,
+    "**/*.exe": true,
+    "logs": true
+  },
+  "explorerExclude.backup": {},
+  "triggerTaskOnSave.tasks": {
+    "build": ["int_test_main.go", "*.h", "*.c"]
+  },
+  "hide-files.files": []
 }

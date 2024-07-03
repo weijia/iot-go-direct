@@ -1,4 +1,5 @@
-set CC=arm-linux-gnueabihf-gcc
+#!/bin/bash
+export CC=arm-linux-gnueabihf-gcc
 arm-linux-gnueabihf-gcc -c -o pan3028.o pan3028-app\pan3028.c 
 arm-linux-gnueabihf-gcc -c -o pan3028_port.o pan3028-app\pan3028_port.c
 arm-linux-gnueabihf-gcc -c -o spi-3028.o pan3028-app\spi-3028.c 
