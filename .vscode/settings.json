@@ -3,7 +3,9 @@
     "gojsonschema",
     "Mqtt",
     "paho",
+    "pflag",
     "spidev",
+    "supervisord",
     "thingsboard",
     "xeipuuv"
   ],

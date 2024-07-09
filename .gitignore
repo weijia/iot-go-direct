@@ -11,3 +11,5 @@ lora_service
 cmd/iot/firmware/
 *.txt
 cmd/iot/apps/*
+webgui/
+supervisord.ini
