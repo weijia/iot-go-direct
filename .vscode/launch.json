@@ -16,8 +16,9 @@
       "name": "Launch iot cobra",
       "type": "go",
       "request": "launch",
+      "preLaunchTask": "remove config file for test",
       "mode": "auto",
-      "program": "cmd\\cobra_main",
+      "program": "cmd\\cobra_main"
       // "args": ["status"]
       // "args": ["-s", "192.168.1.20", "-p", "192.168.1.18"]
     },
@@ -27,7 +28,26 @@
       "request": "launch",
       "mode": "auto",
       "program": "cmd\\cobra_main",
-      "args": ["lora"]
+      // "args": ["lora"],
+      "args": [
+        "lora",
+        "--dev",
+        "/dev/spidev1.0",
+        "--port",
+        "8888",
+        "--host_ip",
+        "127.0.0.1"
+      ]
+      // "args": ["-s", "192.168.1.20", "-p", "192.168.1.18"]
+    },
+    {
+      "name": "Launch main loop cobra",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "cmd\\cobra_main",
+      // "args": ["lora"],
+      "args": ["main_loop"]
       // "args": ["-s", "192.168.1.20", "-p", "192.168.1.18"]
     }
   ]

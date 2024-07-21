@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
     "gojsonschema",
+    "logfile",
+    "maxbytes",
     "Mqtt",
     "paho",
     "pflag",

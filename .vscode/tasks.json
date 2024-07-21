@@ -22,6 +22,16 @@
                 "kind": "build",
                 "isDefault": true
             }
-        }
+        },
+        {
+            "label": "remove config file for test",
+            "type": "shell",
+            "command": "${workspaceFolder}/cmd/cobra_main/del-config-file.bat",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
     ]
 }

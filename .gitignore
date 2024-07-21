@@ -13,3 +13,4 @@ cmd/iot/firmware/
 cmd/iot/apps/*
 webgui/
 supervisord.ini
+*.log

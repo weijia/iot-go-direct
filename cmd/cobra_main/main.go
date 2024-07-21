@@ -34,10 +34,9 @@ var rootCmd = &cobra.Command{
 				log.Fatal("Can not get executable")
 			}
 			appFullPath = curRunningExecutable
-		} else {
-			// Add main app entry
-			stringMap["main"] = appFullPath
 		}
+		stringMap["main"] = fmt.Sprintf("%s main_loop", strings.Replace(appFullPath, "\\", "\\\\", -1))
+
 
 		stringMap["lora1"] = fmt.Sprintf("%s lora --dev /dev/spidev1.0 --port 8866 --host_ip 127.0.0.1", strings.Replace(appFullPath, "\\", "\\\\", -1))
 		stringMap["lora2"] = fmt.Sprintf("%s lora --dev /dev/spidev2.0 --port 8867 --host_ip 127.0.0.1", strings.Replace(appFullPath, "\\", "\\\\", -1))
@@ -46,6 +45,7 @@ var rootCmd = &cobra.Command{
 		supervisord_manager.GenerateConfig(stringMap)
 
 		supervisord_main.RealMain()
+		
 	},
 }
 
