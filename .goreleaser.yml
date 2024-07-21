@@ -18,7 +18,7 @@ builds:
     flags:
       - -mod=readonly
     ldflags:
-      - -s -static -w -X main.version={{.Version}}
+      - -s -extldflags --static -w -X main.version={{.Version}}
 
   - id: iot_go-win
     binary: iot_go
