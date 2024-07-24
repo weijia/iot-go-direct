@@ -1,6 +1,13 @@
 //go:build linux
 package bsp
 
+
+import (
+	"path/filepath"
+	"os"
+	"fmt"
+)
+
 func WriteLedFile(devName string, value int) {
 	rootPath := "/sys/devices/platform/leds/leds"
 	devPath := filepath.Join(filepath.Join(rootPath, devName), "brightness")
