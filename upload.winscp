@@ -1,13 +1,13 @@
 # Connect to SFTP server using a password
-#open sftp://root@192.168.1.48/ -certificate="*"
+open sftp://root@192.168.1.34/ -certificate="*"
 # Upload file
 #put lora_service /home/root/
-#put main /home/root/
+put main /home/root/
 
-open sftp://ota:123123@120.79.55.61/ -certificate="*"
+#open sftp://ota:123123@120.79.55.61/ -certificate="*"
 # Upload file
 # put lora_service /home/root/
-put main /home/ota/upgrade/
+#put main /home/ota/upgrade/
 
 # Exit WinSCP
 exit
