@@ -11,7 +11,7 @@ builds:
       - CGO_ENABLED=1
       - CC=arm-linux-gnueabihf-gcc
       - CXX=arm-linux-gnueabihf-g++
-      - CGO_CFLAGS="--sysroot=/sysroot/linux/armhf -v"
+      - CGO_CFLAGS="--sysroot=/sysroot/linux/armhf -v -L/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib"
       - CGO_LDFLAGS="--sysroot=/sysroot/linux/armhf -L/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib"
       - PKG_CONFIG_SYSROOT_DIR=/sysroot/linux/armhf
       - C_INCLUDE_PATH=/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/include
