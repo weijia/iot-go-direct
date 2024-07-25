@@ -31,7 +31,7 @@ jobs:
           wget -q https://releases.linaro.org/components/toolchain/binaries/6.5-2018.12/arm-linux-gnueabihf/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           mv gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz /tmp/
           sudo mkdir -p /sysroot/linux/armhf
-          sudo chmod -R 755 /sysroot/linux/armhf
+          sudo chmod -R 777 /sysroot/linux/armhf
           pushd /sysroot/linux/armhf
           tar -xf /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           ls
