@@ -33,7 +33,7 @@ jobs:
           sudo mkdir -p /sysroot/linux/armhf
           sudo chmod -R 755 /sysroot/linux/armhf
           pushd /sysroot/linux/armhf
-          tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
+          tar -xf /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           ls
           popd
           echo "--"
