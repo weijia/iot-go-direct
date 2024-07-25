@@ -35,7 +35,9 @@ jobs:
           tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           popd
           echo "--"
-          ls /tmp/
+          ls /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin
+          echo "---"
+          ls /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/
           echo "--"
           ls
           export PATH=/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH
