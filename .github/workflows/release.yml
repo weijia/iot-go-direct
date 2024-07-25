@@ -30,21 +30,23 @@ jobs:
           # wget -q https://releases.linaro.org/components/toolchain/binaries/latest-7/arm-linux-gnueabihf/gcc-linaro-7.5.0-2019.12-x86_64_arm-linux-gnueabihf.tar.xz
           wget -q https://releases.linaro.org/components/toolchain/binaries/6.5-2018.12/arm-linux-gnueabihf/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           mv gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz /tmp/
-          ls
-          pushd /tmp/
+          sudo mkdir -p /sysroot/linux/armhf
+          sudo chmod -R 755 /sysroot/linux/armhf
+          pushd /sysroot/linux/armhf
           tar -xf gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
+          ls
           popd
           echo "--"
-          ls /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin
+          ls /sysroot/linux/armhf/bin
           echo "---"
-          ls /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/
+          ls /sysroot/linux/armhf
           echo "--"
           ls
           export PATH=/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH
           # 将目录添加到 PATH, 不再支持
           # echo "::add-path::/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin"
           # 假设我们想要将/path/to/your/directory添加到PATH中  
-          echo "/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH" >> $GITHUB_PATH
+          echo "/sysroot/linux/armhf/bin:$PATH" >> $GITHUB_PATH
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
