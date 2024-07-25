@@ -14,6 +14,7 @@ builds:
       - CGO_CFLAGS=--sysroot=/sysroot/linux/armhf
       - CGO_LDFLAGS=--sysroot=/sysroot/linux/armhf
       - PKG_CONFIG_SYSROOT_DIR=/sysroot/linux/armhf
+      - C_INCLUDE_PATH=/sysroot/linux/armhf/arm-linux-gnueabihf/include/c++/6.5.0
       - PKG_CONFIG_PATH=/sysroot/linux/armhf/opt/vc/lib/pkgconfig:/sysroot/linux/armhf/usr/lib/arm-linux-gnueabihf/pkgconfig:/sysroot/linux/armhf/usr/lib/pkgconfig:/sysroot/linux/armhf/usr/local/lib/pkgconfig
     flags:
       - -mod=readonly
