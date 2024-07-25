@@ -41,6 +41,8 @@ jobs:
           echo "--"
           ls
           export PATH=/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH
+          # 将目录添加到 PATH
+          echo "::add-path::/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin"
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
