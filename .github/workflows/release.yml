@@ -32,7 +32,7 @@ jobs:
           mv gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz /tmp/
           sudo mkdir -p /sysroot/linux
           sudo chmod -R 777 /sysroot/linux
-          pushd /sysroot/linux/armhf
+          pushd /sysroot/linux
           tar -xf /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           mv gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf armhf
           ls
@@ -43,7 +43,7 @@ jobs:
           ls /sysroot/linux/armhf
           echo "--"
           ls
-          export PATH=/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH
+          # export PATH=/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin:$PATH
           # 将目录添加到 PATH, 不再支持
           # echo "::add-path::/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin"
           # 假设我们想要将/path/to/your/directory添加到PATH中  
