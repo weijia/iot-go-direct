@@ -20,7 +20,7 @@ builds:
     flags:
       - -mod=readonly
     ldflags:
-      - -s -extldflags --static -w -X main.version={{.Version}}
+      - -s -extldflags "--static -L /sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib" -w -X main.version={{.Version}}
 
   - id: iot_go-win
     binary: iot_go
