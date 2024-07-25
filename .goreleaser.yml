@@ -17,6 +17,7 @@ builds:
       - C_INCLUDE_PATH=/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/include
       - LIBRARY_PATH=/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib
       - LD_LIBRARY_PATH=/sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib
+      - CFLAGS="--sysroot=/sysroot/linux/armhf"
       - PKG_CONFIG_PATH=/sysroot/linux/armhf/opt/vc/lib/pkgconfig:/sysroot/linux/armhf/usr/lib/arm-linux-gnueabihf/pkgconfig:/sysroot/linux/armhf/usr/lib/pkgconfig:/sysroot/linux/armhf/usr/local/lib/pkgconfig
     flags:
       - -mod=readonly
