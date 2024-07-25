@@ -35,7 +35,8 @@ jobs:
           pushd /sysroot/linux
           tar -xf /tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf.tar.xz
           mv gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf armhf
-          ls
+          ls armhf
+          ls armhf/arm-linux-gnueabihf/include/c++/6.5.0
           popd
           echo "--"
           ls /sysroot/linux/armhf/bin
