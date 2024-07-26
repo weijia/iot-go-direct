@@ -49,6 +49,8 @@ jobs:
           # echo "::add-path::/tmp/gcc-linaro-6.5.0-2018.12-x86_64_arm-linux-gnueabihf/bin"
           # 假设我们想要将/path/to/your/directory添加到PATH中  
           echo "/sysroot/linux/armhf/bin:$PATH" >> $GITHUB_PATH
+          cp /sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib/crt*.o .
+          
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
