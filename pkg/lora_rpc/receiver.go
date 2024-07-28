@@ -17,7 +17,7 @@ func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, r
 	// util.IotLog("RPC:  called")
 	*recvChannel <- argType
 	// log.Println("RPC: after put to channel")
-	util.IotLog("-------------------Received lora msg: %v", argType)
+	util.IotLog("---------------Received lora msg: %v", argType)
 	reply.Result = 0
 	return nil
 }

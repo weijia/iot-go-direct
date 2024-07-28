@@ -86,7 +86,7 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 	for {
 		select {
 		case <-eventTimer.C:
-			util.IotLog("IsReplyTimeout return due to timeout")
+			util.IotLog("IsReplyTimeout return due to timeout, index: %d", loraModule.LoraIndex)
 			return true, nil
 		case nodeReply := <-*loraModule.ReceivingCh:
 			util.IotLog("Received node msg from main msg loop (lora module ch): %p", loraModule.ReceivingCh)

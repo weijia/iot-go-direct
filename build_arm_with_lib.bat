@@ -1,4 +1,8 @@
 rem PATH=%PATH%;D:\迅雷下载\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf.tar\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf\bin\
+
+copy version\version-tpl.txt version\version.go
+echo var BuildDate = "%DATE% %TIME%" >> version\version.go
+
 set CGO_ENABLED=1
 set GOARCH=arm
 set GOOS=linux

@@ -52,7 +52,7 @@ func (easyClient *MqttEasyClient) createClientOptions() *mqtt.ClientOptions {
 func (easyClient *MqttEasyClient) Subscribe() error {
 	// 重新连接成功后重新订阅主题
 	token := easyClient.Client.Subscribe(easyClient.Topic, 0, func(client mqtt.Client, mqttMsg mqtt.Message) {
-		util.IotLog("Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic())
+		util.IotLog(">>>>>>>>>>>>>>>Received message: %s from topic: %s", mqttMsg.Payload(), mqttMsg.Topic())
 		*easyClient.ReceivingChannel <- mqttMsg
 	})
 

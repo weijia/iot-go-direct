@@ -29,7 +29,7 @@ func (client Mqtt) SendTo(topic string, data interface{}) {
 	if token.Error() != nil {
 		IotLogErrWithStr("Publish error", token.Error())
 	} else {
-		IotLog("Published message: %s, %s", topic, string(payload))
+		IotLog("<<<<<<<<<<<<<<<Published message: %s, %s", topic, string(payload))
 	}
 }
 
