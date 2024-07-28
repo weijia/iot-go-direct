@@ -1,13 +1,22 @@
 {
   "cSpell.words": [
+    "armhf",
+    "extldflags",
+    "gnueabihf",
+    "goarch",
     "gojsonschema",
+    "goreleaser",
+    "ldflags",
+    "libc",
     "logfile",
     "maxbytes",
     "Mqtt",
     "paho",
     "pflag",
+    "pkgconfig",
     "spidev",
     "supervisord",
+    "sysroot",
     "thingsboard",
     "xeipuuv"
   ],
