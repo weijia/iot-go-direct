@@ -17,7 +17,7 @@ builds:
     flags:
       - -mod=readonly
     ldflags:
-      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc " -w -X main.version={{.Version}}
+      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc " -w -X main.version={{.Version}} version.BuildDate={{.Date}} version.Version=${VERSION}
 
   - id: iot_go-win
     binary: iot_go
