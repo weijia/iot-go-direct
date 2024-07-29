@@ -2,7 +2,7 @@
 builds:
   - id: iot_go-arm
     binary: iot_go
-    main: ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go
+    main: ./cmd/cobra_main/
     goos:
       - linux
     goarch:
@@ -21,7 +21,7 @@ builds:
 
   - id: iot_go-win
     binary: iot_go
-    main: ./cmd/iot/main.go
+    main: ./cmd/cobra_main/
     goos:
       - windows
     goarch:
