@@ -2,7 +2,7 @@
 builds:
   - id: iot_go-arm
     binary: iot_go
-    main: ./cmd/cobra_main/main.go
+    main: ./cmd/cobra_main/
     goos:
       - linux
     goarch:
@@ -17,11 +17,11 @@ builds:
     flags:
       - -mod=readonly
     ldflags:
-      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc " -w -X main.version={{.Version}}
+      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc " -w -X main.version={{.Version}} -X version.BuildDate={{.Date}} -X version.Version=${VERSION}
 
   - id: iot_go-win
     binary: iot_go
-    main: ./cmd/iot/main.go
+    main: ./cmd/cobra_main/
     goos:
       - windows
     goarch:
