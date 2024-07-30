@@ -7,7 +7,6 @@ import (
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 	"sync"
-	"time"
 )
 
 type ConfigRequest struct {
@@ -61,38 +60,23 @@ func IsModuleParamChanged(config ConfigRequest) bool {
 var IsInitDone = false
 var IsInitOngoing = false
 
-func SendHeartbeatOnce(ctx context.Context, wg *sync.WaitGroup) {
-	// Send heartbeat to Module1
-	go lora_module.Module1.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList1, wg)
-	// Send heartbeat to Module2
-	go lora_module.Module2.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList2, wg)
-	// Not responding node will receive node init in public freq in above steps
-}
-
-func SendNodeHeartbeatInLoop(ctx context.Context) {
-	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
-	for {
-		select{
-		case <- ctx.Done():
-			return
-		case <-ticker1.C:
-			SendHeartbeatOnce(ctx, nil)
-		}
-	}
-}
-
 func InitAccordingToConfig(ctx context.Context) {
 	IsInitOngoing = true
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	SendHeartbeatOnce(ctx, &wg)
+	// Send heartbeat to Module1
+	go lora_module.Module1.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList1, &wg)
+	// Send heartbeat to Module2
+	go lora_module.Module2.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList2, &wg)
+	// Not responding node will receive node init in public freq in above steps
 	// Wait for above 2 activities to complete
 	wg.Wait()
 
 	IsInitOngoing = false
 	IsInitDone = true
-	go SendNodeHeartbeatInLoop(ctx)
+	go lora_module.Module1.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList1, nil)
+	go lora_module.Module2.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList1, nil)
 }
 
 func (config ConfigRequest) handle(ctx context.Context) interface{} {

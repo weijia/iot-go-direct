@@ -147,7 +147,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			util.IotLogInfo("MainLoop: Handle node msg timeout")
 			bsp.GetOrCreateNodeState(timeoutNodeId)
 		case <-ticker.C:
-			util.IotLogInfo("MainLoop: prepare heartbeat")
+			util.IotLogInfo("MainLoop: prepare heartbeat to server")
 			currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
 			for _, state := range bsp.BspConfigInstance.NodeStates {

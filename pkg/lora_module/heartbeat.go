@@ -3,6 +3,7 @@ package lora_module
 import (
 	"context"
 	"sync"
+	"time"
 
 	"iot_go/pkg/bsp"
 	"iot_go/pkg/node"
@@ -11,6 +12,22 @@ import (
 
 // Will be set by top level msg loop
 var TimeoutNodeIdCh *chan string
+
+
+func (loraModule LoraModule) SendHeartbeatForListInLoop(ctx context.Context,
+	nodeList []string, wg *sync.WaitGroup) {
+		
+		ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
+		for {
+			select{
+			case <- ctx.Done():
+				return
+			case <-ticker1.C:
+				loraModule.SendHeartbeatForList(ctx, nodeList, nil)
+			}
+		}
+	
+}
 
 func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 	nodeList []string, wg *sync.WaitGroup) {
@@ -31,12 +48,14 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 		loraModule.Mutex.Unlock()
 		// util.IotLog("SendHeartbeatForNode returned timeout & data: %v", reply)
 		if reply == nil {
+			util.IotLogErrorWithFormatStr("Heartbeat for %s no reply, will set node "+
+				"status as offline and send node init for it on public freq", nodeIdStr)
+			// Send timeout msg to main thread to update node state
 			if TimeoutNodeIdCh != nil {
 				*TimeoutNodeIdCh <- nodeIdStr
 			}
-			util.IotLogErrorWithFormatStr("Heartbeat for %s no reply, will set node "+
-				"status as offline and send node init for it on public freq", nodeIdStr)
 			Module0.Mutex.Lock()
+			util.IotLog("Sending heartbeat on 0 for %s", nodeIdStr)
 			Module0.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.CONFIG_NODE_REPLY)
 			Module0.Mutex.Unlock()
 		}
