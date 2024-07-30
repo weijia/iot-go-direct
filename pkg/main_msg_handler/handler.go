@@ -115,8 +115,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	for {
 		select {
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
+			util.IotLogInfo("MainLoop: Sending mqtt msg to server")
 			mqttClient.SendToServer(publishingMqttMsg)
-			// util.IotLogInfo("Sent mqtt msg to server")
 			runLedCh <- 1
 			// util.IotLogInfo("Sent run led heartbeat")
 			// We put the restart here instead of after handling mqtt msg
@@ -133,6 +133,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
+			util.IotLogInfo("MainLoop: received mqtt msg to server")
 			reply := msg.HandleMqttMsg(ctx, mainMsgHandler.MqttToServerCh, mqttMsg.Payload())
 			runLedCh <- 1
 			if reply != nil {
@@ -140,26 +141,13 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 					fmt.Sprintf("Sending to mqtt server ch failed: %v", reply))
 			}
 		case nodeMsg := <-mainMsgHandler.NodeMsgCh:
+			util.IotLogInfo("MainLoop: handle node msg")
 			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
 		case timeoutNodeId := <-mainMsgHandler.TimeoutNodeIdCh:
+			util.IotLogInfo("MainLoop: Handle node msg timeout")
 			bsp.GetOrCreateNodeState(timeoutNodeId)
-		// case reply := <-node.ColorUpdateRequestTimeoutCh:
-		// 	// Find the correct reply in statesForPendingColorUpdate and send reply if exists
-		// 	for index, state := range node.StatesForPendingColorUpdate {
-		// 		util.IotLogInfo(fmt.Sprintf("data in slice: %p, data from ch: %p", &state.Reply, reply))
-		// 		if &state.Reply == reply {
-		// 			select {
-		// 			case mainMsgHandler.MqttToServerCh <- reply:
-		// 			default:
-		// 				util.IotLogErrorStr("mqtt publish channel full when sending color update reply")
-		// 			}
-		// 			// Remove current element from statesForPendingColorUpdate
-		// 			node.StatesForPendingColorUpdate = append(
-		// 				node.StatesForPendingColorUpdate[:index], node.StatesForPendingColorUpdate[index+1:]...)
-		// 			break
-		// 		}
-		// 	}
 		case <-ticker.C:
+			util.IotLogInfo("MainLoop: prepare heartbeat")
 			currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
 			for _, state := range bsp.BspConfigInstance.NodeStates {
@@ -184,6 +172,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			u.Status = l
 			mqttClient.SendToServer(u)
 			runLedCh <- 1
+		// Handle ctx cancel
 		case <-ctx.Done():
 			cancel()
 			return
