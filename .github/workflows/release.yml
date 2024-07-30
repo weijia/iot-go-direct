@@ -23,16 +23,16 @@ jobs:
 
       - name: Set version variable  
         run: |  
-          if [ "${{ github.event_name }}" = "push" ] && [ ! -z "$(git describe --tags --exact-match 2>/dev/null)" ]; then  
-            VERSION=$(git describe --tags --exact-match)  
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV  
-          elif [ "${{ github.event_name }}" = "release" ]; then  
-            VERSION=${{ github.event.release.tag_name }}  
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV  
-          else  
-            echo "No version found. Using default or branch name."  
-            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g') # 使用分支名作为版本（可选）  
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV  
+          if [ "${{ github.event_name }}" = "push" ] && [ ! -z "$(git describe --tags --exact-match 2>/dev/null)" ]; then
+            VERSION=$(git describe --tags --exact-match)
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" = "release" ]; then
+            VERSION=${{ github.event.release.tag_name }}
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          else
+            echo "No version found. Using default or branch name."
+            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g') # 使用分支名作为版本（可选）
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
           fi
       -
         name: Set up Go

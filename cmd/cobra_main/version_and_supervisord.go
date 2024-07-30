@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"iot_go/version"
 	"github.com/weijia/supervisord/supervisord_main"
 )
 
@@ -26,9 +25,9 @@ func init() {
 }
 
 func printVer() {
-	fmt.Println("Build Date:", version.BuildDate)
-	fmt.Println("Git Commit:", version.GitCommit)
-	fmt.Println("Version:", version.Version)
-	fmt.Println("Go Version:", version.GoVersion)
-	fmt.Println("OS / Arch:", version.OsArch)
+	fmt.Println("Build Date:", BuildDate)
+	fmt.Println("Git Commit:", GitCommit)
+	fmt.Println("Version:", Version)
+	fmt.Println("Go Version:", GoVersion)
+	fmt.Println("OS / Arch:", OsArch)
 }

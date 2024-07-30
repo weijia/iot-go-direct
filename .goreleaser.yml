@@ -17,7 +17,10 @@ builds:
     flags:
       - -mod=readonly
     ldflags:
-      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc " -w -X main.version={{.Version}} -X version.BuildDate={{.Date}} -X version.Version=${VERSION}
+      - -s -extldflags " --sysroot=/sysroot/linux/armhf/arm-linux-gnueabihf/libc" -w
+      - -X main.BuildDate={{.Date}}
+      - -X main.GitCommit={{.ShortCommit}}
+      - -X main.Version={{.Env.VERSION}}
 
   - id: iot_go-win
     binary: iot_go
@@ -28,11 +31,15 @@ builds:
       - amd64
     env:
       - CGO_ENABLED=0
+    ldflags:
+      - -X main.BuildDate={{.Date}}
+      - -X main.GitCommit={{.ShortCommit}}
+      - -X main.Version={{.Env.VERSION}}
 
-before:
-  hooks:
-    - echo "Running pre-build hook"
-    - ./build_arm_lib.sh
+# before:
+#   hooks:
+#     - echo "Running pre-build hook"
+#     - ./build_arm_lib.sh
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"

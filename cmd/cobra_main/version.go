@@ -1,4 +1,4 @@
-package version
+package main
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 var GitCommit string
 
 // Version returns the main version number that is being run at the moment.
-const Version = util.APP_VERSION
+var Version = util.APP_VERSION
 
 // BuildDate returns the date the binary was built
 var BuildDate = ""
