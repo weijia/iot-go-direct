@@ -36,10 +36,10 @@ builds:
       - -X main.GitCommit={{.ShortCommit}}
       - -X main.Version={{.Env.VERSION}}
 
-# before:
-#   hooks:
-#     - echo "Running pre-build hook"
-#     - ./build_arm_lib.sh
+before:
+  hooks:
+    - echo "Running pre-build hook"
+    - ./build_arm_lib.sh
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"

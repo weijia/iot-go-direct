@@ -21,7 +21,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set version variable  
+      - name: Set version variable
         run: |  
           if [ "${{ github.event_name }}" = "push" ] && [ ! -z "$(git describe --tags --exact-match 2>/dev/null)" ]; then
             VERSION=$(git describe --tags --exact-match)
