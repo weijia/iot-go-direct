@@ -133,7 +133,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
-			util.IotLogInfo("MainLoop: received mqtt msg to server")
+			util.IotLogInfo("MainLoop: received mqtt msg from server")
 			reply := msg.HandleMqttMsg(ctx, mainMsgHandler.MqttToServerCh, mqttMsg.Payload())
 			runLedCh <- 1
 			if reply != nil {

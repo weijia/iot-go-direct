@@ -76,7 +76,7 @@ func InitAccordingToConfig(ctx context.Context) {
 	IsInitOngoing = false
 	IsInitDone = true
 	go lora_module.Module1.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList1, nil)
-	go lora_module.Module2.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList1, nil)
+	go lora_module.Module2.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList2, nil)
 }
 
 func (config ConfigRequest) handle(ctx context.Context) interface{} {

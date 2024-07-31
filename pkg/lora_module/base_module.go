@@ -133,7 +133,12 @@ func (loraModule LoraModule) SendWithoutReply(data []byte) {
 		Data:    data,
 		ReplyCh: nil,
 	}
-	*loraModule.SendingToNodeCh <- msgReq
+	select {  
+	case *loraModule.SendingToNodeCh <- msgReq: // 尝试发送数据到channel  
+		util.IotLog("Send to node channel OK")
+	default: // 如果发送操作会阻塞，则执行default分支  
+		util.IotLog("Send to node channel full, discard the message")  
+	}
 }
 
 func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt int, expectedMsgType int) []byte {

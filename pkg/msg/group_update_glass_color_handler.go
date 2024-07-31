@@ -49,7 +49,7 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 		groupMsg := node.GetGroupUpdateGlassColorMsg(
 			finalNodeList2, group.Color)
 		// bsp.GetModule2Client().Send(groupMsg)
-		lora_module.Module1.SendWithoutReply(groupMsg)
+		lora_module.Module2.SendWithoutReply(groupMsg)
 	}
 
 	var reply GroupUpdateGlassColorReply
