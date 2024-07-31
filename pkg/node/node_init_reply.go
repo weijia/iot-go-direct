@@ -81,7 +81,7 @@ var ConfigReqCh = make(chan shared.ConfigParams)
 // var CancelFuncForNodeInitReplyTimeout context.CancelFunc
 
 func UpdateNodeStateForInitReply(nodeInitReply []byte) {
-	util.IotLogInfo(fmt.Sprintf("Got init reply: %v\n", nodeInitReply))
+	util.IotLogInfo(fmt.Sprintf("Got init reply: %v", nodeInitReply))
 	nodeId := GetNodeIdFromMsg(nodeInitReply)
 
 	// Update node state in bsp

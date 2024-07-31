@@ -17,15 +17,15 @@ var TimeoutNodeIdCh *chan string
 func (loraModule LoraModule) SendHeartbeatForListInLoop(ctx context.Context,
 	nodeList []string, wg *sync.WaitGroup) {
 		
-		ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
-		for {
-			select{
-			case <- ctx.Done():
-				return
-			case <-ticker1.C:
-				loraModule.SendHeartbeatForList(ctx, nodeList, nil)
-			}
+	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
+	for {
+		select{
+		case <- ctx.Done():
+			return
+		case <-ticker1.C:
+			loraModule.SendHeartbeatForList(ctx, nodeList, nil)
 		}
+	}
 	
 }
 
@@ -55,7 +55,7 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 				*TimeoutNodeIdCh <- nodeIdStr
 			}
 			Module0.Mutex.Lock()
-			util.IotLog("Sending heartbeat on 0 for %s", nodeIdStr)
+			util.IotLog("Sending node init on 0 for %s", nodeIdStr)
 			Module0.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.CONFIG_NODE_REPLY)
 			Module0.Mutex.Unlock()
 		}

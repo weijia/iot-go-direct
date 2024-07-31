@@ -119,7 +119,7 @@ func GetReplyOrTimeout(ch *chan NodeMsgReply) NodeMsgReply {
 	}
 	select {
 	case reply = <-*ch:
-		util.IotLog("Got reply from base module msg loop: %v", reply)
+		util.IotLog("Got reply from base module msg loop (data, is timeout): %v", reply)
 		eventTimer.Stop()
 		// util.IotLog("GetReplyOrTimeout received reply from level1, returning: %v", reply)
 	case <-eventTimer.C:
