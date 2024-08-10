@@ -47,19 +47,19 @@ const (
 func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) {
 	// Application's data change will only happen in this routine to ensure no
 	// concurrent data changes in different routines
-	util.IotLog("Received node message from module index: %d, %v", msgRaw.ModuleIndex, msgRaw.Data)
+	util.IotLog("Handle Node Msg: Received node message from module index: %d, %v", msgRaw.ModuleIndex, msgRaw.Data)
 	msg := msgRaw.Data
 	// DumpBytes(msg)
 	if !node.IsChecksumCorrect(msg) {
 		//Log error and return
-		util.IotLogErrorWithFormatStr("Checksum incorrect, discard package: %v", msg)
+		util.IotLogErrorWithFormatStr("Handle Node Msg: Checksum incorrect, discard package: %v", msg)
 		return
 	}
 	gatewayId := fmt.Sprintf("%x", msg[REPLY_GATEWAY_ID_START_INDEX:REPLY_GATEWAY_ID_START_INDEX+GATEWAY_ID_LEN])
 
 	// Need to check if the message is for this gateway
 	if !strings.EqualFold(gatewayId, bsp.BspConfigInstance.GatewayNodeId) {
-		util.IotLogInfo(fmt.Sprintf("Received gateway Id: %s is not for this gateway: %s", gatewayId, bsp.BspConfigInstance.GatewayNodeId))
+		util.IotLogInfo(fmt.Sprintf("Handle Node Msg: Received gateway Id: %s is not for this gateway: %s", gatewayId, bsp.BspConfigInstance.GatewayNodeId))
 		return
 	}
 
@@ -75,13 +75,13 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 	switch msg[REPLY_CMD_START_INDEX] {
 	case CONFIG_NODE_REPLY:
 		// TODO: handle node config reply and check if we can already update module1 & 2 config
-		util.IotLogInfo(fmt.Sprintf("Received node config reply for node %s", nodeId))
+		util.IotLogInfo(fmt.Sprintf("Handle Node Msg: Received node config reply for node %s", nodeId))
 		node.UpdateNodeStateForInitReply(msg)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
 			fmt.Sprintf("Send received node reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UNKNOWN_NODE_REPLY:
-		util.IotLogInfo(fmt.Sprintf("Received unknown node config reply for node %s", nodeId))
+		util.IotLogInfo(fmt.Sprintf("Handle Node Msg: Received unknown node config reply for node %s", nodeId))
 		node.UpdateNodeStateForInitReply(msg)
 		if !bsp.IsInNodeList1(nodeId) && !bsp.IsInNodeList2(nodeId) {
 			var unknownNodeList []string
@@ -94,7 +94,7 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		}
 
 	case HEARTBEAT_REPLY:
-		util.IotLogInfo("Received is heartbeat reply")
+		util.IotLogInfo("Handle Node Msg: Received is heartbeat reply")
 		// util.IotLog("Before update according to heartbeat: %v", nodeState.NodeReportedColor)
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
@@ -105,25 +105,25 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		// util.IotLog("After update according to heartbeat: %v", nodeState.NodeReportedColor)
 		// util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send received heartbeat reply %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Handle Node Msg: Send received heartbeat reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case UPDATE_GLASS_COLOR_REPLY:
-		util.IotLogInfo("Received is glass color update reply")
-		util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
+		util.IotLogInfo("Handle Node Msg: Received is glass color update reply")
+		util.IotLog("Handle Node Msg: module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send received update glass color reply %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Handle Node Msg: Send received update glass color reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 
 	case GET_GLASS_STATE_REPLY:
 		// TODO: complete the real handling
-		util.IotLogInfo("Received is get glass state reply")
+		util.IotLogInfo("Handle Node Msg: Received is get glass state reply")
 		for i := 0; i < 4; i++ {
 			nodeState.NodeReportedColor[i*2] = int(msg[node.REPLY_PAYLOAD_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[node.REPLY_PAYLOAD_START_INDEX+i]) & 0xf
 		}
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
-			fmt.Sprintf("Send received glass state reply %v to module %d failed", msg, msgRaw.ModuleIndex))
+			fmt.Sprintf("Handle Node Msg: Send received glass state reply %v to module %d failed", msg, msgRaw.ModuleIndex))
 	default:
-		util.IotLogErrorStr("Not handled msg, maybe it is sent from gateway")
+		util.IotLogErrorStr("Handle Node Msg: Not handled msg, maybe it is sent from gateway")
 	}
 
 }

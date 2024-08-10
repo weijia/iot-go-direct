@@ -16,10 +16,10 @@ port=0.0.0.0:9001
 		content = content + fmt.Sprintf(`[program:%s]
 command = %s
 stdout_logfile = %s.log
-stdout_logfile_maxbytes = 65535
+stdout_logfile_maxbytes = 655350
 stdout_logfile_backups = 5
 stderr_logfile = %s-err.log
-stderr_logfile_maxbytes = 65535
+stderr_logfile_maxbytes = 655350
 stderr_logfile_backups = 5
 `, name, cmd, name, name)
 	}

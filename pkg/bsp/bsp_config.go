@@ -99,7 +99,7 @@ func InitConfig() {
 		viper.WriteConfig()
 	}
 	// The config file should be there, either created using default value or 
-	// exists alrady
+	// exists already
 	data, err := os.ReadFile(configFilePath)
 	if err == nil && data != nil {
 		err = json.Unmarshal(data, &BspConfigInstance)

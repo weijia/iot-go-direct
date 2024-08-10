@@ -15,6 +15,13 @@ var recvChannel *chan lora_shared.LoraData
 
 func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
 	// util.IotLog("RPC:  called")
+	select {  
+		case *recvChannel <- argType:  
+			// fmt.Println("Sent successfully")  
+		default:  
+			// 如果channel已满，打印消息  
+			fmt.Errorf("Channel full, could not send without blocking")
+		}
 	*recvChannel <- argType
 	// log.Println("RPC: after put to channel")
 	util.IotLog("---------------Received lora msg: %v", argType)

@@ -18,6 +18,7 @@ func (loraModule LoraModule) SendHeartbeatForListInLoop(ctx context.Context,
 	nodeList []string, wg *sync.WaitGroup) {
 		
 	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
+	defer ticker1.Stop()
 	for {
 		select{
 		case <- ctx.Done():
@@ -26,7 +27,6 @@ func (loraModule LoraModule) SendHeartbeatForListInLoop(ctx context.Context,
 			loraModule.SendHeartbeatForList(ctx, nodeList, nil)
 		}
 	}
-	
 }
 
 func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,

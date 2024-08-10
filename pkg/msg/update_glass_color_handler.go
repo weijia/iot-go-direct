@@ -57,7 +57,7 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 	}
 	if len(colorUpdateForModule2) > 0 {
 		wg.Add(1)
-		go lora_module.Module1.UpdateGlassColorForList(colorUpdateForModule2, &wg)
+		go lora_module.Module2.UpdateGlassColorForList(colorUpdateForModule2, &wg)
 	}
 
 	wg.Wait()

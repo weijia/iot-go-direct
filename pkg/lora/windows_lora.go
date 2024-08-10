@@ -1,4 +1,4 @@
-//go:build windows
+//go:build !arm
 
 package lora
 
@@ -14,7 +14,7 @@ func (lora Lora) InitLora(module shared.Module) int {
 	fmt.Println("Win: Initiating Lora")
 	// C.rf_init()
 	data := map[string]interface{}{
-		fmt.Sprintf("%s-inited",
+		fmt.Sprintf("%s-initialized",
 			lora.DeviceName): "yes",
 	}
 	bsp.GetBsp().SafeUploadTelemetry(bsp.BspConfigInstance.GatewayNodeId, data)
