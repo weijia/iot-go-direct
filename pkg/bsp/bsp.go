@@ -27,8 +27,8 @@ func InitBoard(host string) {
 	module2Client = lora_client.NewLoraClient(8868, host)
 
 	module0Client.InitLora(module0Param)
-	module1Client.InitLora(module1Param)
-	module2Client.InitLora(module2Param)
+	module1Client.InitLora(BspConfigInstance.InitMsgContent.Module1)
+	module2Client.InitLora(BspConfigInstance.InitMsgContent.Module2)
 }
 
 type VirtualBsp struct {

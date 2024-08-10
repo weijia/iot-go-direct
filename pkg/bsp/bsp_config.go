@@ -83,8 +83,8 @@ func InitConfig() {
 	if err != nil {
 		util.IotLogErrWithStr("vip read config error", err)
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
-		// BspConfigInstance.ConfigParams.Module1 = module1Param
-		// BspConfigInstance.ConfigParams.Module2 = module2Param
+		BspConfigInstance.InitMsgContent.Module1 = module1Param
+		BspConfigInstance.InitMsgContent.Module2 = module2Param
 		defaultLocalConfig, _ := json.Marshal(BspConfigInstance)
 		/*******************  使用 ioutil.WriteFile 写入文件 *****************/
 		err2 := os.WriteFile(configFilePath, defaultLocalConfig, 0666) //写入文件(字节数组)
@@ -98,6 +98,8 @@ func InitConfig() {
 		}
 		viper.WriteConfig()
 	}
+	// The config file should be there, either created using default value or 
+	// exists alrady
 	data, err := os.ReadFile(configFilePath)
 	if err == nil && data != nil {
 		err = json.Unmarshal(data, &BspConfigInstance)

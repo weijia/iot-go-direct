@@ -29,15 +29,10 @@ stderr_logfile_backups = 5
 
 	// 尝试以只写模式打开文件，如果文件不存在则创建它
 	// 使用 os.O_CREATE | os.O_WRONLY | os.O_EXCL 以确保文件不存在时创建
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0666)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
-		// 检查错误是否为文件已存在
-		if os.IsExist(err) {
-			fmt.Println("文件已存在，不会创建新文件")
-		} else {
-			// 处理其他类型的错误
-			fmt.Println("创建文件时发生错误:", err)
-		}
+		// 处理其他类型的错误
+		fmt.Println("创建文件时发生错误:", err)
 		return
 	}
 	defer file.Close()
