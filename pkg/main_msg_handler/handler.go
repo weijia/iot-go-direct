@@ -107,6 +107,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	mainMsgHandler.MqttToServerCh <- initMsg
 
 	ticker := time.NewTicker(time.Second * util.TO_SERVER_HEARTBEAT_SECONDS)
+	defer ticker.Stop()
 	u := msg.HeartbeatStatusUpdate{
 		MsgType:       "heartbeat_status_update",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,

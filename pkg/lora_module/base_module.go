@@ -22,21 +22,21 @@ var Module0 = LoraModule{
 	ReceivingCh:     &module0ReceivingCh,
 	// LoraClient:  bsp.GetModule0Client(), // client only available after board init
 	LoraIndex: 0,
-	Mutex:     &sync.Mutex{},
+	// Mutex:     &sync.Mutex{},
 }
 var Module1 = LoraModule{
 	SendingToNodeCh: &module1SendingToNodeCh,
 	ReceivingCh:     &module1ReceivingCh,
 	// LoraClient:  bsp.GetModule1Client(),
 	LoraIndex: 1,
-	Mutex:     &sync.Mutex{},
+	// Mutex:     &sync.Mutex{},
 }
 var Module2 = LoraModule{
 	SendingToNodeCh: &module2SendingToNodeCh,
 	ReceivingCh:     &module2ReceivingCh,
 	// LoraClient:  bsp.GetModule2Client(),
 	LoraIndex: 2,
-	Mutex:     &sync.Mutex{},
+	// Mutex:     &sync.Mutex{},
 }
 
 var ModuleList = [3]LoraModule{
@@ -85,7 +85,7 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 	for {
 		select {
 		case <-eventTimer.C:
-			util.IotLog("NodeMsgLoop: IsReplyTimeout return due to timeout, index: %d", loraModule.LoraIndex)
+			util.IotLogErrorWithFormatStr("NodeMsgLoop: IsReplyTimeout return due to timeout, index: %d", loraModule.LoraIndex)
 			return true, nil
 		case nodeReply := <-*loraModule.ReceivingCh:
 			util.IotLog("NodeMsgLoop: Received node msg from main msg loop (lora module ch): %p", loraModule.ReceivingCh)
@@ -94,7 +94,7 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 				// eventTimer.Stop() used defer above to do this already
 				return false, nodeReply
 			} else {
-				util.IotLogErrorWithFormatStr("NodeMsgLoop: Unexpected node message when waiting for node reply")
+				util.IotLogErrorWithFormatStr("NodeMsgLoop: Unexpected node message when waiting for node reply, response node: %s, expected node: %s", responseNodeId, nodeIdStr)
 			}
 		}
 	}
@@ -119,11 +119,11 @@ func GetReplyOrTimeout(ch *chan NodeMsgReply) NodeMsgReply {
 	}
 	select {
 	case reply = <-*ch:
-		util.IotLog("Got reply from base module msg loop (data, is timeout): %v", reply)
+		util.IotLog("GetReplyOrTimeout: Got reply from base module msg loop (data, is timeout): %v", reply)
 		// eventTimer.Stop() // already use defer above to do this
 		// util.IotLog("GetReplyOrTimeout received reply from level1, returning: %v", reply)
 	case <-eventTimer.C:
-		util.IotLogErrorStr("Timeout for waiting for Module to reply")
+		util.IotLogErrorStr("GetReplyOrTimeout: Timeout for waiting for Module to reply")
 	}
 	return reply
 }

@@ -14,7 +14,9 @@ type LedManager struct {
 
 func (ledManager LedManager) LedMsgLoop(ctx context.Context) {
 	ticker := time.NewTicker(time.Second * time.Duration(ledManager.Timeout))
+	defer ticker.Stop()
 	ledFlickerTicker := time.NewTicker(time.Second * time.Duration(1))
+	defer ledFlickerTicker.Stop()
 	isRefreshed := false
 	isLedOn := false
 	TurnOnLed(ledManager.DeviceName)
@@ -29,6 +31,8 @@ func (ledManager LedManager) LedMsgLoop(ctx context.Context) {
 			isRefreshed = true
 
 		case <-ticker.C:
+			// TODO: fix led/watch dog calculation issue, it is not 60 second false to trigger
+			// TODO: the error print below
 			// util.IotLogInfo("led timeout")
 			if isRefreshed {
 				isRefreshed = false

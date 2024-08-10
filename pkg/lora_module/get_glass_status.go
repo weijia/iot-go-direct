@@ -16,9 +16,9 @@ func (loraModule LoraModule) InitiateGetGlassStatusReq(
 		NodeId: nodeIdStr,
 		Color:  "1f2f3f4f5f6f7f8f",
 	})
-	loraModule.Mutex.Lock()
+	// loraModule.Mutex.Lock()
 	data := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetRetrieveColorMsg(nodeIdStr), util.GET_GLASS_STATUS_MAX_RETRY, node.GET_GLASS_STATE_REPLY)
-	loraModule.Mutex.Unlock()
+	// loraModule.Mutex.Unlock()
 	if data != nil {
 		reply.Status[0].Color = node.GetColorWithArea(data)
 	}

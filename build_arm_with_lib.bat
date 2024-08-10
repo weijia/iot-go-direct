@@ -1,5 +1,5 @@
 rem PATH=%PATH%;D:\迅雷下载\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf.tar\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf\bin\
-PATH=%PATH%;D:\codes\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf\bin\
+PATH=%PATH%;C:\codes\personal\gcc-linaro-7.5.0-2019.12-i686-mingw32_arm-linux-gnueabihf\bin\
 @REM copy version\version-tpl.txt version\version.go
 @REM echo var BuildDate = "%TIME%" >> version\version.go
 
@@ -19,7 +19,13 @@ rem go build -a -v
 for /f "delims=" %%i in ('git rev-parse HEAD') do set LATEST_COMMIT=%%i
 echo The latest commit hash is: %LATEST_COMMIT%
 
-go build -a -v  -ldflags="-s -w  -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%DATE:~0,10%-%TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
+python -c "from datetime import datetime; print(datetime.now().strftime('%%Y-%%m-%%d-%%H:%%M:%%S'))" > temp.txt
+for /f "delims=" %%i in (temp.txt) do set CURRENT_DATE_TIME=%%i  
+echo Current date is %CURRENT_DATE_TIME%
+del temp.txt
+
+@REM go build -a -v  -ldflags="-s -w  -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%DATE:~0,10%-%TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
+go build -a -v  -ldflags="-s -w  -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%CURRENT_DATE_TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
 @REM go build -a -v  -ldflags="-s -w" cmd/iot/main.go
 @REM go build -a -v  -ldflags="-s -w" cmd/lora_service/lora_service.go
 move main iot_go

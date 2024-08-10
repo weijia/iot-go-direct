@@ -43,9 +43,9 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 	}
 	for _, nodeIdStr := range nodeList {
 		util.IotLog("Sending heartbeat on %d for %s", loraModule.LoraIndex, nodeIdStr)
-		loraModule.Mutex.Lock()
+		// loraModule.Mutex.Lock()
 		reply := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetHeartbeatMsg(nodeIdStr), util.HEARTBEAT_RETRY_CNT, node.HEARTBEAT_REPLY)
-		loraModule.Mutex.Unlock()
+		// loraModule.Mutex.Unlock()
 		// util.IotLog("SendHeartbeatForNode returned timeout & data: %v", reply)
 		if reply == nil {
 			util.IotLogErrorWithFormatStr("Heartbeat for %s no reply, will set node "+
@@ -54,10 +54,10 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 			if TimeoutNodeIdCh != nil {
 				*TimeoutNodeIdCh <- nodeIdStr
 			}
-			Module0.Mutex.Lock()
+			// Module0.Mutex.Lock()
 			util.IotLog("Sending node init on 0 for %s", nodeIdStr)
 			Module0.SendNodeMsgWithRetryOrTimeout(node.GetNodeInitMsg(nodeIdStr, module), util.NODE_INIT_RETRY_CNT, node.CONFIG_NODE_REPLY)
-			Module0.Mutex.Unlock()
+			// Module0.Mutex.Unlock()
 		}
 	}
 	if wg != nil {
