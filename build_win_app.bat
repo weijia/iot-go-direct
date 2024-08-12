@@ -13,9 +13,7 @@ python increase_version.py
 for /f "delims=" %%i in (version.txt) do set CURRENT_VERSION=%%i  
 echo Current version is %CURRENT_VERSION%
 
-
-@REM go build -a -v  -ldflags="-s -w  -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%DATE:~0,10%-%TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
-go build -a -v  -ldflags="-s -w -X bsp.SwVersion=%CURRENT_VERSION% -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%CURRENT_DATE_TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
+go build -a -v  -ldflags="-s -w -X main.Version=%CURRENT_VERSION% -X bsp.SwVersion=%CURRENT_VERSION% -X main.GitCommit=%LATEST_COMMIT% -X main.BuildDate=%CURRENT_DATE_TIME%" ./cmd/cobra_main/main.go ./cmd/cobra_main/main_loop.go ./cmd/cobra_main/version_and_supervisord.go ./cmd/cobra_main/lora_service.go ./cmd/cobra_main/version.go
 
 @REM go build  -ldflags="-s -w" cmd/iot/main.go
 @REM go build  -ldflags="-s -w" cmd/int_test/int_test_main.go

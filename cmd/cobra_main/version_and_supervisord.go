@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/weijia/supervisord/supervisord_main"
+	// "iot_go/pkg/bsp"
 )
 
 // versionCmd represents the version command

@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"runtime"
-	"iot_go/pkg/bsp"
+	// "iot_go/pkg/bsp"
 )
 
 // GitCommit returns the git commit that was compiled. This will be filled in by the compiler.
 var GitCommit string
 
 // Version returns the main version number that is being run at the moment.
-var Version = bsp.SwVersion
+var Version = ""
 
 // BuildDate returns the date the binary was built
 var BuildDate = ""

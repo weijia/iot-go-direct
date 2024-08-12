@@ -1,6 +1,7 @@
 {
   "cSpell.words": [
     "armhf",
+    "autorestart",
     "extldflags",
     "gnueabihf",
     "goarch",
@@ -18,6 +19,7 @@
     "supervisord",
     "sysroot",
     "thingsboard",
+    "weijia",
     "xeipuuv"
   ],
   "files.exclude": {

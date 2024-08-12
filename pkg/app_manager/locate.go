@@ -47,6 +47,6 @@ func GetLatestApp(appFolder string, executableName string) (string, error) {
 
 		}
 	} 
-	fmt.Printf("Error reading app store folder: %s with err: %v\n", appStorePath, err)
-	return "", err
+	fmt.Printf("Error reading app store folder: %s with err: %v\n", appStorePath, os.ErrNotExist)
+	return "", os.ErrNotExist
 }

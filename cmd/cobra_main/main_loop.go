@@ -29,7 +29,7 @@ var mainLoopCmd = &cobra.Command{
 		loraServiceIp := loraHost
 
 		util.IotLog("lora service host: %s, push host: %s", loraHost, pushHost)
-		util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
+		// util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
 		ctx, cancel := context.WithCancel(context.Background())
 	
 		go main_msg_handler.InfiniteAppLoop(ctx, loraServiceIp)

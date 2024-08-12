@@ -12,16 +12,19 @@ func GenerateConfig(appNameToCmdMapping map[string]string) {
 port=0.0.0.0:9001
 
 `
+	outputToStdOut := ",/dev/stdout"
 	for name, cmd := range appNameToCmdMapping {
 		content = content + fmt.Sprintf(`[program:%s]
 command = %s
-stdout_logfile = %s.log
+stdout_logfile = %s.log%s
 stdout_logfile_maxbytes = 655350
-stdout_logfile_backups = 5
+stdout_logfile_backups = 2
 stderr_logfile = %s-err.log
-stderr_logfile_maxbytes = 655350
-stderr_logfile_backups = 5
-`, name, cmd, name, name)
+stderr_logfile_maxbytes = 65535
+stderr_logfile_backups = 2
+autorestart = true
+`, name, cmd, name, outputToStdOut, name)
+		outputToStdOut = ""
 	}
 
 	// Create the file

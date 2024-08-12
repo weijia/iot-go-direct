@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 		// Main command logic here
 		// Create supervisord_config file
 
-		// 创建一个空的字符串到字符串的映射  
+		// 创建一个空的字符串到字符串的映射
 		stringMap := make(map[string]string)
 
 		appFullPath, err := app_manager.GetLatestApp(msg.FIRMWARE_FOLDER, "main")
@@ -33,24 +33,29 @@ var rootCmd = &cobra.Command{
 			if getExecutableErr != nil {
 				log.Fatal("Can not get executable")
 			}
+			fmt.Printf("curRunningExecutable: %s", curRunningExecutable)
 			appFullPath = curRunningExecutable
 		}
-		stringMap["main"] = fmt.Sprintf("%s main_loop", strings.Replace(appFullPath, "\\", "\\\\", -1))
+		winPath := strings.Replace(appFullPath, "\\", "\\\\", -1)
+		if winPath != "" {
+			appFullPath = winPath
+		}
+		fmt.Printf("Basic cmd: '%s'\n", appFullPath)
+		stringMap["main"] = fmt.Sprintf("%s main_loop", appFullPath)
 
+		stringMap["lora1"] = fmt.Sprintf("%s lora --dev /dev/spidev1.0 --port 8866 --host_ip 127.0.0.1", appFullPath)
+		stringMap["lora2"] = fmt.Sprintf("%s lora --dev /dev/spidev2.0 --port 8867 --host_ip 127.0.0.1", appFullPath)
+		stringMap["lora3"] = fmt.Sprintf("%s lora --dev /dev/spidev3.0 --port 8868 --host_ip 127.0.0.1", appFullPath)
 
-		stringMap["lora1"] = fmt.Sprintf("%s lora --dev /dev/spidev1.0 --port 8866 --host_ip 127.0.0.1", strings.Replace(appFullPath, "\\", "\\\\", -1))
-		stringMap["lora2"] = fmt.Sprintf("%s lora --dev /dev/spidev2.0 --port 8867 --host_ip 127.0.0.1", strings.Replace(appFullPath, "\\", "\\\\", -1))
-		stringMap["lora3"] = fmt.Sprintf("%s lora --dev /dev/spidev3.0 --port 8868 --host_ip 127.0.0.1", strings.Replace(appFullPath, "\\", "\\\\", -1))
-		
 		supervisord_manager.GenerateConfig(stringMap)
 
 		supervisord_main.RealMain()
-		
+
 	},
 }
 
 func main() {
-	
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
