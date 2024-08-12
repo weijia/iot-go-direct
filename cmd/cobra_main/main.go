@@ -15,9 +15,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "myapp",
-	Short: "MyApp is a sample CLI application",
-	Long:  `MyApp is a sample command line interface (CLI) application using Cobra.`,
+	Use:   "iot_go",
+	Short: "IOT go application",
+	Long:  `iot_go is a IOT application using Cobra.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Main command logic here
 		// Create supervisord_config file
