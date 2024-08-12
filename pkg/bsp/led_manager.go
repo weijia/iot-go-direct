@@ -18,6 +18,7 @@ func (ledManager LedManager) LedMsgLoop(ctx context.Context) {
 	ledFlickerTicker := time.NewTicker(time.Second * time.Duration(1))
 	defer ledFlickerTicker.Stop()
 	isRefreshed := false
+	isWatchdogTimeout := false
 	isLedOn := false
 	TurnOnLed(ledManager.DeviceName)
 	for {
@@ -29,16 +30,17 @@ func (ledManager LedManager) LedMsgLoop(ctx context.Context) {
 		case <-*ledManager.HeartbeatCh:
 			// util.IotLogInfo("Received heartbeat for led")
 			isRefreshed = true
+			isWatchdogTimeout = false
 
 		case <-ticker.C:
-			// TODO: fix led/watch dog calculation issue, it is not 60 second false to trigger
-			// TODO: the error print below
 			// util.IotLogInfo("led timeout")
 			if isRefreshed {
 				isRefreshed = false
+			} else {
+				isWatchdogTimeout = true
 			}
 		case <-ledFlickerTicker.C:
-			if isRefreshed {
+			if !isWatchdogTimeout {
 				if isLedOn {
 					TurnOffLed(ledManager.DeviceName)
 					isLedOn = false

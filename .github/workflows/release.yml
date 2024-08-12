@@ -66,6 +66,11 @@ jobs:
           cp /sysroot/linux/armhf/arm-linux-gnueabihf/libc/usr/lib/crt*.o .
           
       -
+        name: Build arm libs
+        run: |
+          ./build_arm_lib.sh
+          
+      -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:

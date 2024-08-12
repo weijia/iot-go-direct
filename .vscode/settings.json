@@ -35,7 +35,9 @@
     "**/*.a": true,
     "**/go.mod": true,
     "**/*.exe": true,
-    "logs": true
+    "logs": true,
+    "**/*.log": true,
+    "supervisord.ini": true
   },
   "explorerExclude.backup": {},
   "triggerTaskOnSave.tasks": {

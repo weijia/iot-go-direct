@@ -1,0 +1,23 @@
+# 1. 读取文件  
+try:  
+    with open('version.txt', 'r') as file:  
+        # 尝试将文件中的字符串转换为浮点数  
+        current_version = float(file.read().strip())  
+except (ValueError, FileNotFoundError, IOError) as e:  
+    print(f"读取文件或转换浮点数时出错: {e}")  
+    # 可以选择在这里处理错误，比如使用默认值或退出程序  
+    current_version = 0.0  # 使用默认值作为示例  
+  
+# 2. 处理浮点数  
+new_version = round(current_version + 0.1, 3)
+  
+# 3. 写入文件  
+try:  
+    with open('version.txt', 'w') as file:  
+        # 将新的浮点数写回文件  
+        file.write(f"{new_version}\n")  
+except IOError as e:  
+    print(f"写入文件时出错: {e}")  
+    # 可以在这里处理错误，比如记录日志或通知用户  
+  
+print(f"已更新版本号: 从 {current_version} 到 {new_version}")
