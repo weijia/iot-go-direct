@@ -51,7 +51,7 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		NodeType:      1,
 		Rssi:          10,
 		Ccid:          "test",
-		Heartbeat:     20,
+		Heartbeat:     60,
 		Module1:       module1Param,
 		Module2:       module2Param,
 	},

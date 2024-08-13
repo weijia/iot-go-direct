@@ -90,6 +90,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
+		util.DumpBytes(byteSlice)
 		args := lora_shared.LoraData{
 			Data: byteSlice,
 			RSSI: float64(C.RSSI),
@@ -120,9 +121,11 @@ func (loraDev Lora) MsgLoop() {
 		case data := <-send:
 			// Ref: https://packagewjx.github.io/2018/09/19/cgo-cstring-ram-leak/
 			cBufferNeedToFree := C.CBytes(data)
-			defer C.free(unsafe.Pointer(cBufferNeedToFree))
-			util.IotLog("Lora.Send: Sending len: %d\n", len(data))
+			// Following will only be useful when the function return, so free manually
+			// defer C.free(unsafe.Pointer(cBufferNeedToFree))
+			util.DumpBytes(data)
 			res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
+			C.free(unsafe.Pointer(cBufferNeedToFree))
 			if res != 0 {
 				util.IotLogErrorWithFormatStr("Lora.Send: Error sending: %d\n", res)
 			}

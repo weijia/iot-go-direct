@@ -21,15 +21,15 @@ var pushHost string
 // versionCmd represents the version command
 var mainLoopCmd = &cobra.Command{
 	Use:     "main_loop",
-	Short:   "Run the main loop without after all lora service started",
-	Long:    `Run the main loop without after all lora service started`,
+	Short:   "Run the main loop",
+	Long:    `Run the main loop after all lora service started`,
 	Run: func(cmd *cobra.Command, args []string) {
 		printVer()
 		fmt.Printf("main() pid: %d\n", os.Getpid())
 		loraServiceIp := loraHost
 
 		util.IotLog("lora service host: %s, push host: %s", loraHost, pushHost)
-		// util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
+		util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
 		ctx, cancel := context.WithCancel(context.Background())
 	
 		go main_msg_handler.InfiniteAppLoop(ctx, loraServiceIp)

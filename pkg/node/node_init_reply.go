@@ -113,6 +113,7 @@ func UpdateNodeStateForInitReply(nodeInitReply []byte) {
 		}
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
+	// util.IotLog("LastMsgTimestamp: %d", nodeState.LastMsgTimestamp)
 
 	// for i, NodeInitPendingNodeId := range PendingInitReqNodeList {
 	// 	if NodeInitPendingNodeId == nodeId {

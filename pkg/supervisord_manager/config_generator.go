@@ -12,8 +12,13 @@ func GenerateConfig(appNameToCmdMapping map[string]string) {
 port=0.0.0.0:9001
 
 `
-	outputToStdOut := ",/dev/stdout"
+	logFileCfg := ""
 	for name, cmd := range appNameToCmdMapping {
+		if name == "main" {
+			logFileCfg = ", /dev/stdout"
+		} else {
+			logFileCfg = ""
+		}
 		content = content + fmt.Sprintf(`[program:%s]
 command = %s
 stdout_logfile = %s.log%s
@@ -23,8 +28,7 @@ stderr_logfile = %s-err.log
 stderr_logfile_maxbytes = 65535
 stderr_logfile_backups = 2
 autorestart = true
-`, name, cmd, name, outputToStdOut, name)
-		outputToStdOut = ""
+`, name, cmd, name, logFileCfg, name)
 	}
 
 	// Create the file

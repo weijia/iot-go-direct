@@ -34,16 +34,6 @@ const (
 // 	return (int(r)&0xf0)>>4 - 1
 // }
 
-// func DumpBytes(a []byte) {
-// 	res := ""
-// 	for i := 0; i < len(a); i++ {
-// 		res += fmt.Sprintf("%02x ", a[i])
-// 		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
-// 		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
-// 	}
-// 	util.IotLog("%s", res)
-// }
-
 func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) {
 	// Application's data change will only happen in this routine to ensure no
 	// concurrent data changes in different routines
@@ -71,6 +61,7 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		return
 	}
 	nodeState.LastMsgTimestamp = time.Now().Unix()
+	// util.IotLog("LastMsgTimestamp: %d", nodeState.LastMsgTimestamp)
 
 	switch msg[REPLY_CMD_START_INDEX] {
 	case CONFIG_NODE_REPLY:
@@ -102,7 +93,7 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 		}
 		nodeState.RSSI = msgRaw.RSSI
 		nodeState.SNR = msgRaw.SNR
-		// util.IotLog("After update according to heartbeat: %v", nodeState.NodeReportedColor)
+		util.IotLog("Handle Node Msg: After update according to heartbeat: %v", nodeState.NodeReportedColor)
 		// util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,
 			fmt.Sprintf("Handle Node Msg: Send received heartbeat reply %v to module %d failed", msg, msgRaw.ModuleIndex))

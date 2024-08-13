@@ -106,7 +106,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	initMsg.MsgType = "init"
 	mainMsgHandler.MqttToServerCh <- initMsg
 
-	ticker := time.NewTicker(time.Second * util.TO_SERVER_HEARTBEAT_SECONDS)
+	ticker := time.NewTicker(time.Second * time.Duration(bsp.BspConfigInstance.Heartbeat))
 	defer ticker.Stop()
 	u := msg.HeartbeatStatusUpdate{
 		MsgType:       "heartbeat_status_update",
@@ -155,6 +155,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
 					util.IotLog("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
+					// util.IotLog("LastMsgTimestamp: %d", state.LastMsgTimestamp)
 					if state.LastMsgTimestamp < currentTimestamp-int64(bsp.BspConfigInstance.Heartbeat) {
 						color = node.SetColorForNodeAsInvalid(color)
 					}

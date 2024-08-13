@@ -2,12 +2,11 @@ package util
 
 import (
 	"fmt"
-	"io"
+	// "io"
 	"log/slog"
 	"os"
-	"path/filepath"
-
-	"github.com/natefinch/lumberjack"
+	// "path/filepath"
+	// "github.com/natefinch/lumberjack"
 )
 
 func IotLog(formatStr string, a ...any) {
@@ -47,6 +46,17 @@ func IotLogInfo(s string) {
 	slog.Info(s)
 }
 
+
+func DumpBytes(a []byte) {
+	res := ""
+	for i := 0; i < len(a); i++ {
+		res += fmt.Sprintf("%02x ", a[i])
+		// fmt.Printf("(%d, %d, %02x )", i, a[i], a[i])
+		// fmt.Printf("(%d, %d, %02x %c)", i, a[i], a[i], a[i])
+	}
+	IotLog("%s", res)
+}
+
 type LogConfigParams struct {
 	MaxSize    int `json:"max_size"`
 	MaxBackups int `json:"max_backups"`
@@ -55,26 +65,26 @@ type LogConfigParams struct {
 }
 
 func ConfigLogFile(logFilename string, params LogConfigParams) {
-	logTargetFolder := filepath.Join(GetAppRoot(), "logs")
-	logTarget := filepath.Join(logTargetFolder, logFilename)
-	maxSize := params.MaxSize
-	if maxSize == 0 {
-		maxSize = 5
-	}
-	maxBackups := params.MaxBackups
-	if maxBackups == 0 {
-		maxBackups = 10
-	}
-	IotLog("Max backup size: %d, max backups: %d", maxSize, maxBackups)
-	r := &lumberjack.Logger{
-		Filename:   logTarget,
-		MaxSize:    params.MaxSize,    //日志最大的大小（M）
-		MaxBackups: params.MaxBackups, //备份个数
-		MaxAge:     params.MaxAge,     //最大保存天数（day）
-		Compress:   false,             //是否压缩
-		LocalTime:  false,
-	}
+	// logTargetFolder := filepath.Join(GetAppRoot(), "logs")
+	// logTarget := filepath.Join(logTargetFolder, logFilename)
+	// maxSize := params.MaxSize
+	// if maxSize == 0 {
+	// 	maxSize = 5
+	// }
+	// maxBackups := params.MaxBackups
+	// if maxBackups == 0 {
+	// 	maxBackups = 10
+	// }
+	// IotLog("Max backup size: %d, max backups: %d", maxSize, maxBackups)
+	// r := &lumberjack.Logger{
+	// 	Filename:   logTarget,
+	// 	MaxSize:    params.MaxSize,    //日志最大的大小（M）
+	// 	MaxBackups: params.MaxBackups, //备份个数
+	// 	MaxAge:     params.MaxAge,     //最大保存天数（day）
+	// 	Compress:   false,             //是否压缩
+	// 	LocalTime:  false,
+	// }
 
-	logger := slog.New(slog.NewTextHandler(io.MultiWriter(os.Stdout, r), nil))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 }
