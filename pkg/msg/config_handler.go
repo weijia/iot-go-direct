@@ -65,6 +65,7 @@ func InitAccordingToConfig(ctx context.Context) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
+	// TODO: the node list will be changed in one go routine and used by another, need to improve
 	// Send heartbeat to Module1
 	go lora_module.Module1.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList1, &wg)
 	// Send heartbeat to Module2

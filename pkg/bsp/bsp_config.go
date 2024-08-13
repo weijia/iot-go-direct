@@ -51,7 +51,7 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		NodeType:      1,
 		Rssi:          10,
 		Ccid:          "test",
-		Heartbeat:     60,
+		Heartbeat:     20, // for node heartbeat, server heart beat is defined as const
 		Module1:       module1Param,
 		Module2:       module2Param,
 	},
