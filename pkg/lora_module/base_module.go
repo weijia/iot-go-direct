@@ -5,7 +5,6 @@ import (
 	"iot_go/pkg/lora_client"
 	"iot_go/pkg/node"
 	"iot_go/pkg/util"
-	"sync"
 	"time"
 )
 
@@ -16,6 +15,9 @@ var module2SendingToNodeCh = make(chan NodeMsgReq, 10)
 var module0ReceivingCh = make(chan []byte, 10)
 var module1ReceivingCh = make(chan []byte, 10)
 var module2ReceivingCh = make(chan []byte, 10)
+
+var module1NodeListCh = make(chan []string, 2)
+var module2NodeListCh = make(chan []string, 2)
 
 var Module0 = LoraModule{
 	SendingToNodeCh: &module0SendingToNodeCh,
@@ -30,13 +32,16 @@ var Module1 = LoraModule{
 	// LoraClient:  bsp.GetModule1Client(),
 	LoraIndex: 1,
 	// Mutex:     &sync.Mutex{},
+	NodeListCh: &module1NodeListCh,
 }
+
 var Module2 = LoraModule{
 	SendingToNodeCh: &module2SendingToNodeCh,
 	ReceivingCh:     &module2ReceivingCh,
 	// LoraClient:  bsp.GetModule2Client(),
 	LoraIndex: 2,
 	// Mutex:     &sync.Mutex{},
+	NodeListCh: &module2NodeListCh,
 }
 
 var ModuleList = [3]LoraModule{
@@ -49,7 +54,9 @@ type LoraModule struct {
 	// WaitingReplyTimer *time.Timer
 	LoraClient *lora_client.LoraClient
 	LoraIndex  int //LoraIndex starts from 0
-	Mutex      *sync.Mutex
+	// Mutex      *sync.Mutex
+	// nodeList []string
+	NodeListCh *chan []string
 }
 
 func (loraModule LoraModule) MsgLoop(ctx context.Context) {

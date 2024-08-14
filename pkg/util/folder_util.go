@@ -38,6 +38,7 @@ func GetOrCreateDownloadingFolder() string {
 func GetOrCreateAppFolder() string {
 	appRoot := GetAppRoot()
 	appFolder := filepath.Join(appRoot, FIRMWARE_FOLDER)
+	os.RemoveAll(appFolder)
 	os.MkdirAll(appFolder, 0771)
 	return appFolder
 }

@@ -15,6 +15,8 @@ type NodeState struct {
 	ModuleParam shared.Module `json:"module_param"`
 	RSSI float64 `json:"rssi"`
 	SNR float64 `json:"snr"`
+	IsOffline bool `json:"is_offline"`
+	CompletionStatus int `json:"completion_status"`
 }
 
 func GetOrCreateNodeState(nodeId string) *NodeState {

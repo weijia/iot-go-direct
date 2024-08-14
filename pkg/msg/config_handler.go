@@ -65,19 +65,25 @@ func InitAccordingToConfig(ctx context.Context) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	// TODO: the node list will be changed in one go routine and used by another, need to improve
+	// Always use copy of the node list to prevent
+	// accessing node list from different go routine
+	copiedNodeList1 := make([]string, len(bsp.BspConfigInstance.NodeList1)) // 预先分配足够的空间  
+    copy(copiedNodeList1, bsp.BspConfigInstance.NodeList1) // 复制元素  
+	copiedNodeList2 := make([]string, len(bsp.BspConfigInstance.NodeList2)) // 预先分配足够的空间  
+    copy(copiedNodeList2, bsp.BspConfigInstance.NodeList2) // 复制元素  
+
 	// Send heartbeat to Module1
-	go lora_module.Module1.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList1, &wg)
+	go lora_module.Module1.SendHeartbeatForList(ctx, copiedNodeList1, &wg)
 	// Send heartbeat to Module2
-	go lora_module.Module2.SendHeartbeatForList(ctx, bsp.BspConfigInstance.NodeList2, &wg)
+	go lora_module.Module2.SendHeartbeatForList(ctx, copiedNodeList2, &wg)
 	// Not responding node will receive node init in public freq in above steps
 	// Wait for above 2 activities to complete
 	wg.Wait()
 
 	IsInitOngoing = false
 	IsInitDone = true
-	go lora_module.Module1.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList1, nil)
-	go lora_module.Module2.SendHeartbeatForListInLoop(ctx, bsp.BspConfigInstance.NodeList2, nil)
+	go lora_module.Module1.SendHeartbeatForListInLoop(ctx, copiedNodeList1)
+	go lora_module.Module2.SendHeartbeatForListInLoop(ctx, copiedNodeList2)
 }
 
 func (config ConfigRequest) handle(ctx context.Context) interface{} {
@@ -159,6 +165,10 @@ func HandleConfigAfterInit(configParams shared.ConfigParams) {
 	wg.Wait()
 
 	saveConfig(configParams)
+
+	lora_module.Module1.UpdateNodeList(bsp.BspConfigInstance.BaseConfigParams.NodeList1)
+	lora_module.Module2.UpdateNodeList(bsp.BspConfigInstance.BaseConfigParams.NodeList2)
+
 	bsp.GetBsp().SetModule1Params(configParams.Module1)
 	bsp.GetBsp().SetModule2Params(configParams.Module2)
 }

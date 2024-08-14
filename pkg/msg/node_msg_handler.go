@@ -91,8 +91,10 @@ func HandleNodeMsg(msgRaw lora_shared.LoraData, MqttPublishCh chan interface{}) 
 			nodeState.NodeReportedColor[i*2] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf0 >> 4
 			nodeState.NodeReportedColor[i*2+1] = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+i]) & 0xf
 		}
+		nodeState.CompletionStatus = int(msg[HEARTBEAT_COLOR_POS_START_INDEX+4])
 		nodeState.RSSI = msgRaw.RSSI
 		nodeState.SNR = msgRaw.SNR
+		nodeState.IsOffline = false
 		util.IotLog("Handle Node Msg: After update according to heartbeat: %v", nodeState.NodeReportedColor)
 		// util.IotLog("module: %d, ch: %p", msgRaw.ModuleIndex, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh)
 		util.SendBytesMsgWithoutBlocking(msg, lora_module.ModuleList[msgRaw.ModuleIndex].ReceivingCh,

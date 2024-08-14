@@ -144,19 +144,22 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 		case nodeMsg := <-mainMsgHandler.NodeMsgCh:
 			util.IotLogInfo("MainLoop: handle node msg")
 			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
+			
 		case timeoutNodeId := <-mainMsgHandler.TimeoutNodeIdCh:
 			util.IotLogInfo("MainLoop: Handle node msg timeout")
-			bsp.GetOrCreateNodeState(timeoutNodeId)
+			nodeState := bsp.GetOrCreateNodeState(timeoutNodeId)
+			nodeState.IsOffline = true
+
 		case <-ticker.C:
 			util.IotLogInfo("MainLoop: prepare heartbeat to server")
-			currentTimestamp := time.Now().Unix()
+			// currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
 			for _, state := range bsp.BspConfigInstance.NodeStates {
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
 					util.IotLog("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
 					// util.IotLog("LastMsgTimestamp: %d", state.LastMsgTimestamp)
-					if state.LastMsgTimestamp < currentTimestamp-int64(bsp.BspConfigInstance.Heartbeat) {
+					if state.IsOffline {
 						color = node.SetColorForNodeAsInvalid(color)
 					}
 					s := msg.HeartbeatStatus{
@@ -167,6 +170,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						RunArea:     state.RunningArea,
 						RSSI:        state.RSSI,
 						SNR:         state.SNR,
+						IsOffline:   state.IsOffline,
+						CompletionStatus: state.CompletionStatus,
 					}
 					l = append(l, s)
 				}

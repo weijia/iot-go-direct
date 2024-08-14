@@ -17,6 +17,8 @@ type HeartbeatStatus struct {
 	RunArea     int    `json:"run_area"`
 	RSSI float64 `json:"rssi"`
 	SNR float64 `json:"snr"`
+	IsOffline bool `json:"is_offline"`
+	CompletionStatus int `json:"completion_status"`
 }
 
 func GetColorStrFromSlice(colorSlice [8]int) string {

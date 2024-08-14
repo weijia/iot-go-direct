@@ -13,19 +13,31 @@ import (
 // Will be set by top level msg loop
 var TimeoutNodeIdCh *chan string
 
-
 func (loraModule LoraModule) SendHeartbeatForListInLoop(ctx context.Context,
-	nodeList []string, wg *sync.WaitGroup) {
+	nodeList []string) {
 		
 	ticker1 := time.NewTicker(time.Duration(bsp.BspConfigInstance.Heartbeat) * time.Second)
 	defer ticker1.Stop()
 	for {
 		select{
+		case nodeList = <- *loraModule.NodeListCh:
 		case <- ctx.Done():
 			return
 		case <-ticker1.C:
 			loraModule.SendHeartbeatForList(ctx, nodeList, nil)
 		}
+	}
+}
+
+func (loraModule LoraModule) UpdateNodeList(nodeList []string) {
+	copiedNodeList := make([]string, len(nodeList)) // 预先分配足够的空间  
+    copy(copiedNodeList, nodeList) // 复制元素
+
+	select {
+	case *loraModule.NodeListCh <- copiedNodeList:
+	default:
+		// 如果channel已满，打印消息
+		util.IotLogErrorStr("UpdateNodeList: Channel full, could not send without blocking")
 	}
 }
 
@@ -52,7 +64,14 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 				"status as offline and send node init for it on public freq", nodeIdStr)
 			// Send timeout msg to main thread to update node state
 			if TimeoutNodeIdCh != nil {
-				*TimeoutNodeIdCh <- nodeIdStr
+				
+				select {
+				case *TimeoutNodeIdCh <- nodeIdStr:
+				default:
+					// 如果channel已满，打印消息
+					util.IotLogErrorStr("SendHeartbeatForList: Channel full, could not send without blocking")
+				}
+
 			}
 			// Module0.Mutex.Lock()
 			util.IotLog("Sending node init on 0 for %s", nodeIdStr)
