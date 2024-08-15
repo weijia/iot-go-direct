@@ -172,7 +172,8 @@ func GetColorWithArea(msg []byte) string {
 
 func IsColorUpdateSuccess(msg []byte) bool {
 	util.IotLog("Update result: %v, %d, %d, %v", msg, msg[UPDATE_GLASS_COLOR_RESULT_INDEX], UPDATE_GLASS_COLOR_RESULT_INDEX, msg[UPDATE_GLASS_COLOR_RESULT_INDEX] == 1)
-	if msg[UPDATE_GLASS_COLOR_RESULT_INDEX] == 1 {
+	// Latest execute result is 0: error, 1: ongoing, 2: completed
+	if msg[UPDATE_GLASS_COLOR_RESULT_INDEX] != 0 {
 		return true
 	} else {
 		return false
