@@ -54,7 +54,7 @@ func (loraModule LoraModule) SendHeartbeatForList(ctx context.Context,
 		}
 	}
 	for _, nodeIdStr := range nodeList {
-		util.IotLog("Sending heartbeat on %d for %s", loraModule.LoraIndex, nodeIdStr)
+		util.IotDebugPrintf("Sending heartbeat on %d for %s", loraModule.LoraIndex, nodeIdStr)
 		// loraModule.Mutex.Lock()
 		reply := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetHeartbeatMsg(nodeIdStr), util.HEARTBEAT_RETRY_CNT, node.HEARTBEAT_REPLY)
 		// loraModule.Mutex.Unlock()

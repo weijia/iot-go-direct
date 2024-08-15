@@ -13,22 +13,25 @@ port=0.0.0.0:9001
 
 `
 	logFileCfg := ""
+	logFileBackup := 1
 	for name, cmd := range appNameToCmdMapping {
 		if name == "main" {
 			logFileCfg = ", /dev/stdout"
+			logFileBackup = 5
 		} else {
 			logFileCfg = ""
+			logFileBackup = 1
 		}
 		content = content + fmt.Sprintf(`[program:%s]
 command = %s
 stdout_logfile = %s.log%s
 stdout_logfile_maxbytes = 1024000
-stdout_logfile_backups = 5
+stdout_logfile_backups = %d
 stderr_logfile = %s-err.log
 stderr_logfile_maxbytes = 65535
-stderr_logfile_backups = 2
+stderr_logfile_backups = 1
 autorestart = true
-`, name, cmd, name, logFileCfg, name)
+`, name, cmd, name, logFileCfg, logFileBackup, name)
 	}
 
 	// Create the file

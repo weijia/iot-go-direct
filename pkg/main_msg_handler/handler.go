@@ -50,7 +50,7 @@ func InfiniteAppLoop(ctx context.Context, loraServiceIp string) {
 }
 
 func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraServiceIp string) {
-	util.IotLog("Starting main app version: %s", bsp.SwVersion)
+	util.IotDebugPrintf("Starting main app version: %s", bsp.SwVersion)
 	runLedCh := make(chan int)
 
 	runLed := bsp.LedManager{
@@ -116,7 +116,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	for {
 		select {
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
-			util.IotLogInfo("MainLoop: Sending mqtt msg to server")
+			util.IotDebug("MainLoop: Sending mqtt msg to server")
 			mqttClient.SendToServer(publishingMqttMsg)
 			runLedCh <- 1
 			// util.IotLogInfo("Sent run led heartbeat")
@@ -134,7 +134,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
-			util.IotLogInfo("MainLoop: received mqtt msg from server")
+			util.IotDebug("MainLoop: received mqtt msg from server")
 			reply := msg.HandleMqttMsg(ctx, mainMsgHandler.MqttToServerCh, mqttMsg.Payload())
 			runLedCh <- 1
 			if reply != nil {
@@ -142,21 +142,21 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 					fmt.Sprintf("Sending to mqtt server ch failed: %v", reply))
 			}
 		case nodeMsg := <-mainMsgHandler.NodeMsgCh:
-			util.IotLogInfo("MainLoop: handle node msg")
+			util.IotDebug("MainLoop: handle node msg")
 			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
 			
 		case timeoutNodeId := <-mainMsgHandler.TimeoutNodeIdCh:
-			util.IotLogInfo("MainLoop: Handle node msg timeout")
+			util.IotDebug("MainLoop: Handle node msg timeout")
 			nodeState := bsp.GetOrCreateNodeState(timeoutNodeId)
 			nodeState.IsOffline = true
 
 		case <-ticker.C:
-			util.IotLogInfo("MainLoop: prepare heartbeat to server")
+			util.IotDebug("MainLoop: prepare heartbeat to server")
 			// currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
 			for _, state := range bsp.BspConfigInstance.NodeStates {
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
-					util.IotLog("Reporting state: %v", state)
+					util.IotDebugPrintf("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
 					// util.IotLog("LastMsgTimestamp: %d", state.LastMsgTimestamp)
 					if state.IsOffline {

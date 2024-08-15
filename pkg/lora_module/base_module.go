@@ -66,14 +66,14 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 			util.IotLogInfo("NodeMsgLoop: Cancel of context called, quitting LoraModule.MsgLoop")
 			return
 		case m := <-*loraModule.SendingToNodeCh:
-			util.IotLog("NodeMsgLoop: Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
+			util.IotDebugPrintf("NodeMsgLoop: Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
 			loraModule.LoraClient.Send(m.Data)
 			isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
 			reply := NodeMsgReply{
 				Data:      msg,
 				IsTimeout: isTimeout,
 			}
-			util.IotLog("NodeMsgLoop: Bottom level wait for reply got is timeout: %v, msg: %v, send to reply ch: %p", isTimeout, msg, m.ReplyCh)
+			util.IotDebugPrintf("NodeMsgLoop: Bottom level wait for reply got is timeout: %v, msg: %v, send to reply ch: %p", isTimeout, msg, m.ReplyCh)
 			if m.ReplyCh != nil {
 				*m.ReplyCh <- reply
 				close(*m.ReplyCh)
@@ -95,7 +95,7 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 			util.IotLogErrorWithFormatStr("NodeMsgLoop: IsReplyTimeout return due to timeout, index: %d", loraModule.LoraIndex)
 			return true, nil
 		case nodeReply := <-*loraModule.ReceivingCh:
-			util.IotLog("NodeMsgLoop: Received node msg from main msg loop (lora module ch): %p", loraModule.ReceivingCh)
+			util.IotDebugPrintf("NodeMsgLoop: Received node msg from main msg loop (lora module ch): %p", loraModule.ReceivingCh)
 			responseNodeId := node.GetNodeIdStr(nodeReply)
 			if responseNodeId == nodeIdStr {
 				// eventTimer.Stop() used defer above to do this already
@@ -126,7 +126,7 @@ func GetReplyOrTimeout(ch *chan NodeMsgReply) NodeMsgReply {
 	}
 	select {
 	case reply = <-*ch:
-		util.IotLog("GetReplyOrTimeout: Got reply from base module msg loop (data, is timeout): %v", reply)
+		util.IotDebugPrintf("GetReplyOrTimeout: Got reply from base module msg loop (data, is timeout): %v", reply)
 		// eventTimer.Stop() // already use defer above to do this
 		// util.IotLog("GetReplyOrTimeout received reply from level1, returning: %v", reply)
 	case <-eventTimer.C:
