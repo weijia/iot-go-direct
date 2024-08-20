@@ -112,6 +112,11 @@ func InitConfig() {
 	BspConfigInstance.SoftVersion = SwVersion
 	gatewayIdFilePath := filepath.Join(appRoot, "gateway_id.txt")
 	file, err := os.Open(gatewayIdFilePath)
+	util.IotLog("HeartbeatToServer is set to %d", BspConfigInstance.BaseConfigParams.HeartbeatToServer)
+	if BspConfigInstance.BaseConfigParams.HeartbeatToServer < 30 {
+		util.IotLogErrorWithFormatStr("HeartbeatToServer is invalid: %d, reset to 30", BspConfigInstance.BaseConfigParams.HeartbeatToServer)
+		BspConfigInstance.BaseConfigParams.HeartbeatToServer = 30
+	}
 	PeriodNumberForReportingToServer = BspConfigInstance.BaseConfigParams.HeartbeatToServer/10
 
 	if err == nil {

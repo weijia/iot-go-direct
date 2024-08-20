@@ -87,9 +87,14 @@ func InitAccordingToConfig(ctx context.Context) {
 }
 
 func (config ConfigRequest) handle(ctx context.Context) interface{} {
-	if bsp.PeriodNumberForReportingToServer != config.Params.HeartbeatToServer/10 {
+	if bsp.PeriodNumberForReportingToServer != config.Params.HeartbeatToServer/10 &&
+			config.Params.HeartbeatToServer >= 30 {
 		bsp.PeriodNumberForReportingToServer = config.Params.HeartbeatToServer/10
 		util.IotLog("Updated reporting period: %d seconds", bsp.PeriodNumberForReportingToServer*10)
+	} else {
+		util.IotLogErrorWithFormatStr(
+			"HeartbeatToServer %d is not changed or below 30, ignore the setting value", 
+			config.Params.HeartbeatToServer)
 	}
 	
 	if IsInitDone {

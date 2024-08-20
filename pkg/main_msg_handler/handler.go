@@ -155,6 +155,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			bsp.RemainingPeriod -= 1
 			if bsp.RemainingPeriod <= 0 {
 				bsp.RemainingPeriod = bsp.PeriodNumberForReportingToServer
+			} else {
+				continue
 			}
 			util.IotDebug("MainLoop: prepare heartbeat to server")
 			// currentTimestamp := time.Now().Unix()
