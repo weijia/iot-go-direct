@@ -16,15 +16,17 @@ type ColorParams struct {
 }
 
 func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
-	broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
-		util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-		request.Params.ColorParams)
-	// bsp.GetModule1Client().Send(broadcastMsg)
-	// bsp.GetModule2Client().Send(broadcastMsg)
-	lora_module.Module1.SendWithoutReply(broadcastMsg)
-	lora_module.Module2.SendWithoutReply(broadcastMsg)
+	if request.Params.ColorParams != "" {
+		broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
+			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
+			request.Params.ColorParams)
+		lora_module.Module1.SendWithoutReply(broadcastMsg)
+		lora_module.Module2.SendWithoutReply(broadcastMsg)
+	} else {
+		util.IotLogErrorWithFormatStr("ColorParam is invalid: %v", request.Params.ColorParams)
+	}
 	reply := GatewayNodeIdReply{
-		MsgType:       "gateway_reboot_reply",
+		MsgType:       "broadcast_update_glass_color_reply",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
 	}
 	return reply
