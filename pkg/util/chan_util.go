@@ -37,24 +37,24 @@ func SendRepliedNodeIdWithoutBlocking(nodeId string, ch *chan<- string, timeoutS
 	}()
 }
 
-var HeartbeatIndex = 0
+// var HeartbeatIndex = 0
 
-func IsReplyTimeout(nodeIdStr string, ch *<-chan string, timeoutSeconds int) bool {
-	localIndex := HeartbeatIndex
-	HeartbeatIndex += 1
-	IotLogInfo(fmt.Sprintf("handling reply for index: %d", localIndex))
-	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
-	for {
-		select {
-		case <-eventTimer.C:
-			IotLogInfo(fmt.Sprintf("Timeout waiting for index: %d, node id: %s", localIndex, nodeIdStr))
-			// IotLogInfo(fmt.Sprintf("Timeout waiting for node id: %s", nodeIdStr))
-			return true
-		case responseNodeId := <-*ch:
-			IotLogInfo(fmt.Sprintf("Reply for node id for index: %d, node id: %s from ch: %p", localIndex, responseNodeId, ch))
-			// IotLogInfo(fmt.Sprintf("Reply for node id: %s", responseNodeId))
-			eventTimer.Stop()
-			return false
-		}
-	}
-}
+// func IsReplyTimeout(nodeIdStr string, ch *<-chan string, timeoutSeconds int) bool {
+// 	localIndex := HeartbeatIndex
+// 	HeartbeatIndex += 1
+// 	IotLogInfo(fmt.Sprintf("handling reply for index: %d", localIndex))
+// 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
+// 	for {
+// 		select {
+// 		case <-eventTimer.C:
+// 			IotLogInfo(fmt.Sprintf("Timeout waiting for index: %d, node id: %s", localIndex, nodeIdStr))
+// 			// IotLogInfo(fmt.Sprintf("Timeout waiting for node id: %s", nodeIdStr))
+// 			return true
+// 		case responseNodeId := <-*ch:
+// 			IotLogInfo(fmt.Sprintf("Reply for node id for index: %d, node id: %s from ch: %p", localIndex, responseNodeId, ch))
+// 			// IotLogInfo(fmt.Sprintf("Reply for node id: %s", responseNodeId))
+// 			eventTimer.Stop()
+// 			return false
+// 		}
+// 	}
+// }

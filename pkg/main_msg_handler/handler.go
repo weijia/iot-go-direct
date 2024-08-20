@@ -106,7 +106,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 	initMsg.MsgType = "init"
 	mainMsgHandler.MqttToServerCh <- initMsg
 
-	ticker := time.NewTicker(time.Second * util.TO_SERVER_HEARTBEAT_SECONDS)
+	// Use 10 seconds as period
+	ticker := time.NewTicker(time.Second * 10)
 	defer ticker.Stop()
 	u := msg.HeartbeatStatusUpdate{
 		MsgType:       "heartbeat_status_update",
@@ -151,6 +152,10 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			nodeState.IsOffline = true
 
 		case <-ticker.C:
+			bsp.RemainingPeriod -= 1
+			if bsp.RemainingPeriod <= 0 {
+				bsp.RemainingPeriod = bsp.PeriodNumberForReportingToServer
+			}
 			util.IotDebug("MainLoop: prepare heartbeat to server")
 			// currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}

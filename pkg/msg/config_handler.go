@@ -87,8 +87,13 @@ func InitAccordingToConfig(ctx context.Context) {
 }
 
 func (config ConfigRequest) handle(ctx context.Context) interface{} {
+	if bsp.PeriodNumberForReportingToServer != config.Params.HeartbeatToServer/10 {
+		bsp.PeriodNumberForReportingToServer = config.Params.HeartbeatToServer/10
+		util.IotLog("Updated reporting period: %d seconds", bsp.PeriodNumberForReportingToServer*10)
+	}
+	
 	if IsInitDone {
-		go HandleConfigAfterInit(config.Params)
+		go HandleConfigAfterInitWillBlock(config.Params)
 		// TODO: if freq is not changed, we do not need to re init lora
 		// if IsModuleParamChanged(config) {
 		// Need to send node init req and wait for resp in before freq change
@@ -120,11 +125,17 @@ func getConfigReply() interface{} {
 }
 
 func saveConfig(configParams shared.ConfigParams) {
+	// Update InitMsgContent so when gateway starts, latest config will be sent to server
 	bsp.BspConfigInstance.InitMsgContent.Module1 = configParams.Module1
 	bsp.BspConfigInstance.InitMsgContent.Module2 = configParams.Module2
+
+	// We will only accept number multiple 10 as HeartbeatToServer, see HeartbeatToServer handling
+	bsp.BspConfigInstance.InitMsgContent.HeartbeatToServer = 10*configParams.HeartbeatToServer/10
+
 	bsp.BspConfigInstance.BaseConfigParams = configParams.BaseConfigParams
-	if bsp.BspConfigInstance.Heartbeat <=0 {
-		bsp.BspConfigInstance.Heartbeat = 20
+	if bsp.BspConfigInstance.BaseConfigParams.Heartbeat <=0 {
+		bsp.BspConfigInstance.BaseConfigParams.Heartbeat = 20
+		bsp.BspConfigInstance.InitMsgContent.Heartbeat = bsp.BspConfigInstance.Heartbeat
 	}
 	// TODO: update work around for list 2 empty
 	if len(bsp.BspConfigInstance.BaseConfigParams.NodeList2) > 0 && bsp.BspConfigInstance.BaseConfigParams.NodeList2[0] == "        " {
@@ -134,10 +145,12 @@ func saveConfig(configParams shared.ConfigParams) {
 	bsp.BspConfigInstance.CommitChanges()
 }
 
-func HandleConfigAfterInit(configParams shared.ConfigParams) {
+func HandleConfigAfterInitWillBlock(configParams shared.ConfigParams) {
 	needSendInitForModule0 := make(map[string]shared.Module)
 	needSendInitForModule1 := make(map[string]shared.Module)
 	needSendInitForModule2 := make(map[string]shared.Module)
+
+	// config node list1 may contain node that is currently for module 2 or not joined (send init in module0)
 	for _, nodeIdStr := range configParams.NodeList1 {
 		if bsp.IsInNodeList1(nodeIdStr) {
 			needSendInitForModule1[nodeIdStr] = configParams.Module1
@@ -159,9 +172,9 @@ func HandleConfigAfterInit(configParams shared.ConfigParams) {
 
 	var wg sync.WaitGroup
 	wg.Add(3)
-	go lora_module.Module0.SendNodeInitForList(needSendInitForModule0, &wg)
-	go lora_module.Module1.SendNodeInitForList(needSendInitForModule1, &wg)
-	go lora_module.Module2.SendNodeInitForList(needSendInitForModule2, &wg)
+	go lora_module.Module0.SendNodeInitForListWillBlock(needSendInitForModule0, &wg)
+	go lora_module.Module1.SendNodeInitForListWillBlock(needSendInitForModule1, &wg)
+	go lora_module.Module2.SendNodeInitForListWillBlock(needSendInitForModule2, &wg)
 	wg.Wait()
 
 	saveConfig(configParams)
@@ -169,6 +182,6 @@ func HandleConfigAfterInit(configParams shared.ConfigParams) {
 	lora_module.Module1.UpdateNodeList(bsp.BspConfigInstance.BaseConfigParams.NodeList1)
 	lora_module.Module2.UpdateNodeList(bsp.BspConfigInstance.BaseConfigParams.NodeList2)
 
-	bsp.GetBsp().SetModule1Params(configParams.Module1)
-	bsp.GetBsp().SetModule2Params(configParams.Module2)
+	bsp.GetBsp().SetModule1HWParams(configParams.Module1)
+	bsp.GetBsp().SetModule2HWParams(configParams.Module2)
 }

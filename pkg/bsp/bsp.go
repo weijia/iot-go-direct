@@ -7,14 +7,12 @@ import (
 	"iot_go/pkg/thingsboard"
 	"iot_go/pkg/thingsboard_shared"
 	"iot_go/pkg/util"
-
-	"fmt"
 )
 
 type Bsp interface {
-	SetModule0Params(module shared.Module)
-	SetModule1Params(module shared.Module)
-	SetModule2Params(module shared.Module)
+	SetModule0HWParams(module shared.Module)
+	SetModule1HWParams(module shared.Module)
+	SetModule2HWParams(module shared.Module)
 }
 
 var module0Client *lora_client.LoraClient
@@ -30,6 +28,9 @@ func InitBoard(host string) {
 	module1Client.InitLora(BspConfigInstance.InitMsgContent.Module1)
 	module2Client.InitLora(BspConfigInstance.InitMsgContent.Module2)
 }
+
+var PeriodNumberForReportingToServer = 6
+var RemainingPeriod = PeriodNumberForReportingToServer
 
 type VirtualBsp struct {
 	thingsboardServer thingsboard.ThingsboardServer
@@ -57,36 +58,36 @@ func (virtualBsp VirtualBsp) SetModule0Params(moduleParams shared.Module) {
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
 	util.IotLog("Setting Module0 Params: %v", moduleParamsInJson)
 
-	data := map[string]interface{}{
-		"module0": fmt.Sprintf("band: %d, factor: %d, freq: %d",
-			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
-	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
+	// data := map[string]interface{}{
+	// 	"module0": fmt.Sprintf("band: %d, factor: %d, freq: %d",
+	// 		moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
+	// }
+	// virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 }
 
-func (virtualBsp VirtualBsp) SetModule1Params(moduleParams shared.Module) {
+func (virtualBsp VirtualBsp) SetModule1HWParams(moduleParams shared.Module) {
 	module1Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
 	util.IotLog("Setting Module1 Params: %s\n", moduleParamsInJson)
 
-	data := map[string]interface{}{
-		"module1": fmt.Sprintf("band: %d, factor: %d, freq: %d",
-			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
-	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
+	// data := map[string]interface{}{
+	// 	"module1": fmt.Sprintf("band: %d, factor: %d, freq: %d",
+	// 		moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
+	// }
+	// virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 
 }
 
-func (virtualBsp VirtualBsp) SetModule2Params(moduleParams shared.Module) {
+func (virtualBsp VirtualBsp) SetModule2HWParams(moduleParams shared.Module) {
 	module2Client.InitLora(moduleParams)
 	moduleParamsInJson, _ := json.Marshal(moduleParams)
 	util.IotLog("Setting Module2 Params: %s\n", moduleParamsInJson)
 
-	data := map[string]interface{}{
-		"module2": fmt.Sprintf("band: %d, factor: %d, freq: %d",
-			moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
-	}
-	virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
+	// data := map[string]interface{}{
+	// 	"module2": fmt.Sprintf("band: %d, factor: %d, freq: %d",
+	// 		moduleParams.Band, moduleParams.Factor, moduleParams.Freq),
+	// }
+	// virtualBsp.SafeUploadTelemetry(BspConfigInstance.GatewayNodeId, data)
 }
 
 func GetBsp() *VirtualBsp {

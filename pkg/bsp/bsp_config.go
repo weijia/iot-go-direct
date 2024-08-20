@@ -52,6 +52,7 @@ var defaultInitMsgContent = shared.InitMsgContent{
 		Rssi:          10,
 		Ccid:          "test",
 		Heartbeat:     20, // for node heartbeat, server heart beat is defined as const
+		HeartbeatToServer:     60, // for node heartbeat, server heart beat is defined as const
 		Module1:       module1Param,
 		Module2:       module2Param,
 	},
@@ -111,6 +112,7 @@ func InitConfig() {
 	BspConfigInstance.SoftVersion = SwVersion
 	gatewayIdFilePath := filepath.Join(appRoot, "gateway_id.txt")
 	file, err := os.Open(gatewayIdFilePath)
+	PeriodNumberForReportingToServer = BspConfigInstance.BaseConfigParams.HeartbeatToServer/10
 
 	if err == nil {
 		defer file.Close()

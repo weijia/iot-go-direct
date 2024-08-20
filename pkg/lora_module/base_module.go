@@ -65,10 +65,12 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 		case <-ctx.Done():
 			util.IotLogInfo("NodeMsgLoop: Cancel of context called, quitting LoraModule.MsgLoop")
 			return
+		case nodeReply := <-*loraModule.ReceivingCh:
+			util.IotLogErrorWithFormatStr("NodeMsgLoop: unexpected node message when no request message sent: %v", nodeReply)
 		case m := <-*loraModule.SendingToNodeCh:
 			util.IotDebugPrintf("NodeMsgLoop: Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
 			loraModule.LoraClient.Send(m.Data)
-			isTimeout, msg := loraModule.IsReplyTimeout(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
+			isTimeout, msg := loraModule.IsReplyTimeoutWillBlock(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
 			reply := NodeMsgReply{
 				Data:      msg,
 				IsTimeout: isTimeout,
@@ -86,13 +88,13 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 	}
 }
 
-func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int) (bool, []byte) {
+func (loraModule LoraModule) IsReplyTimeoutWillBlock(nodeIdStr string, timeoutSeconds int) (bool, []byte) {
 	eventTimer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
 	defer eventTimer.Stop()
 	for {
 		select {
 		case <-eventTimer.C:
-			util.IotLogErrorWithFormatStr("NodeMsgLoop: IsReplyTimeout return due to timeout, index: %d", loraModule.LoraIndex)
+			util.IotLogErrorWithFormatStr("NodeMsgLoop: IsReplyTimeoutWillBlock return due to timeout, index: %d", loraModule.LoraIndex)
 			return true, nil
 		case nodeReply := <-*loraModule.ReceivingCh:
 			util.IotDebugPrintf("NodeMsgLoop: Received node msg from main msg loop (lora module ch): %p", loraModule.ReceivingCh)
@@ -101,7 +103,7 @@ func (loraModule LoraModule) IsReplyTimeout(nodeIdStr string, timeoutSeconds int
 				// eventTimer.Stop() used defer above to do this already
 				return false, nodeReply
 			} else {
-				util.IotLogErrorWithFormatStr("NodeMsgLoop: Unexpected node message when waiting for node reply, response node: %s, expected node: %s", responseNodeId, nodeIdStr)
+				util.IotLogErrorWithFormatStr("NodeMsgLoop: IsReplyTimeoutWillBlock Unexpected node message when waiting for node reply, response node: %s, expected node: %s", responseNodeId, nodeIdStr)
 			}
 		}
 	}
@@ -148,7 +150,7 @@ func (loraModule LoraModule) SendWithoutReply(data []byte) {
 	}
 }
 
-func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt int, expectedMsgType int) []byte {
+func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeoutWillBlock(msg []byte, retryCnt int, expectedMsgType int) []byte {
 	for i := 0; i < retryCnt; i++ {
 		ch := make(chan NodeMsgReply)
 		msgReq := NodeMsgReq{
@@ -160,7 +162,7 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt 
 		case *loraModule.SendingToNodeCh <- msgReq:
 		default:
 			// 如果channel已满，打印消息
-			util.IotLogErrorStr("SendNodeMsgWithRetryOrTimeout: Channel full, could not send without blocking")
+			util.IotLogErrorStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Channel full, could not send without blocking")
 		}
 
 		// util.IotLog("After sending to sendingToNodeCh")
@@ -170,10 +172,10 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeout(msg []byte, retryCnt 
 				// util.IotLog("Is not timeout, returning data: %v", n.Data)
 				return n.Data
 			} else {
-				util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeout: Received reply: %v, cmd: %d, expected: %d", n.Data, n.Data[node.REPLY_CMD_START_INDEX], expectedMsgType)
+				util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Received reply: %v, cmd: %d, expected: %d", n.Data, n.Data[node.REPLY_CMD_START_INDEX], expectedMsgType)
 			}
 		} else {
-			util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeout: Timeout, retry sending msg: %v", msg)
+			util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Timeout, retry sending msg: %v", msg)
 		}
 	}
 	return nil

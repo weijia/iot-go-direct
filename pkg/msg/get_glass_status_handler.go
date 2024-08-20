@@ -16,9 +16,9 @@ type GlassStatusParams struct {
 
 func (req GetGlassStatusRequest) handle(mqttToServer chan interface{}) interface{} {
 	if bsp.IsInNodeList1(req.Params.NodeId) {
-		go lora_module.Module1.InitiateGetGlassStatusReq(req.Params.NodeId, mqttToServer)
+		go lora_module.Module1.InitiateGetGlassStatusReqWillBlock(req.Params.NodeId, mqttToServer)
 	} else if bsp.IsInNodeList2(req.Params.NodeId) {
-		go lora_module.Module1.InitiateGetGlassStatusReq(req.Params.NodeId, mqttToServer)
+		go lora_module.Module2.InitiateGetGlassStatusReqWillBlock(req.Params.NodeId, mqttToServer)
 	} else {
 		var reply shared.GlassStatusUpdate
 		reply.MsgType = "glass_status_update"

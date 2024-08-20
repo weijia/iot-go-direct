@@ -7,7 +7,7 @@ import (
 	"iot_go/pkg/util"
 )
 
-func (loraModule LoraModule) InitiateGetGlassStatusReq(
+func (loraModule LoraModule) InitiateGetGlassStatusReqWillBlock(
 	nodeIdStr string, mqttToServer chan interface{}) {
 	var reply shared.GlassStatusUpdate
 	reply.MsgType = "glass_status_update"
@@ -17,7 +17,7 @@ func (loraModule LoraModule) InitiateGetGlassStatusReq(
 		Color:  "1f2f3f4f5f6f7f8f",
 	})
 	// loraModule.Mutex.Lock()
-	data := loraModule.SendNodeMsgWithRetryOrTimeout(node.GetRetrieveColorMsg(nodeIdStr), util.GET_GLASS_STATUS_MAX_RETRY, node.GET_GLASS_STATE_REPLY)
+	data := loraModule.SendNodeMsgWithRetryOrTimeoutWillBlock(node.GetRetrieveColorMsg(nodeIdStr), util.GET_GLASS_STATUS_MAX_RETRY, node.GET_GLASS_STATE_REPLY)
 	// loraModule.Mutex.Unlock()
 	if data != nil {
 		reply.Status[0].Color = node.GetColorWithArea(data)

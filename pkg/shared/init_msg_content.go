@@ -1,5 +1,6 @@
 package shared
 
+// Init message data from gateway to server
 type NodeInfoContent struct {
 	GatewayNodeId string `json:"gateway_node_id"`
 	HardVersion   string `json:"hard_version"`
@@ -10,10 +11,12 @@ type NodeInfoContent struct {
 	Rssi          int    `json:"rssi"`
 	Ccid          string `json:"ccid"`
 	Heartbeat     int    `json:"heart_beat"`
+	HeartbeatToServer     int    `json:"heart_beat_to_server"`
 	Module1       Module `json:"module1"`
 	Module2       Module `json:"module2"`
 }
 
+// Init message data from gateway to server
 type InitMsgContent struct {
 	NodeInfoContent
 	Module0 Module `json:"module0"`
