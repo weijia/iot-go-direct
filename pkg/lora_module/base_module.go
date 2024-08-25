@@ -163,6 +163,7 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeoutWillBlock(msg []byte, 
 		default:
 			// 如果channel已满，打印消息
 			util.IotLogErrorStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Channel full, could not send without blocking")
+			return nil
 		}
 
 		// util.IotLog("After sending to sendingToNodeCh")
