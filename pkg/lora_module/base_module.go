@@ -70,16 +70,19 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 		case m := <-*loraModule.SendingToNodeCh:
 			util.IotDebugPrintf("NodeMsgLoop: Received send to node req: %v using %s", m, loraModule.LoraClient.Address)
 			loraModule.LoraClient.Send(m.Data)
-			isTimeout, msg := loraModule.IsReplyTimeoutWillBlock(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
-			reply := NodeMsgReply{
-				Data:      msg,
-				IsTimeout: isTimeout,
-			}
-			util.IotDebugPrintf("NodeMsgLoop: Bottom level wait for reply got is timeout: %v, msg: %v, send to reply ch: %p", isTimeout, msg, m.ReplyCh)
 			if m.ReplyCh != nil {
-				*m.ReplyCh <- reply
-				close(*m.ReplyCh)
+				isTimeout, msg := loraModule.IsReplyTimeoutWillBlock(node.GetNodeIdStr(m.Data), util.LEVEL1_WAIT_FOR_LORA_SERVICE_PUSH_DATA_TIMEOUT_SECONDS)
+				reply := NodeMsgReply{
+					Data:      msg,
+					IsTimeout: isTimeout,
+				}
+				util.IotDebugPrintf("NodeMsgLoop: Bottom level wait for reply got is timeout: %v, msg: %v, send to reply ch: %p", isTimeout, msg, m.ReplyCh)
+				if m.ReplyCh != nil {
+					*m.ReplyCh <- reply
+					close(*m.ReplyCh)
+				}
 			}
+
 			// Sleep 1 second after received a message. As other node may still working on receiving this message
 			time.Sleep(time.Second * 1)
 			// }
@@ -163,7 +166,6 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeoutWillBlock(msg []byte, 
 		default:
 			// 如果channel已满，打印消息
 			util.IotLogErrorStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Channel full, could not send without blocking")
-			return nil
 		}
 
 		// util.IotLog("After sending to sendingToNodeCh")
