@@ -75,7 +75,7 @@ func (client LoraClient) Exit() {
 
 func (client LoraClient) Send(data []byte) {
 	args := &lora_shared.LoraData{Data: data}
-	util.IotLog("Hardware: Sending data: %v", data)
+	util.IotLog("Hardware: Sending data: % X", data)
 	var reply lora_shared.ReplyResult
 	err := client.CallWithReconnect("LoraRpc.Send", args, &reply)
 	if err != nil {

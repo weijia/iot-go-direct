@@ -90,7 +90,7 @@ func (loraDev Lora) CopyFromBufferIfExists() {
 		// util.IotLogInfo(fmt.Sprintf("----------------Data received, %v\n", buffer))
 		byteSlice := make([]byte, len)
 		buffer.Read(byteSlice)
-		util.DumpBytes(byteSlice)
+		util.IotLog("% X", byteSlice)
 		args := lora_shared.LoraData{
 			Data: byteSlice,
 			RSSI: float64(C.RSSI),
@@ -123,7 +123,7 @@ func (loraDev Lora) MsgLoop() {
 			cBufferNeedToFree := C.CBytes(data)
 			// Following will only be useful when the function return, so free manually
 			// defer C.free(unsafe.Pointer(cBufferNeedToFree))
-			util.DumpBytes(data)
+			util.IotLog("% X", data)
 			res := C.send((*C.uchar)(cBufferNeedToFree), C.int(len(data)))
 			C.free(unsafe.Pointer(cBufferNeedToFree))
 			if res != 0 {
