@@ -178,7 +178,7 @@ func (loraModule LoraModule) SendNodeMsgWithRetryOrTimeoutWillBlock(msg []byte, 
 				util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Received reply: %v, cmd: %d, expected: %d", n.Data, n.Data[node.REPLY_CMD_START_INDEX], expectedMsgType)
 			}
 		} else {
-			util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Timeout, retry sending msg: %v", msg)
+			util.IotLogErrorWithFormatStr("SendNodeMsgWithRetryOrTimeoutWillBlock: Timeout, retry sending msg: % X", msg)
 		}
 	}
 	return nil
