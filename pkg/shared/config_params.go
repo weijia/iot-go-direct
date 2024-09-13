@@ -6,8 +6,8 @@ type BaseConfigParams struct {
 	NodeList2      []string `json:"node_list_2"`
 	TouchNodeList1 []string `json:"touch_node_list_1"`
 	TouchNodeList2 []string `json:"touch_node_list_2"`
-	Custom         string   `json:"custom"`
-	Project        string   `json:"project"`
+	Custom         string   `json:"custom,omitempty"`
+	Project        string   `json:"project,omitempty"`
 	Heartbeat      int      `json:"heart_beat"`
 	// Only accept multiples of 10, see usage of HeartbeatToServer
 	HeartbeatToServer      int      `json:"heart_beat_to_server"`

@@ -58,8 +58,8 @@
             "properties": {
               "freq": {
                 "type": "integer",
-                "minimum": 4500,
-                "maximum": 4900
+                "minimum": 3700,
+                "maximum": 6000
               },
               "band": {
                 "type": "integer",
@@ -113,8 +113,6 @@
           "node_list_2",
           "touch_node_list_1",
           "touch_node_list_2",
-          "custom",
-          "project",
           "heart_beat",
           "module1",
           "module2"

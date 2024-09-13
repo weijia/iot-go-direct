@@ -12,6 +12,7 @@ import (
 type LoraClient struct {
 	RpcClient *rpc.Client
 	Address   string
+	Port      int
 }
 
 func (client *LoraClient) CreateRpcClientWithRetry() {
@@ -37,6 +38,7 @@ func NewLoraClient(port int, host ...string) *LoraClient {
 	}
 	instance := new(LoraClient)
 	instance.Address = fmt.Sprintf("%s:%d", realHost, port)
+	instance.Port = port
 	instance.CreateRpcClientWithRetry()
 	return instance
 }
@@ -75,7 +77,7 @@ func (client LoraClient) Exit() {
 
 func (client LoraClient) Send(data []byte) {
 	args := &lora_shared.LoraData{Data: data}
-	util.IotLog("Hardware: Sending data: % X", data)
+	util.IotLog("Hardware: Sending data, port %d: % X", client.Port, data)
 	var reply lora_shared.ReplyResult
 	err := client.CallWithReconnect("LoraRpc.Send", args, &reply)
 	if err != nil {
@@ -90,10 +92,11 @@ func (client LoraClient) Receive() []byte {
 	if err != nil {
 		util.IotLogErrWithStr("LoraRpc.Receive error:", err)
 	}
-	for i := 0; i < len(reply.Data); i++ {
-		util.IotLog("0x%x", reply.Data[i])
-	}
-	util.IotLog("\n")
+	// for i := 0; i < len(reply.Data); i++ {
+	// 	util.IotLog("0x%x", reply.Data[i])
+	// }
+	// util.IotLog("\n")
+	util.IotLog("% X", reply.Data)
 	return reply.Data
 }
 

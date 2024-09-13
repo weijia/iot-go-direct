@@ -5,8 +5,8 @@ type NodeInfoContent struct {
 	GatewayNodeId string `json:"gateway_node_id"`
 	HardVersion   string `json:"hard_version"`
 	SoftVersion   string `json:"soft_version"`
-	Custom        string `json:"custom"`
-	Project       string `json:"project"`
+	Custom        string `json:"custom,omitempty"`
+	Project       string `json:"project,omitempty"`
 	NodeType      int    `json:"node_type"`
 	Rssi          int    `json:"rssi"`
 	Ccid          string `json:"ccid"`

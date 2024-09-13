@@ -23,7 +23,7 @@ func (loraReceiverRpc LoraReceiverRpc) OnReceive(argType lora_shared.LoraData, r
 			util.IotLogErrorStr("Channel full, could not send without blocking")
 	}
 	// log.Println("RPC: after put to channel")
-	util.IotLog("---------------Received lora msg from hardware: % X", argType.Data)
+	util.IotLog("---------------Received lora msg from hardware %d: % X", argType.ModuleIndex, argType.Data)
 	reply.Result = 0
 	return nil
 }
