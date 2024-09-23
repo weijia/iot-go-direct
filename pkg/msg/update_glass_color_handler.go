@@ -34,6 +34,7 @@ func (request UpdateGlassColorRequest) handle(mqttToServer chan interface{}) {
 
 	for _, param := range request.Params {
 		_, err := hex.DecodeString(param.Color)
+		bsp.SetRequestingColor(param.NodeId, param.Color)
 		if err == nil {
 			if bsp.IsInNodeList1(param.NodeId) {
 				colorUpdateForModule1[param.NodeId] = param

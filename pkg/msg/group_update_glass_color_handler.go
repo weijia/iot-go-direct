@@ -26,6 +26,7 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 
 	for _, nodeId := range group.NodeList1 {
 		if bsp.IsInNodeList1(nodeId) {
+			bsp.SetRequestingColor(nodeId, group.Color)
 			finalNodeList1 = append(finalNodeList1, util.DecodeId(nodeId))
 		} else {
 			invalidNodeList = append(invalidNodeList, nodeId)
@@ -40,6 +41,7 @@ func (request GroupUpdateGlassColorRequest) handle() interface{} {
 
 	for _, nodeId := range group.NodeList2 {
 		if bsp.IsInNodeList2(nodeId) {
+			bsp.SetRequestingColor(nodeId, group.Color)
 			finalNodeList2 = append(finalNodeList2, util.DecodeId(nodeId))
 		} else {
 			invalidNodeList = append(invalidNodeList, nodeId)

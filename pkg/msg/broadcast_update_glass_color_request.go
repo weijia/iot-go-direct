@@ -22,6 +22,7 @@ func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 			request.Params.ColorParams)
 		lora_module.Module1.SendWithoutReply(broadcastMsg)
 		lora_module.Module2.SendWithoutReply(broadcastMsg)
+		bsp.SetAllRequestingColor(request.Params.ColorParams)
 	} else {
 		util.IotLogErrorWithFormatStr("ColorParam is invalid: %v", request.Params.ColorParams)
 	}

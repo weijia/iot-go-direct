@@ -165,6 +165,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
 					util.IotDebugPrintf("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
+					requestingColor := msg.GetColorStrFromSlice(state.NodeRequestingColor)
 					// util.IotLog("LastMsgTimestamp: %d", state.LastMsgTimestamp)
 					if state.IsOffline {
 						color = node.SetColorForNodeAsInvalid(color)
@@ -179,6 +180,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						SNR:         state.SNR,
 						IsOffline:   state.IsOffline,
 						CompletionStatus: state.CompletionStatus,
+						NodeRequestingColor: requestingColor,
 					}
 					l = append(l, s)
 				}
