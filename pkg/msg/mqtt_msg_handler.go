@@ -74,7 +74,13 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 	// }
 
 	switch baseRequest.Method {
-
+	
+	case "mqtt_config":
+		var mqttConfigRequest MqttConfigRequest
+		if err := json.Unmarshal(body, &mqttConfigRequest); err != nil {
+			util.IotLogError(err)
+		}
+		return mqttConfigRequest.handle()
 	case "broadcast_update_glass_color_request":
 		var broadcastUpdateGlassColorRequest BroadcastUpdateGlassColorRequest
 		if err := json.Unmarshal(body, &broadcastUpdateGlassColorRequest); err != nil {
