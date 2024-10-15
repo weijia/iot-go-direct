@@ -74,7 +74,10 @@ func (req GatewayUpgradeRequest) handle() interface{} {
 		req.Params.TargetHardwareVersion !=
 			bsp.BspConfigInstance.HardVersion ||
 		targetSwVer <= localSwVer {
-		reply.State = fmt.Sprintf("error, target: %f is less than current version: %f", targetSwVer, localSwVer)
+		reply.State = fmt.Sprintf("error, upgrade condition not met: target sw ver: %f, hw ver: %s, gwid: current ver: %s, current sw ver: %f, hw ver: %s, gwid: current ver: %s", 
+			targetSwVer, req.Params.TargetHardwareVersion, req.Params.GatewayNodeId,
+			localSwVer, bsp.BspConfigInstance.HardVersion, bsp.BspConfigInstance.GatewayNodeId)
+
 	} else {
 		err := Download(req.Params)
 		if err != nil {

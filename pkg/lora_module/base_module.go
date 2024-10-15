@@ -81,6 +81,8 @@ func (loraModule LoraModule) MsgLoop(ctx context.Context) {
 					*m.ReplyCh <- reply
 					close(*m.ReplyCh)
 				}
+			} else {
+				time.Sleep(time.Second * 2)
 			}
 
 			// Sleep 1 second after received a message. As other node may still working on receiving this message
