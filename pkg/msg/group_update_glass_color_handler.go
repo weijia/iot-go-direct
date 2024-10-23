@@ -17,6 +17,15 @@ type GroupUpdateGlassColorParams struct {
 	Color     string   `json:"color"`
 }
 
+func (request GroupUpdateGlassColorRequest) Replay() {
+	if GroupUpdateGlassColorRequestResendCnt > 0 {
+		util.IotLogErrorWithFormatStr("resend group update glass color request, cnt: %d", GroupUpdateGlassColorRequestResendCnt)
+		GroupUpdateGlassColorRequestResendCnt -= 1
+		request.handle()
+	}
+}
+
+
 func (request GroupUpdateGlassColorRequest) handle() interface{} {
 	invalidNodeList := []string{}
 	finalNodeList1 := [][]byte{}

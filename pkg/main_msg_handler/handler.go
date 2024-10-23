@@ -18,6 +18,9 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+const (
+	NODE_STATE_CMD_COMPLETED = 2
+)
 
 type MainMsgHandler struct {
 	MqttToServerCh   chan interface{}
@@ -161,6 +164,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 			util.IotDebug("MainLoop: prepare heartbeat to server")
 			// currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
+			resendCmd := false
 			for _, state := range bsp.BspConfigInstance.NodeStates {
 				if bsp.IsInNodeList1(state.NodeId) || bsp.IsInNodeList2(state.NodeId) {
 					util.IotDebugPrintf("Reporting state: %v", state)
@@ -183,7 +187,14 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						NodeRequestingColor: requestingColor,
 					}
 					l = append(l, s)
+					if state.CompletionStatus == NODE_STATE_CMD_COMPLETED && 
+						!bsp.IsEqual(state.NodeReportedColor, state.NodeRequestingColor){
+							resendCmd = true
+					}
 				}
+			}
+			if resendCmd {
+				msg.KeptGroupUpdateGlassColorRequest.Replay()
 			}
 			u.Status = l
 			mqttClient.SendToServer(u)

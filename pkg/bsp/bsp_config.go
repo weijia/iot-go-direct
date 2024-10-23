@@ -43,18 +43,18 @@ var module2Param = shared.Module{
 
 var defaultInitMsgContent = shared.InitMsgContent{
 	NodeInfoContent: shared.NodeInfoContent{
-		GatewayNodeId: "F12309150001",
-		HardVersion:   "1.0",
-		SoftVersion:   SwVersion,
-		Custom:        "test",
-		Project:       "test",
-		NodeType:      1,
-		Rssi:          10,
-		Ccid:          "test",
-		Heartbeat:     20, // for node heartbeat, server heart beat is defined as const
-		HeartbeatToServer:     60, // for node heartbeat, server heart beat is defined as const
-		Module1:       module1Param,
-		Module2:       module2Param,
+		GatewayNodeId:     "F12309150001",
+		HardVersion:       "1.0",
+		SoftVersion:       SwVersion,
+		Custom:            "test",
+		Project:           "test",
+		NodeType:          1,
+		Rssi:              10,
+		Ccid:              "test",
+		Heartbeat:         20, // for node heartbeat, server heart beat is defined as const
+		HeartbeatToServer: 60, // for node heartbeat, server heart beat is defined as const
+		Module1:           module1Param,
+		Module2:           module2Param,
 	},
 	Module0: module0Param,
 }
@@ -82,6 +82,7 @@ func InitConfig() {
 	configFilePath := filepath.Join(appRoot, CONFIG_FILE_NAME)
 
 	if err != nil {
+		/*******************重新生成配置文件***************************/
 		util.IotLogErrWithStr("vip read config error", err)
 		BspConfigInstance.InitMsgContent = defaultInitMsgContent
 		BspConfigInstance.InitMsgContent.Module1 = module1Param
@@ -99,7 +100,7 @@ func InitConfig() {
 		}
 		viper.WriteConfig()
 	}
-	// The config file should be there, either created using default value or 
+	// The config file should be there, either created using default value or
 	// exists already
 	data, err := os.ReadFile(configFilePath)
 	if err == nil && data != nil {
@@ -108,16 +109,19 @@ func InitConfig() {
 			util.IotLogError(err)
 		}
 	}
-	// Overwrite board related info to config
+	/*******************覆盖配置文件中必须动态生成的内容***************************/
+	// 1. Init software version
 	BspConfigInstance.SoftVersion = SwVersion
-	gatewayIdFilePath := filepath.Join(appRoot, "gateway_id.txt")
-	file, err := os.Open(gatewayIdFilePath)
+	// 2. Init HeartbeatToServer
 	util.IotLog("HeartbeatToServer is set to %d", BspConfigInstance.BaseConfigParams.HeartbeatToServer)
 	if BspConfigInstance.BaseConfigParams.HeartbeatToServer < 30 {
 		util.IotLogErrorWithFormatStr("HeartbeatToServer is invalid: %d, reset to 30", BspConfigInstance.BaseConfigParams.HeartbeatToServer)
 		BspConfigInstance.BaseConfigParams.HeartbeatToServer = 30
 	}
-	PeriodNumberForReportingToServer = BspConfigInstance.BaseConfigParams.HeartbeatToServer/10
+	PeriodNumberForReportingToServer = BspConfigInstance.BaseConfigParams.HeartbeatToServer / 10
+	// 3. Init gateway id if exist
+	gatewayIdFilePath := filepath.Join(appRoot, "gateway_id.txt")
+	file, err := os.Open(gatewayIdFilePath)
 
 	if err == nil {
 		defer file.Close()
@@ -137,8 +141,19 @@ func InitConfig() {
 	} else {
 		util.IotLogErrWithStr("Open gateway_id.txt failed", err)
 	}
-
+	// 4. Init node requesting color
+	initRequestingColors()
 }
+
+
+func initRequestingColors() {
+	for nodeStateIndex := range BspConfigInstance.NodeStates {
+		for index := range BspConfigInstance.NodeStates[nodeStateIndex].NodeRequestingColor {
+			BspConfigInstance.NodeStates[nodeStateIndex].NodeRequestingColor[index] = 0xF
+		}
+	}
+}
+
 
 func (bspConfig BspConfig) CommitChanges() {
 	appRoot := util.GetAppRoot()

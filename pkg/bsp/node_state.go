@@ -68,3 +68,17 @@ func SetAllRequestingColor(requestingColor string) {
 		SetRequestingColorByNodeStateRef(&BspConfigInstance.NodeStates[index], requestingColor)
 	}
 }
+
+// CompareArrays checks if two arrays of int are equal, ignoring elements that are 0xF.
+func IsEqual(a, b [8]int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] && (a[i] != 0xF && b[i] != 0xF) {
+			return false
+		}
+	}
+	return true
+}

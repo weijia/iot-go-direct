@@ -56,6 +56,10 @@ func ValidateMsg(schemaStr string, data string) bool {
 		}
 	}
 }
+// TODO: remove the hack for re-send the message
+var KeptGroupUpdateGlassColorRequest GroupUpdateGlassColorRequest
+var GroupUpdateGlassColorRequestResendCnt = 0
+
 
 func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []byte) interface{} {
 	var baseRequest BaseRequest
@@ -114,11 +118,13 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 		return req.handle(mqttToServer)
 
 	case "group_update_glass_color_request":
-		var req GroupUpdateGlassColorRequest
-		if err := json.Unmarshal(body, &req); err != nil {
+		// var req GroupUpdateGlassColorRequest
+		if err := json.Unmarshal(body, &KeptGroupUpdateGlassColorRequest); err != nil {
 			util.IotLogError(err)
 		}
-		return req.handle()
+		GroupUpdateGlassColorRequestResendCnt = 2
+		return KeptGroupUpdateGlassColorRequest.handle()
+		// return req.handle()
 
 	case "node_info_request":
 		var nodeInfoRequest NodeInfoRequest
