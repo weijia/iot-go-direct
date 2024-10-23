@@ -18,9 +18,9 @@ type GroupUpdateGlassColorParams struct {
 }
 
 func (request GroupUpdateGlassColorRequest) Replay() {
-	if GroupUpdateGlassColorRequestResendCnt > 0 {
-		util.IotLogErrorWithFormatStr("resend group update glass color request, cnt: %d", GroupUpdateGlassColorRequestResendCnt)
-		GroupUpdateGlassColorRequestResendCnt -= 1
+	if groupUpdateGlassColorRequestResendCnt > 0 {
+		util.IotLogErrorWithFormatStr("resend group update glass color request, cnt: %d", groupUpdateGlassColorRequestResendCnt)
+		groupUpdateGlassColorRequestResendCnt -= 1
 		request.handle()
 	}
 }

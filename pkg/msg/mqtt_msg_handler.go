@@ -58,7 +58,7 @@ func ValidateMsg(schemaStr string, data string) bool {
 }
 // TODO: remove the hack for re-send the message
 var KeptGroupUpdateGlassColorRequest GroupUpdateGlassColorRequest
-var GroupUpdateGlassColorRequestResendCnt = 0
+var groupUpdateGlassColorRequestResendCnt = 0
 
 
 func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []byte) interface{} {
@@ -122,7 +122,7 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 		if err := json.Unmarshal(body, &KeptGroupUpdateGlassColorRequest); err != nil {
 			util.IotLogError(err)
 		}
-		GroupUpdateGlassColorRequestResendCnt = 2
+		groupUpdateGlassColorRequestResendCnt = 2
 		return KeptGroupUpdateGlassColorRequest.handle()
 		// return req.handle()
 
