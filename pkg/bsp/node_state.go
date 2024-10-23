@@ -59,7 +59,7 @@ func SetRequestingColorByNodeStateRef(nodeState *NodeState, requestingColor stri
 
 		// 打印处理后的字节（在这个例子中，它仍然是相同的）
 		// fmt.Printf("处理后的字节[%d]: %02x\n", i, processedByte)
-		nodeState.NodeRequestingColor[(b&0xf0)>>4] = int(b & 0xf)
+		nodeState.NodeRequestingColor[(b&0xf0)>>4-1] = int(b & 0xf)
 	}
 }
 

@@ -1,6 +1,9 @@
 package bsp
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestCompareArrays(t *testing.T) {
     tests := []struct {
@@ -36,4 +39,47 @@ func TestCompareArrays(t *testing.T) {
             }
         })
     }
+}
+
+func TestSetRequestingColorByNodeStateRef(t *testing.T) {
+	tests := []struct {
+		name             string
+		nodeState        *NodeState
+		requestingColor  string
+		expectedNodeState *NodeState
+	}{
+		{
+			name:             "测试用例1：正常的十六进制字符串",
+			nodeState:        &NodeState{},
+			requestingColor:  "1a2b3c4d",
+			expectedNodeState: &NodeState{NodeRequestingColor: [8]int{10, 11, 12, 13, 0, 0, 0, 0}},
+		},
+		{
+			name:             "测试用例2：空的十六进制字符串",
+			nodeState:        &NodeState{},
+			requestingColor:  "",
+			expectedNodeState: &NodeState{NodeRequestingColor: [8]int{0, 0, 0, 0, 0, 0, 0, 0}},
+		},
+		{
+			name:             "测试用例3：非法的十六进制字符串",
+			nodeState:        &NodeState{},
+			requestingColor:  "zzzz",
+			expectedNodeState: &NodeState{NodeRequestingColor: [8]int{0, 0, 0, 0, 0, 0, 0, 0}},
+		},
+		{
+			name:             "测试用例4：部分有效的十六进制字符串",
+			nodeState:        &NodeState{},
+			requestingColor:  "5e6f",
+			expectedNodeState: &NodeState{NodeRequestingColor: [8]int{0, 0, 0, 0, 14, 15, 0, 0}},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			SetRequestingColorByNodeStateRef(tt.nodeState, tt.requestingColor)
+			if !reflect.DeepEqual(tt.nodeState, tt.expectedNodeState) {
+				t.Errorf("SetRequestingColorByNodeStateRef() = %v, want %v", tt.nodeState, tt.expectedNodeState)
+			}
+		})
+	}
 }
