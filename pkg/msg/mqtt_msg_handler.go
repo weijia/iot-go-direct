@@ -122,7 +122,7 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 		if err := json.Unmarshal(body, &KeptGroupUpdateGlassColorRequest); err != nil {
 			util.IotLogError(err)
 		}
-		groupUpdateGlassColorRequestResendCnt = 2
+		groupUpdateGlassColorRequestResendCnt = 5
 		return KeptGroupUpdateGlassColorRequest.handle()
 		// return req.handle()
 

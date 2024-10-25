@@ -187,7 +187,7 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						NodeRequestingColor: requestingColor,
 					}
 					l = append(l, s)
-					if state.CompletionStatus == NODE_STATE_CMD_COMPLETED && 
+					if // state.CompletionStatus == NODE_STATE_CMD_COMPLETED && 
 						!bsp.IsEqual(state.NodeReportedColor, state.NodeRequestingColor){
 							resendCmd = true
 					}
