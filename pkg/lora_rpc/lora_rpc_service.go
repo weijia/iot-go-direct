@@ -18,8 +18,18 @@ type LoraRpc struct {
 	LoraDev *lora.Lora
 }
 
+const (
+	SUCCESS = 0
+)
+
+var isInitiated = false
+
 func (loraRpc LoraRpc) InitLora(argType shared.Module, reply *lora_shared.ReplyResult) error {
 	reply.Result = loraRpc.LoraDev.InitLora(argType)
+	if reply.Result != SUCCESS {
+		util.IotLogErrorStr("Lora init failed")
+	}
+	isInitiated = true
 	return nil
 }
 
@@ -31,8 +41,12 @@ func (loraRpc LoraRpc) Exit(argType lora_shared.EmptyArg, reply *lora_shared.Rep
 func (loraRpc LoraRpc) Send(argType lora_shared.LoraData, reply *lora_shared.ReplyResult) error {
 	// fmt.Println("RPC: Send called")
 	// log.Println("RPC: Send called")
-	fmt.Printf("Sending len: %d\n", len(argType.Data))
-	reply.Result = loraRpc.LoraDev.Send(argType.Data)
+	if isInitiated {
+		util.IotLog("Sending len: %d\n", len(argType.Data))
+		reply.Result = loraRpc.LoraDev.Send(argType.Data)
+	} else {
+		util.IotLogErrorWithFormatStr("Lora not initiated, %s", loraRpc.LoraDev.DeviceName)
+	}
 	return nil
 }
 
