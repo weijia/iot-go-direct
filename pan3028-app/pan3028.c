@@ -2158,7 +2158,7 @@ uint8_t PAN3028_recv_packet(uint8_t *buff)
 	uint32_t len = 0;
 
 	len = PAN3028_read_spec_page_reg(PAGE1_SEL, 0x7D);
-	printf("Rx len: %d\n", len);
+	printf("Rx len: %d, start receiving\n", len);
 	PAN3028_read_fifo(REG_FIFO_ACC_ADDR,buff,len);
 	
 	/* clear rx done irq */
