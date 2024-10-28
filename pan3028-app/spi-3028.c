@@ -290,7 +290,7 @@ int receive(unsigned char* buf, int buffer_len)
 		pr_info("RX buf is too small\n");
 		return -1;
 	}
-	pr_info("memcpy buf: %x\n, recvd len: %d\n", buf, received_len);
+	pr_info("memcpy buf: %x, recvd len: %d\n", buf, received_len);
 	memcpy(buf, rx_buf, received_len);
 	is_rx_buf_empty = 1;
 	res = received_len;
@@ -298,9 +298,72 @@ int receive(unsigned char* buf, int buffer_len)
 	return res;
 }
 
-int is_in_rx_mode = 0;
-int is_tx_ongoing = 0;
+volatile int is_in_rx_mode = 0;
+volatile int is_tx_ongoing = 0;
 time_t tx_timestamp;
+
+
+#include <stdarg.h> // 包含 va_list, va_start, va_end 的头文件
+
+// 定义一个函数，用于格式化并打印当前时间以及可变参数列表中的消息
+void print_current_time_with_vargs_exception(const char *format, ...) {
+    time_t rawtime;
+    struct tm * timeinfo;
+    char buffer[100];
+    char time_str[30]; // 用于存储时间字符串
+    char milliseconds[10]; // 用于存储毫秒部分
+    va_list args; // 可变参数列表
+
+    // 获取当前时间
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    // 使用 strftime 格式化时间
+    strftime(time_str, sizeof(time_str), "time=%Y-%m-%dT%H:%M:%S", timeinfo);
+
+    // 获取当前时间的毫秒部分（这里简化处理，实际可能需要更复杂的实现）
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    snprintf(milliseconds, sizeof(milliseconds), ".%03ld", ts.tv_nsec / 1000000); // 将纳秒转换为毫秒
+
+    // 拼接时间字符串
+    snprintf(buffer, sizeof(buffer), "%s%s", time_str, milliseconds);
+
+    // 初始化可变参数列表
+    va_start(args, format);
+
+    // 使用 vprintf 进行格式化输出
+    vprintf("%s %z level=INFO msg=\"", args);
+
+    // 结束可变参数列表
+    va_end(args);
+
+    // 打印结尾的双引号和换行符
+    printf("\"\n");
+}
+
+// 定义一个函数，打印当前时间和给定的消息
+void print_current_time_and_message(const char *message) {
+    // 获取当前时间
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+
+    // 将时间转换为本地时间
+    struct tm *local_time = localtime(&ts.tv_sec);
+
+    // 定义一个字符数组来存储时间字符串
+    char time_str[30];
+
+    // 使用 strftime 格式化时间
+    strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S", local_time);
+
+    // 添加毫秒部分
+    char millisecond[7];
+    snprintf(millisecond, sizeof(millisecond), ".%03ld", ts.tv_nsec / 1000000);
+
+    // 打印时间字符串和消息
+    printf("time=%s%s+08:00 level=INFO msg=\"%s\"\n", time_str, millisecond, message);
+}
 
 int init_tx_or_rx()
 {
@@ -308,7 +371,7 @@ int init_tx_or_rx()
 	{
 		if(rf_single_tx_data(tx_test_buf, tx_len, &tx_time) != OK)
 		{
-			DDL_Printf("tx fail \r\n");
+			print_current_time_and_message("tx fail");
 		}
 		else
 		{
@@ -317,7 +380,7 @@ int init_tx_or_rx()
 		is_in_rx_mode = 0;
 		is_tx_ongoing = 1;
 		time (&tx_timestamp);
-		DDL_Printf("Send initated, %d\n", tx_timestamp);
+		print_current_time_and_message("Send initalized");
 	}
 	else
 	{//TODO: Remove this RX as after TX, we will call it
@@ -325,10 +388,10 @@ int init_tx_or_rx()
 		time (&t);
 		if (is_tx_ongoing && (t-tx_timestamp)>5) {
 			is_tx_ongoing = 0;
-			DDL_Printf("Tx timeout, start: %d, %d\n", tx_timestamp, t);
+			print_current_time_and_message("Tx timeout");
 		}
         if(!is_in_rx_mode && !is_tx_ongoing){
-			pr_info("Switch to continous RX mode\n");
+			print_current_time_and_message("Switch to continuous RX mode");
 			rf_enter_continous_rx();
 			is_in_rx_mode = 1;
 		}
@@ -342,11 +405,11 @@ double SNR;
 void fill_rx_buf()
 {
 	if(!is_rx_buf_empty) {
-		pr_info("Buffer is not empty, but new data received\n");
+		print_current_time_and_message("Buffer is not empty, but new data received");
 	}
 	else {
 		if (RxDoneParams.Size >= 255){
-			pr_info("RxDoneParams size overflow\n");
+			print_current_time_and_message("RxDoneParams size overflow");
 		}
 		is_rx_buf_empty = 0;
 		received_len = RxDoneParams.Size;
@@ -371,7 +434,7 @@ void event_handler()
 	{
 		// BSP_LED_Toggle();
 		rf_set_recv_flag(RADIO_FLAG_IDLE); 
-		DDL_Printf("Rx : SNR: %f ,RSSI: %f \r\n", RxDoneParams.Snr, RxDoneParams.Rssi);
+		// print_current_time_with_vargs("Rx : SNR: %f ,RSSI: %f \r\n", RxDoneParams.Snr, RxDoneParams.Rssi);
 		for(i = 0; i < RxDoneParams.Size; i++)
 		{
 			DDL_Printf("0x%02x ", RxDoneParams.Payload[i]);
@@ -379,7 +442,7 @@ void event_handler()
 		fill_rx_buf();
 		DDL_Printf("\r\n");
 		rxcnt ++;
-		DDL_Printf("###Rx cnt %d##\r\n", rxcnt);
+		// print_current_time_with_vargs("###Rx cnt %d##\r\n", rxcnt);
 		//rxdone,set sleep and wakeup
 		rf_sleep();
 		rf_sleep_wakeup();
@@ -395,7 +458,7 @@ void event_handler()
 	if((rf_get_recv_flag() == RADIO_FLAG_RXTIMEOUT) || (rf_get_recv_flag() == RADIO_FLAG_RXERR))
 	{
 		rf_set_recv_flag(RADIO_FLAG_IDLE); 
-		DDL_Printf("Rxerr\r\n");
+		print_current_time_and_message("Rxerr");
 		//rxtimeout or rxerr, set sleep and wakeup
 		rf_sleep();
 		rf_sleep_wakeup();
@@ -409,7 +472,8 @@ void event_handler()
 	{
 		rf_set_transmit_flag(RADIO_FLAG_IDLE);  
 		txcnt ++;
-		DDL_Printf("Tx cnt %d\r\n", txcnt );			
+		// print_current_time_with_vargs("Tx cnt %d\r\n", txcnt );
+		print_current_time_and_message("Tx done");
 		//txdone, set sleep and wakeup
 		rf_sleep();
 		rf_sleep_wakeup();

@@ -18,7 +18,7 @@ new_version = round(current_version + 0.01, 3)
 try:  
     with open('version.txt', 'w') as file:  
         # 将新的浮点数写回文件  
-        file.write(f"{new_version}\n")  
+        file.write(f"{new_version:.2f}\n")  
 except IOError as e:  
     print(f"写入文件时出错: {e}")  
     # 可以在这里处理错误，比如记录日志或通知用户  
