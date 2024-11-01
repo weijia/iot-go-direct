@@ -47,12 +47,18 @@ var IsQuittingSoNoRpcReconnect = false
 
 func (client LoraClient) CallWithReconnect(serviceMethod string, args any, reply any) error {
 	err := client.RpcClient.Call(serviceMethod, args, reply)
-	// util.IotLog("Sending arg: %v, %v", args, err)
-	if rpc.ErrShutdown == err && !IsQuittingSoNoRpcReconnect {
+	if err == nil {
+		if replyResult, ok := reply.(lora_shared.ReplyResult); ok {
+			if replyResult.Result != 0 {
+				util.IotLog("Call result failed: %v, %v, retry", err, reply)
+				err = client.RpcClient.Call(serviceMethod, args, reply)
+			}
+		}
+	} else if rpc.ErrShutdown == err && !IsQuittingSoNoRpcReconnect {
 		util.IotLog("Error, reconnect")
 		client.CreateRpcClientWithRetry()
 		err = client.RpcClient.Call(serviceMethod, args, reply)
-		util.IotLog("Call again with ret: %v", err)
+		util.IotLog("Call again with ret: %v, %v", err, reply)
 	}
 	return err
 }
