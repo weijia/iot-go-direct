@@ -97,7 +97,7 @@
     .node-item .node-status.online { background: var(--accent2); }
     .node-item .remove-btn { margin-left: auto; cursor: pointer; color: var(--danger); font-size: 0.85rem; }
 
-    .color-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.4rem; margin-bottom: 0.8rem; }
+    .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 0.8rem; }
     .area-cell {
       background: var(--bg); border: 1px solid var(--panel-border);
       border-radius: 6px; padding: 0.4rem; text-align: center;
@@ -111,7 +111,7 @@
     .color-display:hover { transform: scale(1.05); }
     .color-value { font-size: 0.65rem; font-family: 'SF Mono', monospace; color: var(--accent); }
 
-    .palette { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.25rem; margin-bottom: 0.8rem; }
+    .palette { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; margin-bottom: 0.8rem; }
     .palette-color {
       width: 100%; aspect-ratio: 1; border-radius: 4px;
       border: 1px solid var(--panel-border); cursor: pointer;
@@ -382,22 +382,10 @@
   <script>
     // ===================== Color Mapping =====================
     const COLOR_MAP = {
-      '0': { name: 'Transparent', css: 'rgba(255,255,255,0.02)' },
-      '1': { name: 'Ice Blue',    css: 'rgba(179,229,252,0.35)' },
-      '2': { name: 'Mint',        css: 'rgba(200,230,201,0.35)' },
-      '3': { name: 'Champagne',   css: 'rgba(255,224,178,0.35)' },
-      '4': { name: 'Rose',        css: 'rgba(248,187,208,0.35)' },
-      '5': { name: 'Lavender',    css: 'rgba(225,190,231,0.35)' },
-      '6': { name: 'Sky',         css: 'rgba(100,181,246,0.55)' },
-      '7': { name: 'Sage',        css: 'rgba(129,199,132,0.55)' },
-      '8': { name: 'Amber',       css: 'rgba(255,183,77,0.55)' },
-      '9': { name: 'Coral',       css: 'rgba(244,143,177,0.55)' },
-      'a': { name: 'Orchid',      css: 'rgba(206,147,216,0.55)' },
-      'b': { name: 'Deep Blue',   css: 'rgba(21,101,192,0.75)' },
-      'c': { name: 'Forest',      css: 'rgba(46,125,50,0.75)' },
-      'd': { name: 'Burnt Orange',css: 'rgba(239,108,0,0.75)' },
-      'e': { name: 'Berry',       css: 'rgba(194,24,91,0.75)' },
-      'f': { name: 'Royal',       css: 'rgba(123,31,162,0.75)' },
+      '0': { name: 'Transparent', css: 'rgba(255,255,255,0.03)' },
+      '2': { name: 'Light',       css: 'rgba(180,200,230,0.35)' },
+      '4': { name: 'Dark',        css: 'rgba(20,35,80,0.85)' },
+      'f': { name: 'Keep',        css: 'repeating-linear-gradient(45deg,rgba(100,100,100,0.2),rgba(100,100,100,0.2) 4px,rgba(60,60,60,0.2) 4px,rgba(60,60,60,0.2) 8px)' },
     };
 
     function getColorStyle(val) {
@@ -564,8 +552,7 @@
     function buildPalette(containerId, onSelect) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
-      for (let i = 0; i <= 15; i++) {
-        const hex = i.toString(16);
+      for (const hex of ['0', '2', '4', 'f']) {
         const color = document.createElement('div');
         color.className = 'palette-color';
         color.style.background = getColorStyle(hex);
