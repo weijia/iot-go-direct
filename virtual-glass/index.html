@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Glass Device</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --panel: #121929;
+      --panel-border: #1e2d4d;
+      --text: #c8d1e0;
+      --text-muted: #5a6a8a;
+      --accent: #4d9fff;
+      --accent2: #50e3a4;
+      --warn: #ffb454;
+      --danger: #ff6b6b;
+      --glass-border: rgba(255,255,255,0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    header .status {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    header .status::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+    header .status.online::before { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+    header .status.offline::before { background: var(--danger); }
+
+    .main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 320px 1fr 340px;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 1100px) {
+      .main { grid-template-columns: 280px 1fr; }
+      .right-panel { grid-column: 1 / -1; }
+    }
+    @media (max-width: 700px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+    .panel-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Config form */
+    .form-group {
+      margin-bottom: 0.7rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--panel-border); color: var(--text); }
+    .btn-warn { background: var(--warn); color: #1a1a1a; }
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Glass display */
+    .glass-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      position: relative;
+    }
+    .glass-frame {
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid var(--glass-border);
+      box-shadow:
+        0 0 40px rgba(77,159,255,0.1),
+        inset 0 0 60px rgba(255,255,255,0.03);
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), transparent 60%);
+    }
+    .glass-sector {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      transition: background 0.5s ease, opacity 0.5s ease;
+    }
+    .glass-sector-label {
+      position: absolute;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 700;
+      pointer-events: none;
+      z-index: 5;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    }
+    .glass-center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: var(--panel);
+      border: 2px solid var(--glass-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+
+    .glass-info {
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .glass-info .node-id {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'SF Mono', monospace;
+    }
+    .glass-info .color-raw {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: 'SF Mono', monospace;
+      margin-top: 0.3rem;
+    }
+    .glass-info .completion {
+      font-size: 0.75rem;
+      margin-top: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .completion.done { background: rgba(80,227,164,0.15); color: var(--accent2); }
+    .completion.pending { background: rgba(255,180,84,0.15); color: var(--warn); }
+    .completion.error { background: rgba(255,107,107,0.15); color: var(--danger); }
+
+    /* Legend */
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.4rem;
+      margin-top: 1rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .legend-color {
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      border: 1px solid var(--panel-border);
+    }
+
+    /* Log */
+    .log-container {
+      max-height: 360px;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Courier New', monospace;
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+    .log-entry {
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.3rem;
+      word-break: break-all;
+    }
+    .log-entry.in { background: rgba(80,227,164,0.08); border-left: 2px solid var(--accent2); }
+    .log-entry.out { background: rgba(77,159,255,0.08); border-left: 2px solid var(--accent); }
+    .log-entry.system { background: rgba(255,180,84,0.08); border-left: 2px solid var(--warn); }
+    .log-entry.error { background: rgba(255,107,107,0.08); border-left: 2px solid var(--danger); }
+    .log-time { color: var(--text-muted); margin-right: 0.4rem; }
+    .log-tag {
+      display: inline-block;
+      padding: 0 0.3rem;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      margin-right: 0.3rem;
+    }
+    .log-tag.in { background: var(--accent2); color: #0a0e17; }
+    .log-tag.out { background: var(--accent); color: #fff; }
+    .log-tag.sys { background: var(--warn); color: #0a0e17; }
+    .log-tag.err { background: var(--danger); color: #fff; }
+
+    /* Sim controls */
+    .sim-controls {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--panel-border);
+    }
+    .sim-row {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .color-btn {
+      width: 28px; height: 28px;
+      border-radius: 4px;
+      border: 1px solid var(--panel-border);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .color-btn:hover { transform: scale(1.15); border-color: var(--accent); }
+
+    /* Node selector */
+    .node-selector {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .node-chip {
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--panel-border);
+      cursor: pointer;
+      font-family: 'SF Mono', monospace;
+    }
+    .node-chip.active {
+      border-color: var(--accent);
+      background: rgba(77,159,255,0.15);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔮 Virtual Glass Device</h1>
+    <div class="status offline" id="connStatus">Disconnected</div>
+  </header>
+
+  <div class="main">
+    <!-- Left: Config -->
+    <div class="left-panel">
+      <div class="panel">
+        <div class="panel-title">⚙️ Connection</div>
+        <div class="form-group">
+          <label>Broker URL (WebSocket)</label>
+          <input type="text" id="brokerUrl" value="ws://app.kosglass.com:8083/mqtt" placeholder="ws://host:port/path">
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="username" value="l8juew73i2t17wavzthg">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" value="i0eprmhypu3r16g3wuuc">
+        </div>
+        <div class="form-group">
+          <label>Gateway Node ID</label>
+          <input type="text" id="gatewayId" value="F12309150001" placeholder="12 hex chars">
+        </div>
+        <div class="form-group">
+          <label>Virtual Node ID</label>
+          <input type="text" id="nodeId" value="12345678" placeholder="8 hex chars">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnConnect">Connect</button>
+          <button class="btn btn-secondary" id="btnDisconnect">Disconnect</button>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top: 1rem;">
+        <div class="panel-title">🎮 Simulation</div>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;">Click to simulate color commands (no MQTT needed)</p>
+        <div class="sim-controls">
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.3rem;">Set all areas:</div>
+          <div class="sim-row" id="simAllColors"></div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin:0.5rem 0 0.3rem;">Set single area:</div>
+          <div class="sim-row" id="simSingleArea">
+            <select id="simArea" style="padding:0.3rem;background:var(--bg);border:1px solid var(--panel-border);border-radius:4px;color:var(--text);font-size:0.8rem;">
+              <option value="1">Area 1</option><option value="2">Area 2</option><option value="3">Area 3</option><option value="4">Area 4</option>
+              <option value="5">Area 5</option><option value="6">Area 6</option><option value="7">Area 7</option><option value="8">Area 8</option>
+            </select>
+          </div>
+          <div class="sim-row" id="simSingleColors"></div>
+          <div class="btn-group" style="margin-top:0.5rem;">
+            <button class="btn btn-warn" id="btnSendHeartbeat">Send Heartbeat</button>
+            <button class="btn btn-secondary" id="btnClear">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Glass Display -->
+    <div class="center-panel">
+      <div class="panel" style="height:100%;display:flex;flex-direction:column;">
+        <div class="panel-title">🔷 Glass Panel</div>
+        <div class="glass-container">
+          <div class="glass-frame" id="glassFrame">
+            <!-- 8 sectors generated by JS -->
+            <div class="glass-center">GLASS</div>
+          </div>
+          <div class="glass-info">
+            <div class="node-id" id="displayNodeId">12345678</div>
+            <div class="color-raw" id="displayColor">color: --------</div>
+            <div class="completion done" id="displayStatus">Completed</div>
+          </div>
+        </div>
+        <div class="legend" id="colorLegend"></div>
+      </div>
+    </div>
+
+    <!-- Right: Log -->
+    <div class="right-panel">
+      <div class="panel" style="height:100%;display:flex;flex-direction:column;">
+        <div class="panel-title">📋 Message Log</div>
+        <div class="log-container" id="logContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===================== Color Mapping =====================
+    const COLOR_MAP = {
+      '0': { name: 'Transparent', css: 'rgba(255,255,255,0.02)' },
+      '1': { name: 'Ice Blue',    css: 'rgba(179,229,252,0.35)' },
+      '2': { name: 'Mint',        css: 'rgba(200,230,201,0.35)' },
+      '3': { name: 'Champagne',   css: 'rgba(255,224,178,0.35)' },
+      '4': { name: 'Rose',        css: 'rgba(248,187,208,0.35)' },
+      '5': { name: 'Lavender',    css: 'rgba(225,190,231,0.35)' },
+      '6': { name: 'Sky',         css: 'rgba(100,181,246,0.55)' },
+      '7': { name: 'Sage',        css: 'rgba(129,199,132,0.55)' },
+      '8': { name: 'Amber',       css: 'rgba(255,183,77,0.55)' },
+      '9': { name: 'Coral',       css: 'rgba(244,143,177,0.55)' },
+      'a': { name: 'Orchid',      css: 'rgba(206,147,216,0.55)' },
+      'b': { name: 'Deep Blue',   css: 'rgba(21,101,192,0.75)' },
+      'c': { name: 'Forest',      css: 'rgba(46,125,50,0.75)' },
+      'd': { name: 'Burnt Orange',css: 'rgba(239,108,0,0.75)' },
+      'e': { name: 'Berry',       css: 'rgba(194,24,91,0.75)' },
+      'f': { name: 'Royal',       css: 'rgba(123,31,162,0.75)' },
+    };
+
+    function normalizeColorVal(v) {
+      v = v.toLowerCase();
+      return COLOR_MAP[v] ? v : '0';
+    }
+
+    function getColorStyle(val) {
+      const c = COLOR_MAP[normalizeColorVal(val)];
+      return c ? c.css : COLOR_MAP['0'].css;
+    }
+
+    function getColorName(val) {
+      const c = COLOR_MAP[normalizeColorVal(val)];
+      return c ? c.name : 'Unknown';
+    }
+
+    // ===================== Glass State =====================
+    class GlassState {
+      constructor(nodeId) {
+        this.nodeId = nodeId;
+        this.colors = Array(8).fill('0'); // 8 areas, values 0-F
+        this.completionStatus = 2; // 0=error, 1=ongoing, 2=completed
+        this.isOffline = false;
+        this.rssi = -50;
+        this.snr = 8;
+        this.hardVersion = '100';
+        this.softVersion = '101';
+        this.runArea = 1;
+      }
+
+      getColorString() {
+        let s = '';
+        for (let i = 0; i < 8; i++) {
+          s += (i + 1).toString(16) + this.colors[i];
+        }
+        return s;
+      }
+
+      setColor(colorStr) {
+        // Parse "1122334455667788" format
+        if (!colorStr || colorStr.length % 2 !== 0) return false;
+        const bytes = [];
+        for (let i = 0; i < colorStr.length; i += 2) {
+          bytes.push(colorStr.substr(i, 2));
+        }
+        for (const pair of bytes) {
+          const area = parseInt(pair[0], 16);
+          const val = pair[1].toLowerCase();
+          if (area >= 1 && area <= 8) {
+            this.colors[area - 1] = normalizeColorVal(val);
+          }
+        }
+        this.completionStatus = 2;
+        return true;
+      }
+
+      setArea(areaIndex, val) {
+        if (areaIndex >= 0 && areaIndex < 8) {
+          this.colors[areaIndex] = normalizeColorVal(val);
+        }
+      }
+    }
+
+    // ===================== UI =====================
+    const glassFrame = document.getElementById('glassFrame');
+    const logContainer = document.getElementById('logContainer');
+    const displayNodeId = document.getElementById('displayNodeId');
+    const displayColor = document.getElementById('displayColor');
+    const displayStatus = document.getElementById('displayStatus');
+    const connStatus = document.getElementById('connStatus');
+
+    let glassState = new GlassState('12345678');
+    let mqttClient = null;
+    let isConnected = false;
+
+    // Pre-computed clip-path polygons for 8 pie sectors
+    const SECTOR_CLIPS = [
+      'polygon(50% 50%, 50% 0%, 85.355% 14.645%)',    // 0: 0-45°
+      'polygon(50% 50%, 85.355% 14.645%, 100% 50%)',   // 1: 45-90°
+      'polygon(50% 50%, 100% 50%, 85.355% 85.355%)',   // 2: 90-135°
+      'polygon(50% 50%, 85.355% 85.355%, 50% 100%)',   // 3: 135-180°
+      'polygon(50% 50%, 50% 100%, 14.645% 85.355%)',   // 4: 180-225°
+      'polygon(50% 50%, 14.645% 85.355%, 0% 50%)',     // 5: 225-270°
+      'polygon(50% 50%, 0% 50%, 14.645% 14.645%)',     // 6: 270-315°
+      'polygon(50% 50%, 14.645% 14.645%, 50% 0%)',     // 7: 315-360°
+    ];
+
+    function createSectors() {
+      for (let i = 0; i < 8; i++) {
+        const sector = document.createElement('div');
+        sector.className = 'glass-sector';
+        sector.id = `sector-${i}`;
+        sector.style.clipPath = SECTOR_CLIPS[i];
+        glassFrame.appendChild(sector);
+
+        // Label positioned at mid-angle, radius ~42% from center
+        const label = document.createElement('div');
+        label.className = 'glass-sector-label';
+        label.textContent = i + 1;
+        const midAngle = (i * 45 + 22.5) * Math.PI / 180;
+        const px = 50 + 42 * Math.sin(midAngle);
+        const py = 50 - 42 * Math.cos(midAngle);
+        label.style.left = px + '%';
+        label.style.top = py + '%';
+        label.style.transform = 'translate(-50%, -50%)';
+        glassFrame.appendChild(label);
+      }
+    }
+
+    function renderGlass() {
+      for (let i = 0; i < 8; i++) {
+        const el = document.getElementById(`sector-${i}`);
+        if (el) {
+          el.style.background = getColorStyle(glassState.colors[i]);
+        }
+      }
+      displayNodeId.textContent = glassState.nodeId;
+      displayColor.textContent = 'color: ' + glassState.getColorString();
+
+      const statusMap = { 0: ['Error', 'error'], 1: ['Ongoing', 'pending'], 2: ['Completed', 'done'] };
+      const [text, cls] = statusMap[glassState.completionStatus] || ['Unknown', ''];
+      displayStatus.textContent = text;
+      displayStatus.className = 'completion ' + cls;
+    }
+
+    function addLog(type, message) {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      const now = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      const tagMap = { in: 'IN', out: 'OUT', system: 'SYS', error: 'ERR' };
+      const tagClass = { in: 'in', out: 'out', system: 'sys', error: 'err' };
+      entry.innerHTML = `<span class="log-time">${now}</span><span class="log-tag ${tagClass[type]}">${tagMap[type]}</span>${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function buildLegend() {
+      const container = document.getElementById('colorLegend');
+      for (let i = 0; i <= 15; i++) {
+        const hex = i.toString(16);
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<div class="legend-color" style="background:${getColorStyle(hex)}"></div><span>${hex.toUpperCase()}</span>`;
+        container.appendChild(item);
+      }
+    }
+
+    function buildSimControls() {
+      const allContainer = document.getElementById('simAllColors');
+      const singleContainer = document.getElementById('simSingleColors');
+      for (let i = 0; i <= 15; i++) {
+        const hex = i.toString(16);
+        // All areas
+        const btnAll = document.createElement('div');
+        btnAll.className = 'color-btn';
+        btnAll.style.background = getColorStyle(hex);
+        btnAll.title = `${hex.toUpperCase()}: ${getColorName(hex)}`;
+        btnAll.onclick = () => {
+          const colorStr = Array(8).fill(0).map((_, j) => (j + 1).toString(16) + hex).join('');
+          handleColorCommand(colorStr);
+        };
+        allContainer.appendChild(btnAll);
+
+        // Single area
+        const btnSingle = document.createElement('div');
+        btnSingle.className = 'color-btn';
+        btnSingle.style.background = getColorStyle(hex);
+        btnSingle.title = `${hex.toUpperCase()}: ${getColorName(hex)}`;
+        btnSingle.onclick = () => {
+          const area = parseInt(document.getElementById('simArea').value) - 1;
+          glassState.setArea(area, hex);
+          renderGlass();
+          addLog('system', `Simulated: Area ${area + 1} = ${hex.toUpperCase()} (${getColorName(hex)})`);
+        };
+        singleContainer.appendChild(btnSingle);
+      }
+    }
+
+    // ===================== Command Handling =====================
+    function handleColorCommand(colorStr) {
+      const ok = glassState.setColor(colorStr);
+      if (ok) {
+        renderGlass();
+        addLog('in', `Color updated: ${colorStr}`);
+        // Auto-send reply if connected
+        if (isConnected && mqttClient) {
+          sendColorReply(colorStr);
+        }
+      }
+    }
+
+    function sendColorReply(colorStr) {
+      const gatewayId = document.getElementById('gatewayId').value;
+      const topic = `device/${gatewayId}/out`;
+      const payload = {
+        msg_type: 'update_glass_color_reply',
+        gateway_node_id: gatewayId,
+        status: [{ node_id: glassState.nodeId, color: colorStr }]
+      };
+      mqttClient.publish(topic, JSON.stringify(payload), { qos: 0, retain: false });
+      addLog('out', `Published to ${topic}: update_glass_color_reply`);
+    }
+
+    function sendHeartbeat() {
+      if (!isConnected || !mqttClient) {
+        addLog('error', 'Not connected to broker');
+        return;
+      }
+      const gatewayId = document.getElementById('gatewayId').value;
+      const topic = `device/${gatewayId}/out`;
+      const payload = {
+        msg_type: 'heartbeat_status_update',
+        gateway_node_id: gatewayId,
+        status: [{
+          node_id: glassState.nodeId,
+          color: glassState.getColorString(),
+          hard_version: glassState.hardVersion,
+          soft_version: glassState.softVersion,
+          run_area: glassState.runArea,
+          rssi: glassState.rssi + Math.random() * 4 - 2,
+          snr: glassState.snr + Math.random() * 2 - 1,
+          is_offline: glassState.isOffline,
+          completion_status: glassState.completionStatus,
+          node_requesting_color: glassState.getColorString()
+        }]
+      };
+      mqttClient.publish(topic, JSON.stringify(payload), { qos: 0, retain: false });
+      addLog('out', `Published heartbeat for node ${glassState.nodeId}`);
+    }
+
+    // ===================== MQTT =====================
+    function connect() {
+      const brokerUrl = document.getElementById('brokerUrl').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const gatewayId = document.getElementById('gatewayId').value;
+      const nodeId = document.getElementById('nodeId').value;
+
+      glassState.nodeId = nodeId;
+      renderGlass();
+
+      addLog('system', `Connecting to ${brokerUrl}...`);
+
+      mqttClient = mqtt.connect(brokerUrl, {
+        username: username,
+        password: password,
+        clientId: 'virtual-glass-' + nodeId + '-' + Date.now(),
+        reconnectPeriod: 10000,
+        connectTimeout: 30000,
+      });
+
+      mqttClient.on('connect', () => {
+        isConnected = true;
+        connStatus.textContent = 'Connected';
+        connStatus.className = 'status online';
+        addLog('system', 'MQTT connected');
+
+        const inTopic = `device/${gatewayId}/in`;
+        mqttClient.subscribe(inTopic, { qos: 0 }, (err) => {
+          if (err) {
+            addLog('error', `Subscribe failed: ${err.message}`);
+          } else {
+            addLog('system', `Subscribed to ${inTopic}`);
+          }
+        });
+      });
+
+      mqttClient.on('message', (topic, payload) => {
+        const text = payload.toString();
+        addLog('in', `${topic}: ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}`);
+
+        try {
+          const msg = JSON.parse(text);
+          handleIncomingMessage(msg);
+        } catch (e) {
+          addLog('error', `JSON parse error: ${e.message}`);
+        }
+      });
+
+      mqttClient.on('error', (err) => {
+        addLog('error', `MQTT error: ${err.message}`);
+      });
+
+      mqttClient.on('close', () => {
+        isConnected = false;
+        connStatus.textContent = 'Disconnected';
+        connStatus.className = 'status offline';
+        addLog('system', 'MQTT disconnected');
+      });
+    }
+
+    function disconnect() {
+      if (mqttClient) {
+        mqttClient.end();
+        mqttClient = null;
+      }
+      isConnected = false;
+      connStatus.textContent = 'Disconnected';
+      connStatus.className = 'status offline';
+      addLog('system', 'Disconnected manually');
+    }
+
+    function handleIncomingMessage(msg) {
+      const gatewayId = document.getElementById('gatewayId').value;
+
+      if (msg.method === 'update_glass_color_request' && msg.params) {
+        for (const p of msg.params) {
+          if (p.node_id === glassState.nodeId) {
+            handleColorCommand(p.color);
+          }
+        }
+      }
+      else if (msg.method === 'group_update_glass_color_request' && msg.params) {
+        const list1 = msg.params.node_list1 || [];
+        const list2 = msg.params.node_list2 || [];
+        if (list1.includes(glassState.nodeId) || list2.includes(glassState.nodeId)) {
+          handleColorCommand(msg.params.color);
+        }
+      }
+      else if (msg.method === 'broadcast_update_glass_color_request' && msg.params) {
+        handleColorCommand(msg.params.color);
+      }
+      else if (msg.method === 'get_glass_status_request' && msg.params) {
+        if (msg.params.node_id === glassState.nodeId) {
+          if (isConnected && mqttClient) {
+            const topic = `device/${gatewayId}/out`;
+            const payload = {
+              msg_type: 'glass_status_update',
+              gateway_node_id: gatewayId,
+              status: [{ node_id: glassState.nodeId, color: glassState.getColorString() }]
+            };
+            mqttClient.publish(topic, JSON.stringify(payload));
+            addLog('out', `Published glass_status_update for ${glassState.nodeId}`);
+          }
+        }
+      }
+      else if (msg.method === 'config') {
+        glassState.completionStatus = 2;
+        renderGlass();
+        if (isConnected && mqttClient) {
+          const topic = `device/${gatewayId}/out`;
+          mqttClient.publish(topic, JSON.stringify({ msg_type: 'config_reply', gateway_node_id: gatewayId }));
+          addLog('out', 'Published config_reply');
+        }
+      }
+      else if (msg.method === 'gateway_reboot') {
+        if (isConnected && mqttClient) {
+          const topic = `device/${gatewayId}/out`;
+          mqttClient.publish(topic, JSON.stringify({ msg_type: 'gateway_reboot_reply', gateway_node_id: gatewayId }));
+          addLog('out', 'Published gateway_reboot_reply');
+        }
+        addLog('system', 'Gateway reboot requested');
+      }
+      else if (msg.method === 'execute_cmd') {
+        if (isConnected && mqttClient) {
+          const topic = `device/${gatewayId}/out`;
+          const payload = {
+            msg_type: 'remote_cmd_result',
+            gateway_node_id: gatewayId,
+            stdout: `Executed: ${msg.params?.cmd || ''}`,
+            stderr: ''
+          };
+          mqttClient.publish(topic, JSON.stringify(payload));
+          addLog('out', 'Published remote_cmd_result');
+        }
+      }
+      else {
+        addLog('system', `Received unhandled method: ${msg.method}`);
+      }
+    }
+
+    // ===================== Init =====================
+    document.getElementById('btnConnect').onclick = connect;
+    document.getElementById('btnDisconnect').onclick = disconnect;
+    document.getElementById('btnSendHeartbeat').onclick = sendHeartbeat;
+    document.getElementById('btnClear').onclick = () => {
+      glassState.colors = Array(8).fill('0');
+      glassState.completionStatus = 2;
+      renderGlass();
+      addLog('system', 'Cleared to transparent');
+    };
+
+    createSectors();
+    buildLegend();
+    buildSimControls();
+    renderGlass();
+    addLog('system', 'Virtual Glass Device ready. Click "Connect" to join MQTT broker, or use simulation buttons.');
+  </script>
+</body>
+</html>
