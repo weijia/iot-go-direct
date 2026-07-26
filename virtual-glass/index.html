@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Virtual Glass Device</title>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script src="./js/config.js"></script>
   <style>
     :root {
       --bg: #0a0e17;
@@ -67,16 +68,16 @@
     .main {
       flex: 1;
       display: grid;
-      grid-template-columns: 320px 1fr 340px;
+      grid-template-columns: 340px 1fr 340px;
       gap: 1rem;
       padding: 1rem;
-      max-width: 1400px;
+      max-width: 1500px;
       margin: 0 auto;
       width: 100%;
     }
 
-    @media (max-width: 1100px) {
-      .main { grid-template-columns: 280px 1fr; }
+    @media (max-width: 1200px) {
+      .main { grid-template-columns: 300px 1fr; }
       .right-panel { grid-column: 1 / -1; }
     }
     @media (max-width: 700px) {
@@ -125,6 +126,11 @@
       outline: none;
       border-color: var(--accent);
     }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
     .btn {
       padding: 0.5rem 1rem;
       border: none;
@@ -136,10 +142,59 @@
       font-family: inherit;
     }
     .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-primary { background: var(--accent); color: #fff; }
     .btn-secondary { background: var(--panel-border); color: var(--text); }
     .btn-warn { background: var(--warn); color: #1a1a1a; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* Config section */
+    .config-section {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--panel-border);
+    }
+    .config-section .section-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .config-status {
+      font-size: 0.7rem;
+      padding: 0.3rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(80,227,164,0.1);
+      color: var(--accent2);
+      margin-bottom: 0.5rem;
+    }
+    .config-status.warn { background: rgba(255,180,84,0.1); color: var(--warn); }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--panel-border);
+    }
+    .tab {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     /* Glass display */
     .glass-container {
@@ -294,26 +349,30 @@
     }
     .color-btn:hover { transform: scale(1.15); border-color: var(--accent); }
 
-    /* Node selector */
-    .node-selector {
-      display: flex;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      margin-bottom: 0.5rem;
-    }
-    .node-chip {
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
-      background: var(--bg);
+    /* Hidden file input */
+    .hidden-input { display: none; }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background: var(--panel);
       border: 1px solid var(--panel-border);
-      cursor: pointer;
-      font-family: 'SF Mono', monospace;
+      color: var(--text);
+      font-size: 0.8rem;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
-    .node-chip.active {
-      border-color: var(--accent);
-      background: rgba(77,159,255,0.15);
-      color: var(--accent);
+    .toast.success { border-left: 3px solid var(--accent2); }
+    .toast.error { border-left: 3px solid var(--danger); }
+    .toast.warn { border-left: 3px solid var(--warn); }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
   </style>
 </head>
@@ -327,33 +386,141 @@
     <!-- Left: Config -->
     <div class="left-panel">
       <div class="panel">
-        <div class="panel-title">⚙️ Connection</div>
-        <div class="form-group">
-          <label>Broker URL (WebSocket)</label>
-          <input type="text" id="brokerUrl" value="ws://app.kosglass.com:8083/mqtt" placeholder="ws://host:port/path">
+        <div class="panel-title">⚙️ Configuration</div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active" data-tab="connection">Connection</div>
+          <div class="tab" data-tab="device">Device</div>
+          <div class="tab" data-tab="config">Manage</div>
         </div>
-        <div class="form-group">
-          <label>Username</label>
-          <input type="text" id="username" value="l8juew73i2t17wavzthg">
+
+        <!-- Connection Tab -->
+        <div class="tab-content active" id="tab-connection">
+          <div class="form-group">
+            <label>Broker URL (WebSocket)</label>
+            <input type="text" id="brokerUrl" placeholder="ws://host:port/path">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Username</label>
+              <input type="text" id="username">
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="password">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gateway Node ID</label>
+              <input type="text" id="gatewayId" placeholder="12 hex chars">
+            </div>
+            <div class="form-group">
+              <label>Virtual Node ID</label>
+              <input type="text" id="nodeId" placeholder="8 hex chars">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Reconnect (ms)</label>
+              <input type="number" id="reconnectPeriod" value="10000">
+            </div>
+            <div class="form-group">
+              <label>Timeout (ms)</label>
+              <input type="number" id="connectTimeout" value="30000">
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btnConnect">Connect</button>
+            <button class="btn btn-secondary" id="btnDisconnect">Disconnect</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="password" value="i0eprmhypu3r16g3wuuc">
+
+        <!-- Device Tab -->
+        <div class="tab-content" id="tab-device">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Hardware Version</label>
+              <input type="text" id="hardVersion">
+            </div>
+            <div class="form-group">
+              <label>Software Version</label>
+              <input type="text" id="softVersion">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>RSSI (dBm)</label>
+              <input type="number" id="rssi" value="-50">
+            </div>
+            <div class="form-group">
+              <label>SNR</label>
+              <input type="number" id="snr" value="8">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Run Area</label>
+              <input type="number" id="runArea" value="1" min="1" max="8">
+            </div>
+            <div class="form-group">
+              <label>Completion Status</label>
+              <select id="completionStatus">
+                <option value="0">Error</option>
+                <option value="1">Ongoing</option>
+                <option value="2">Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="isOffline" style="width:auto;vertical-align:middle;margin-right:0.3rem;">
+              Is Offline
+            </label>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-warn" id="btnSendHeartbeat">Send Heartbeat</button>
+            <button class="btn btn-secondary" id="btnClear">Clear Glass</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Gateway Node ID</label>
-          <input type="text" id="gatewayId" value="F12309150001" placeholder="12 hex chars">
-        </div>
-        <div class="form-group">
-          <label>Virtual Node ID</label>
-          <input type="text" id="nodeId" value="12345678" placeholder="8 hex chars">
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" id="btnConnect">Connect</button>
-          <button class="btn btn-secondary" id="btnDisconnect">Disconnect</button>
+
+        <!-- Config Management Tab -->
+        <div class="tab-content" id="tab-config">
+          <div class="config-status" id="configStatus">Loading config...</div>
+
+          <div class="config-section">
+            <div class="section-label">📁 Import / Export</div>
+            <div class="btn-group">
+              <button class="btn btn-secondary btn-sm" id="btnExportConfig">📤 Export</button>
+              <button class="btn btn-secondary btn-sm" id="btnImportConfig">📥 Import</button>
+              <input type="file" id="fileImport" accept=".json" class="hidden-input">
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="section-label">💾 Persistence</div>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem;">
+              Save current settings to browser storage. They will be restored on next visit.
+            </p>
+            <div class="btn-group">
+              <button class="btn btn-primary btn-sm" id="btnSaveConfig">💾 Save Settings</button>
+              <button class="btn btn-danger btn-sm" id="btnResetConfig">🗑 Reset to Default</button>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="section-label">ℹ️ Config Info</div>
+            <div style="font-size:0.72rem;color:var(--text-muted);line-height:1.6;">
+              <div>Config file: <code style="font-size:0.7rem;">config.json</code></div>
+              <div>Storage key: <code style="font-size:0.7rem;">virtual-glass-config</code></div>
+              <div id="configVersion">Version: --</div>
+            </div>
+          </div>
         </div>
       </div>
 
+      <!-- Simulation Panel -->
       <div class="panel" style="margin-top: 1rem;">
         <div class="panel-title">🎮 Simulation</div>
         <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;">Click to simulate color commands (no MQTT needed)</p>
@@ -368,10 +535,6 @@
             </select>
           </div>
           <div class="sim-row" id="simSingleColors"></div>
-          <div class="btn-group" style="margin-top:0.5rem;">
-            <button class="btn btn-warn" id="btnSendHeartbeat">Send Heartbeat</button>
-            <button class="btn btn-secondary" id="btnClear">Clear</button>
-          </div>
         </div>
       </div>
     </div>
@@ -386,7 +549,7 @@
             <div class="glass-center">GLASS</div>
           </div>
           <div class="glass-info">
-            <div class="node-id" id="displayNodeId">12345678</div>
+            <div class="node-id" id="displayNodeId">--</div>
             <div class="color-raw" id="displayColor">color: --------</div>
             <div class="completion done" id="displayStatus">Completed</div>
           </div>
@@ -444,8 +607,8 @@
     class GlassState {
       constructor(nodeId) {
         this.nodeId = nodeId;
-        this.colors = Array(8).fill('0'); // 8 areas, values 0-F
-        this.completionStatus = 2; // 0=error, 1=ongoing, 2=completed
+        this.colors = Array(8).fill('0');
+        this.completionStatus = 2;
         this.isOffline = false;
         this.rssi = -50;
         this.snr = 8;
@@ -463,7 +626,6 @@
       }
 
       setColor(colorStr) {
-        // Parse "1122334455667788" format
         if (!colorStr || colorStr.length % 2 !== 0) return false;
         const bytes = [];
         for (let i = 0; i < colorStr.length; i += 2) {
@@ -487,28 +649,41 @@
       }
     }
 
-    // ===================== UI =====================
+    // ===================== UI Helpers =====================
     const glassFrame = document.getElementById('glassFrame');
     const logContainer = document.getElementById('logContainer');
     const displayNodeId = document.getElementById('displayNodeId');
     const displayColor = document.getElementById('displayColor');
     const displayStatus = document.getElementById('displayStatus');
     const connStatus = document.getElementById('connStatus');
+    const configStatus = document.getElementById('configStatus');
 
     let glassState = new GlassState('12345678');
     let mqttClient = null;
     let isConnected = false;
 
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
     // Pre-computed clip-path polygons for 8 pie sectors
     const SECTOR_CLIPS = [
-      'polygon(50% 50%, 50% 0%, 85.355% 14.645%)',    // 0: 0-45°
-      'polygon(50% 50%, 85.355% 14.645%, 100% 50%)',   // 1: 45-90°
-      'polygon(50% 50%, 100% 50%, 85.355% 85.355%)',   // 2: 90-135°
-      'polygon(50% 50%, 85.355% 85.355%, 50% 100%)',   // 3: 135-180°
-      'polygon(50% 50%, 50% 100%, 14.645% 85.355%)',   // 4: 180-225°
-      'polygon(50% 50%, 14.645% 85.355%, 0% 50%)',     // 5: 225-270°
-      'polygon(50% 50%, 0% 50%, 14.645% 14.645%)',     // 6: 270-315°
-      'polygon(50% 50%, 14.645% 14.645%, 50% 0%)',     // 7: 315-360°
+      'polygon(50% 50%, 50% 0%, 85.355% 14.645%)',
+      'polygon(50% 50%, 85.355% 14.645%, 100% 50%)',
+      'polygon(50% 50%, 100% 50%, 85.355% 85.355%)',
+      'polygon(50% 50%, 85.355% 85.355%, 50% 100%)',
+      'polygon(50% 50%, 50% 100%, 14.645% 85.355%)',
+      'polygon(50% 50%, 14.645% 85.355%, 0% 50%)',
+      'polygon(50% 50%, 0% 50%, 14.645% 14.645%)',
+      'polygon(50% 50%, 14.645% 14.645%, 50% 0%)',
     ];
 
     function createSectors() {
@@ -519,7 +694,6 @@
         sector.style.clipPath = SECTOR_CLIPS[i];
         glassFrame.appendChild(sector);
 
-        // Label positioned at mid-angle, radius ~42% from center
         const label = document.createElement('div');
         label.className = 'glass-sector-label';
         label.textContent = i + 1;
@@ -550,6 +724,10 @@
     }
 
     function addLog(type, message) {
+      const maxEntries = configManager.get('display.logMaxEntries', 200);
+      while (logContainer.children.length >= maxEntries) {
+        logContainer.removeChild(logContainer.firstChild);
+      }
       const entry = document.createElement('div');
       entry.className = `log-entry ${type}`;
       const now = new Date().toLocaleTimeString('zh-CN', { hour12: false });
@@ -576,7 +754,6 @@
       const singleContainer = document.getElementById('simSingleColors');
       for (let i = 0; i <= 15; i++) {
         const hex = i.toString(16);
-        // All areas
         const btnAll = document.createElement('div');
         btnAll.className = 'color-btn';
         btnAll.style.background = getColorStyle(hex);
@@ -587,7 +764,6 @@
         };
         allContainer.appendChild(btnAll);
 
-        // Single area
         const btnSingle = document.createElement('div');
         btnSingle.className = 'color-btn';
         btnSingle.style.background = getColorStyle(hex);
@@ -602,13 +778,107 @@
       }
     }
 
+    // ===================== Config UI Sync =====================
+    function loadConfigToForm() {
+      // Connection
+      document.getElementById('brokerUrl').value = configManager.get('mqtt.brokerUrl', '');
+      document.getElementById('username').value = configManager.get('mqtt.username', '');
+      document.getElementById('password').value = configManager.get('mqtt.password', '');
+      document.getElementById('gatewayId').value = configManager.get('mqtt.gatewayId', '');
+      document.getElementById('nodeId').value = configManager.get('mqtt.nodeId', '');
+      document.getElementById('reconnectPeriod').value = configManager.get('mqtt.reconnectPeriod', 10000);
+      document.getElementById('connectTimeout').value = configManager.get('mqtt.connectTimeout', 30000);
+
+      // Device
+      document.getElementById('hardVersion').value = configManager.get('device.hardVersion', '100');
+      document.getElementById('softVersion').value = configManager.get('device.softVersion', '101');
+      document.getElementById('rssi').value = configManager.get('device.rssi', -50);
+      document.getElementById('snr').value = configManager.get('device.snr', 8);
+      document.getElementById('runArea').value = configManager.get('device.runArea', 1);
+      document.getElementById('completionStatus').value = configManager.get('device.completionStatus', 2);
+      document.getElementById('isOffline').checked = configManager.get('device.isOffline', false);
+
+      // Update glass state from config
+      glassState.nodeId = configManager.get('mqtt.nodeId', '12345678');
+      glassState.hardVersion = configManager.get('device.hardVersion', '100');
+      glassState.softVersion = configManager.get('device.softVersion', '101');
+      glassState.runArea = configManager.get('device.runArea', 1);
+      glassState.rssi = configManager.get('device.rssi', -50);
+      glassState.snr = configManager.get('device.snr', 8);
+      glassState.isOffline = configManager.get('device.isOffline', false);
+      glassState.completionStatus = configManager.get('device.completionStatus', 2);
+
+      // Info
+      document.getElementById('configVersion').textContent =
+        'Version: ' + configManager.get('configVersion', 'unknown');
+
+      renderGlass();
+      updateConfigStatus();
+    }
+
+    function saveFormToConfig() {
+      // Connection
+      configManager.set('mqtt.brokerUrl', document.getElementById('brokerUrl').value);
+      configManager.set('mqtt.username', document.getElementById('username').value);
+      configManager.set('mqtt.password', document.getElementById('password').value);
+      configManager.set('mqtt.gatewayId', document.getElementById('gatewayId').value);
+      configManager.set('mqtt.nodeId', document.getElementById('nodeId').value);
+      configManager.set('mqtt.reconnectPeriod', parseInt(document.getElementById('reconnectPeriod').value) || 10000);
+      configManager.set('mqtt.connectTimeout', parseInt(document.getElementById('connectTimeout').value) || 30000);
+
+      // Device
+      configManager.set('device.hardVersion', document.getElementById('hardVersion').value);
+      configManager.set('device.softVersion', document.getElementById('softVersion').value);
+      configManager.set('device.rssi', parseInt(document.getElementById('rssi').value) || -50);
+      configManager.set('device.snr', parseInt(document.getElementById('snr').value) || 8);
+      configManager.set('device.runArea', parseInt(document.getElementById('runArea').value) || 1);
+      configManager.set('device.completionStatus', parseInt(document.getElementById('completionStatus').value) || 2);
+      configManager.set('device.isOffline', document.getElementById('isOffline').checked);
+
+      // Update glass state
+      glassState.nodeId = configManager.get('mqtt.nodeId');
+      glassState.hardVersion = configManager.get('device.hardVersion');
+      glassState.softVersion = configManager.get('device.softVersion');
+      glassState.runArea = configManager.get('device.runArea');
+      glassState.rssi = configManager.get('device.rssi');
+      glassState.snr = configManager.get('device.snr');
+      glassState.isOffline = configManager.get('device.isOffline');
+      glassState.completionStatus = configManager.get('device.completionStatus');
+
+      renderGlass();
+    }
+
+    function updateConfigStatus() {
+      const validation = configManager.validate();
+      if (validation.valid) {
+        configStatus.textContent = '✓ Configuration valid';
+        configStatus.className = 'config-status';
+      } else {
+        configStatus.textContent = '⚠ ' + validation.errors[0];
+        configStatus.className = 'config-status warn';
+      }
+    }
+
+    // ===================== Tab Management =====================
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          document.getElementById('tab-' + tabName).classList.add('active');
+        });
+      });
+    }
+
     // ===================== Command Handling =====================
     function handleColorCommand(colorStr) {
       const ok = glassState.setColor(colorStr);
       if (ok) {
         renderGlass();
         addLog('in', `Color updated: ${colorStr}`);
-        // Auto-send reply if connected
         if (isConnected && mqttClient) {
           sendColorReply(colorStr);
         }
@@ -616,14 +886,15 @@
     }
 
     function sendColorReply(colorStr) {
-      const gatewayId = document.getElementById('gatewayId').value;
-      const topic = `device/${gatewayId}/out`;
+      const topic = configManager.getTopic('outbound');
+      const gatewayId = configManager.get('mqtt.gatewayId');
       const payload = {
         msg_type: 'update_glass_color_reply',
         gateway_node_id: gatewayId,
         status: [{ node_id: glassState.nodeId, color: colorStr }]
       };
-      mqttClient.publish(topic, JSON.stringify(payload), { qos: 0, retain: false });
+      const qos = configManager.get('mqtt.qos', 0);
+      mqttClient.publish(topic, JSON.stringify(payload), { qos, retain: false });
       addLog('out', `Published to ${topic}: update_glass_color_reply`);
     }
 
@@ -632,8 +903,8 @@
         addLog('error', 'Not connected to broker');
         return;
       }
-      const gatewayId = document.getElementById('gatewayId').value;
-      const topic = `device/${gatewayId}/out`;
+      const topic = configManager.getTopic('outbound');
+      const gatewayId = configManager.get('mqtt.gatewayId');
       const payload = {
         msg_type: 'heartbeat_status_update',
         gateway_node_id: gatewayId,
@@ -650,17 +921,21 @@
           node_requesting_color: glassState.getColorString()
         }]
       };
-      mqttClient.publish(topic, JSON.stringify(payload), { qos: 0, retain: false });
+      const qos = configManager.get('mqtt.qos', 0);
+      mqttClient.publish(topic, JSON.stringify(payload), { qos, retain: false });
       addLog('out', `Published heartbeat for node ${glassState.nodeId}`);
     }
 
     // ===================== MQTT =====================
     function connect() {
-      const brokerUrl = document.getElementById('brokerUrl').value;
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
-      const gatewayId = document.getElementById('gatewayId').value;
-      const nodeId = document.getElementById('nodeId').value;
+      saveFormToConfig();
+
+      const brokerUrl = configManager.get('mqtt.brokerUrl');
+      const username = configManager.get('mqtt.username');
+      const password = configManager.get('mqtt.password');
+      const nodeId = configManager.get('mqtt.nodeId');
+      const reconnectPeriod = configManager.get('mqtt.reconnectPeriod', 10000);
+      const connectTimeout = configManager.get('mqtt.connectTimeout', 30000);
 
       glassState.nodeId = nodeId;
       renderGlass();
@@ -668,11 +943,11 @@
       addLog('system', `Connecting to ${brokerUrl}...`);
 
       mqttClient = mqtt.connect(brokerUrl, {
-        username: username,
-        password: password,
+        username: username || undefined,
+        password: password || undefined,
         clientId: 'virtual-glass-' + nodeId + '-' + Date.now(),
-        reconnectPeriod: 10000,
-        connectTimeout: 30000,
+        reconnectPeriod: reconnectPeriod,
+        connectTimeout: connectTimeout,
       });
 
       mqttClient.on('connect', () => {
@@ -681,8 +956,9 @@
         connStatus.className = 'status online';
         addLog('system', 'MQTT connected');
 
-        const inTopic = `device/${gatewayId}/in`;
-        mqttClient.subscribe(inTopic, { qos: 0 }, (err) => {
+        const inTopic = configManager.getTopic('inbound');
+        const qos = configManager.get('mqtt.qos', 0);
+        mqttClient.subscribe(inTopic, { qos }, (err) => {
           if (err) {
             addLog('error', `Subscribe failed: ${err.message}`);
           } else {
@@ -727,7 +1003,7 @@
     }
 
     function handleIncomingMessage(msg) {
-      const gatewayId = document.getElementById('gatewayId').value;
+      const gatewayId = configManager.get('mqtt.gatewayId');
 
       if (msg.method === 'update_glass_color_request' && msg.params) {
         for (const p of msg.params) {
@@ -749,7 +1025,7 @@
       else if (msg.method === 'get_glass_status_request' && msg.params) {
         if (msg.params.node_id === glassState.nodeId) {
           if (isConnected && mqttClient) {
-            const topic = `device/${gatewayId}/out`;
+            const topic = configManager.getTopic('outbound');
             const payload = {
               msg_type: 'glass_status_update',
               gateway_node_id: gatewayId,
@@ -764,14 +1040,14 @@
         glassState.completionStatus = 2;
         renderGlass();
         if (isConnected && mqttClient) {
-          const topic = `device/${gatewayId}/out`;
+          const topic = configManager.getTopic('outbound');
           mqttClient.publish(topic, JSON.stringify({ msg_type: 'config_reply', gateway_node_id: gatewayId }));
           addLog('out', 'Published config_reply');
         }
       }
       else if (msg.method === 'gateway_reboot') {
         if (isConnected && mqttClient) {
-          const topic = `device/${gatewayId}/out`;
+          const topic = configManager.getTopic('outbound');
           mqttClient.publish(topic, JSON.stringify({ msg_type: 'gateway_reboot_reply', gateway_node_id: gatewayId }));
           addLog('out', 'Published gateway_reboot_reply');
         }
@@ -779,7 +1055,7 @@
       }
       else if (msg.method === 'execute_cmd') {
         if (isConnected && mqttClient) {
-          const topic = `device/${gatewayId}/out`;
+          const topic = configManager.getTopic('outbound');
           const payload = {
             msg_type: 'remote_cmd_result',
             gateway_node_id: gatewayId,
@@ -795,22 +1071,100 @@
       }
     }
 
-    // ===================== Init =====================
-    document.getElementById('btnConnect').onclick = connect;
-    document.getElementById('btnDisconnect').onclick = disconnect;
-    document.getElementById('btnSendHeartbeat').onclick = sendHeartbeat;
-    document.getElementById('btnClear').onclick = () => {
-      glassState.colors = Array(8).fill('0');
-      glassState.completionStatus = 2;
-      renderGlass();
-      addLog('system', 'Cleared to transparent');
-    };
+    // ===================== Config Management Handlers =====================
+    function setupConfigHandlers() {
+      // Save config
+      document.getElementById('btnSaveConfig').onclick = () => {
+        saveFormToConfig();
+        const ok = configManager.save();
+        if (ok) {
+          showToast('Settings saved to browser storage', 'success');
+          addLog('system', 'Config saved to localStorage');
+        } else {
+          showToast('Failed to save settings', 'error');
+        }
+      };
 
-    createSectors();
-    buildLegend();
-    buildSimControls();
-    renderGlass();
-    addLog('system', 'Virtual Glass Device ready. Click "Connect" to join MQTT broker, or use simulation buttons.');
+      // Reset config
+      document.getElementById('btnResetConfig').onclick = async () => {
+        if (!confirm('Reset all settings to defaults?')) return;
+        await configManager.reset();
+        loadConfigToForm();
+        showToast('Reset to default config', 'success');
+        addLog('system', 'Config reset to defaults');
+      };
+
+      // Export config
+      document.getElementById('btnExportConfig').onclick = () => {
+        saveFormToConfig();
+        configManager.export();
+        addLog('system', 'Config exported as JSON file');
+      };
+
+      // Import config
+      document.getElementById('btnImportConfig').onclick = () => {
+        document.getElementById('fileImport').click();
+      };
+      document.getElementById('fileImport').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          await configManager.import(file);
+          loadConfigToForm();
+          showToast('Config imported successfully', 'success');
+          addLog('system', `Config imported from ${file.name}`);
+        } catch (err) {
+          showToast('Import failed: ' + err.message, 'error');
+          addLog('error', `Import failed: ${err.message}`);
+        }
+        e.target.value = '';
+      });
+
+      // Real-time validation on input change
+      const formInputs = document.querySelectorAll('#tab-connection input, #tab-connection select');
+      formInputs.forEach(input => {
+        input.addEventListener('input', () => {
+          saveFormToConfig();
+          updateConfigStatus();
+        });
+      });
+    }
+
+    // ===================== Init =====================
+    async function init() {
+      setupTabs();
+      createSectors();
+      buildLegend();
+      buildSimControls();
+      setupConfigHandlers();
+
+      // Load config
+      await configManager.init();
+      loadConfigToForm();
+
+      // Button handlers
+      document.getElementById('btnConnect').onclick = connect;
+      document.getElementById('btnDisconnect').onclick = disconnect;
+      document.getElementById('btnSendHeartbeat').onclick = sendHeartbeat;
+      document.getElementById('btnClear').onclick = () => {
+        glassState.colors = Array(8).fill('0');
+        glassState.completionStatus = 2;
+        renderGlass();
+        addLog('system', 'Cleared to transparent');
+      };
+
+      renderGlass();
+      addLog('system', 'Virtual Glass Device ready. Config loaded from ' +
+        (localStorage.getItem('virtual-glass-config') ? 'localStorage' : 'config.json'));
+
+      // Auto-connect if configured
+      if (configManager.get('display.autoConnect', false)) {
+        addLog('system', 'Auto-connect enabled, connecting...');
+        setTimeout(connect, 500);
+      }
+    }
+
+    init();
   </script>
 </body>
 </html>

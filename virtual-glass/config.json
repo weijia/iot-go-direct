@@ -1,0 +1,31 @@
+{
+  "mqtt": {
+    "brokerUrl": "ws://app.kosglass.com:8083/mqtt",
+    "username": "l8juew73i2t17wavzthg",
+    "password": "i0eprmhypu3r16g3wuuc",
+    "gatewayId": "F12309150001",
+    "nodeId": "12345678",
+    "reconnectPeriod": 10000,
+    "connectTimeout": 30000,
+    "qos": 0
+  },
+  "device": {
+    "hardVersion": "100",
+    "softVersion": "101",
+    "runArea": 1,
+    "rssi": -50,
+    "snr": 8,
+    "isOffline": false,
+    "completionStatus": 2
+  },
+  "display": {
+    "glassSize": 320,
+    "autoConnect": false,
+    "logMaxEntries": 200
+  },
+  "topics": {
+    "inbound": "device/{gatewayId}/in",
+    "outbound": "device/{gatewayId}/out"
+  },
+  "configVersion": "1.0.0"
+}
