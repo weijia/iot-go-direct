@@ -119,6 +119,30 @@ func main() {
 				}
 				time.Sleep(3 * time.Second)
 			}
+
+			// 验证按协议格式的改色请求(node_id=12345678, 8-hex)能映射到区并触发虚拟玻璃回包。
+			// 这正是之前被默认节点列表(node1/node2 占位符)挡掉、回 invalid 色的场景。
+			color := "1222324252627282"
+			zones, ok := controller.NodeColorToZones("12345678", color)
+			if !ok {
+				log.Printf("[selftest] NodeColorToZones(12345678) FAILED: node not in NodeList1")
+				return
+			}
+			frame, sent := controller.Ctrl.ChangeColorForZones(zones)
+			if !sent || frame.Cmd != serial.StatusChangeColor {
+				log.Printf("[selftest] update_glass_color 12345678: board no reply (timeout)")
+				return
+			}
+			controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
+			ns := bsp.GetOrCreateNodeState("12345678")
+			log.Printf("[selftest] update_glass_color 12345678 OK: reply cmd=%d, node CompletionStatus=%d, requested color=%s",
+				frame.Cmd, ns.CompletionStatus, color)
+
+			// 等待控制板完成变色(mock 约 800ms)，并让主循环自动轮询(每 10s)刷新状态，
+			// 验证不再需要手动 get_glass_status，心跳即可反映“已完成(completion_status=2)”。
+			time.Sleep(10 * time.Second)
+			ns2 := bsp.GetOrCreateNodeState("12345678")
+			log.Printf("[selftest] after auto-poll: 12345678 CompletionStatus=%d (expect 2=已完成)", ns2.CompletionStatus)
 		}()
 	}
 

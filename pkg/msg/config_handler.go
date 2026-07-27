@@ -142,6 +142,9 @@ func saveConfig(configParams shared.ConfigParams) {
 		bsp.BspConfigInstance.BaseConfigParams.Heartbeat = 20
 		bsp.BspConfigInstance.InitMsgContent.Heartbeat = bsp.BspConfigInstance.Heartbeat
 	}
+	if bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval <= 0 {
+		bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval = 10
+	}
 	// TODO: update work around for list 2 empty
 	if len(bsp.BspConfigInstance.BaseConfigParams.NodeList2) > 0 && bsp.BspConfigInstance.BaseConfigParams.NodeList2[0] == "        " {
 		bsp.BspConfigInstance.BaseConfigParams.NodeList2 = 

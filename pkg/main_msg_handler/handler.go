@@ -101,9 +101,17 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, port *
 	initMsg.MsgType = "init"
 	mainMsgHandler.MqttToServerCh <- initMsg
 
-	// Use 10 seconds as period
+	// 心跳 ticker：固定 10 秒一跳，驱动 RemainingPeriod 计数（心跳间隔 = HeartbeatToServer）
 	ticker := time.NewTicker(time.Second * 10)
 	defer ticker.Stop()
+	// 串口轮询 ticker：间隔由独立配置 serial_poll_interval 决定，
+	// 用于在控制板完成变色后自动回填节点状态(completion_status 等)。
+	serialPollInterval := time.Duration(bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval) * time.Second
+	if serialPollInterval <= 0 {
+		serialPollInterval = time.Second * 10
+	}
+	serialPollTicker := time.NewTicker(serialPollInterval)
+	defer serialPollTicker.Stop()
 	u := msg.HeartbeatStatusUpdate{
 		MsgType:       "heartbeat_status_update",
 		GatewayNodeId: bsp.BspConfigInstance.GatewayNodeId,
@@ -111,6 +119,19 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, port *
 
 	for {
 		select {
+		case <-serialPollTicker.C:
+			// 自动轮询颜色控制板状态：让内存里的节点状态(尤其 completion_status)
+			// 反映控制板真实完成态，而不是仅停留在“改色指令已下发(执行中)”。
+			if frame, ok := controller.Ctrl.QueryStatus(); ok {
+				controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
+			}
+			// 热更新：若 serial_poll_interval 配置变化，重建轮询 ticker 以应用新间隔
+			if newInterval := time.Duration(bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval) * time.Second; newInterval > 0 && newInterval != serialPollInterval {
+				serialPollTicker.Stop()
+				serialPollTicker = time.NewTicker(newInterval)
+				serialPollInterval = newInterval
+				util.IotLog("Serial poll interval updated to %d seconds", bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval)
+			}
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
 			util.IotDebug("MainLoop: Sending mqtt msg to server")
 			if mqttClient != nil {

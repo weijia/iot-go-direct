@@ -164,12 +164,21 @@ func InitConfig() {
 			}
 		}
 	}
-	// 6. 默认节点列表：无配置文件时让 mock/测试也能触发串口通信
+	// 6. 默认节点列表：无配置文件时让 mock/测试也能触发串口通信。
+	// 注意 node_id 正式格式为 8 位十六进制（见 MQTT_PROTOCOL.md / update_color_schema.json），
+	// 这里保留 node1/node2 仅作占位（get_glass_status 等不走 schema 的场景可用），
+	// 并预置 12345678 使按协议格式的改色请求也能直接跑通串口回包闭环。
 	if len(BspConfigInstance.BaseConfigParams.NodeList1) == 0 {
-		BspConfigInstance.BaseConfigParams.NodeList1 = []string{"node1"}
+		BspConfigInstance.BaseConfigParams.NodeList1 = []string{"node1", "12345678"}
 	}
 	if len(BspConfigInstance.BaseConfigParams.NodeList2) == 0 {
 		BspConfigInstance.BaseConfigParams.NodeList2 = []string{"node2"}
+	}
+	// 7. 串口轮询间隔默认值（独立配置，与心跳间隔解耦）。
+	// 控制板完成变色后由该间隔自动轮询回填 completion_status。
+	if BspConfigInstance.BaseConfigParams.SerialPollInterval <= 0 {
+		BspConfigInstance.BaseConfigParams.SerialPollInterval = 10
+		util.IotLog("SerialPollInterval defaulted to %d seconds", BspConfigInstance.BaseConfigParams.SerialPollInterval)
 	}
 }
 

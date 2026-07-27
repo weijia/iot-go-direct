@@ -118,6 +118,8 @@ func (c *Controller) UpdateNodeStatesFromSerialReply(frame serial.Frame) {
 			ns.LastMsgTimestamp = time.Now().Unix()
 			if AllZonesCompleted(zones, start, end) {
 				ns.CompletionStatus = 2
+				// 全完成时实际颜色即上次下发的请求色（板子只回报状态不回报颜色）
+				ns.NodeReportedColor = ns.NodeRequestingColor
 			} else {
 				inProgress := false
 				for i := start; i < end; i++ {

@@ -11,6 +11,10 @@ type BaseConfigParams struct {
 	Heartbeat      int      `json:"heart_beat"`
 	// Only accept multiples of 10, see usage of HeartbeatToServer
 	HeartbeatToServer      int      `json:"heart_beat_to_server"`
+	// SerialPollInterval 是网关串口层自动轮询颜色控制板状态的间隔（秒），
+	// 与心跳间隔互相独立。控制板完成变色后由该轮询自动回填 completion_status，
+	// 使心跳上报真实反映完成态，无需服务器手动发 get_glass_status。
+	SerialPollInterval     int      `json:"serial_poll_interval"`
 }
 
 type ConfigParams struct {
