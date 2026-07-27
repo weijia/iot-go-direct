@@ -92,6 +92,7 @@
     "project": "",
     "heart_beat": 20,
     "heart_beat_to_server": 60,
+    "serial_poll_interval": 10,
     "module1": {
       "freq": 4734,
       "band": 250,
@@ -118,6 +119,7 @@
 | `project` | string | 否 | 项目字段 |
 | `heart_beat` | int | 是 | 节点心跳周期（秒） |
 | `heart_beat_to_server` | int | 是 | 网关向服务器上报周期（秒），最小 30，须为 10 的倍数 |
+| `serial_poll_interval` | int | 否 | 网关串口层自动轮询颜色控制板状态的间隔（秒），与 `heart_beat_to_server` 相互独立，默认 10；控制板完成变色后据此间隔自动 `QueryStatus` 回填 `completion_status`，使心跳反映真实完成态，无需服务器手动发 `get_glass_status` |
 | `module1` | object | 是 | Module1 射频参数：freq(3700-6000)、band(125/250/500)、factor(6-12) |
 | `module2` | object | 是 | Module2 射频参数，同 module1 |
 

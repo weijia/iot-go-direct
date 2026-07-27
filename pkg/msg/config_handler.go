@@ -137,13 +137,20 @@ func saveConfig(configParams shared.ConfigParams) {
 	// We will only accept number multiple 10 as HeartbeatToServer, see HeartbeatToServer handling
 	bsp.BspConfigInstance.InitMsgContent.HeartbeatToServer = 10*configParams.HeartbeatToServer/10
 
+	// serial_poll_interval 为可选字段：消息未携带(反序列化为 0)时保留上一次有效值，
+	// 避免整体覆盖 BaseConfigParams 把它清零；上一次值也无效时回退默认 10。
+	prevSerialPoll := bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval
 	bsp.BspConfigInstance.BaseConfigParams = configParams.BaseConfigParams
 	if bsp.BspConfigInstance.BaseConfigParams.Heartbeat <=0 {
 		bsp.BspConfigInstance.BaseConfigParams.Heartbeat = 20
 		bsp.BspConfigInstance.InitMsgContent.Heartbeat = bsp.BspConfigInstance.Heartbeat
 	}
-	if bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval <= 0 {
-		bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval = 10
+	if configParams.BaseConfigParams.SerialPollInterval <= 0 {
+		if prevSerialPoll > 0 {
+			bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval = prevSerialPoll
+		} else {
+			bsp.BspConfigInstance.BaseConfigParams.SerialPollInterval = 10
+		}
 	}
 	// TODO: update work around for list 2 empty
 	if len(bsp.BspConfigInstance.BaseConfigParams.NodeList2) > 0 && bsp.BspConfigInstance.BaseConfigParams.NodeList2[0] == "        " {
