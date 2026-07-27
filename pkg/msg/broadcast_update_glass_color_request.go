@@ -2,8 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_module"
-	"iot_go/pkg/node"
+	"iot_go/pkg/controller"
 	"iot_go/pkg/util"
 )
 
@@ -17,12 +16,17 @@ type ColorParams struct {
 
 func (request BroadcastUpdateGlassColorRequest) handle() interface{} {
 	if request.Params.ColorParams != "" {
-		broadcastMsg := node.GetBroadcastUpdateGlassColorMsg(
-			util.DecodeId(bsp.BspConfigInstance.GatewayNodeId),
-			request.Params.ColorParams)
-		lora_module.Module1.SendWithoutReply(broadcastMsg)
-		lora_module.Module2.SendWithoutReply(broadcastMsg)
+		// 广播：所有 16 区设置为同一颜色
+		color := controller.ParseColorNibble(request.Params.ColorParams)
+		var zones [16]byte
+		for i := range zones {
+			zones[i] = color
+		}
+		controller.Ctrl.ChangeColorForZones(zones)
 		bsp.SetAllRequestingColor(request.Params.ColorParams)
+		if frame, ok := controller.Ctrl.QueryStatus(); ok {
+			controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
+		}
 	} else {
 		util.IotLogErrorWithFormatStr("ColorParam is invalid: %v", request.Params.ColorParams)
 	}

@@ -6,8 +6,10 @@ import (
 	"iot_go/pkg/shared"
 	"iot_go/pkg/thingsboard_shared"
 	"iot_go/pkg/util"
+	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -59,6 +61,11 @@ var defaultInitMsgContent = shared.InitMsgContent{
 	Module0: module0Param,
 }
 var BspConfigInstance BspConfig
+
+// MqttBrokerOverride 允许在测试/开发时覆盖 broker 地址(host:port)，
+// 例如 EMQX 免费公共服务器 broker.emqx.io:1883。由 main 通过 -broker 设置，
+// 在 InitConfig 末尾应用，覆盖配置文件与默认值。
+var MqttBrokerOverride string
 
 const CONFIG_FILE_NAME = "iot_go.json"
 
@@ -143,6 +150,27 @@ func InitConfig() {
 	}
 	// 4. Init node requesting color
 	initRequestingColors()
+
+	// 5. 命令行/测试指定的 broker 覆盖（如 EMQX 免费公共服务器）
+	if MqttBrokerOverride != "" {
+		if host, portStr, err := net.SplitHostPort(MqttBrokerOverride); err == nil {
+			if port, perr := strconv.Atoi(portStr); perr == nil {
+				BspConfigInstance.MqttParams.MqttIP = host
+				BspConfigInstance.MqttParams.MqttPort = port
+				// 公共 broker(如 broker.emqx.io)通常匿名，清空原账号密码
+				BspConfigInstance.MqttParams.MqttUserName = ""
+				BspConfigInstance.MqttParams.MqttPwd = ""
+				util.IotLog("MqttParams overridden by flag: %s", MqttBrokerOverride)
+			}
+		}
+	}
+	// 6. 默认节点列表：无配置文件时让 mock/测试也能触发串口通信
+	if len(BspConfigInstance.BaseConfigParams.NodeList1) == 0 {
+		BspConfigInstance.BaseConfigParams.NodeList1 = []string{"node1"}
+	}
+	if len(BspConfigInstance.BaseConfigParams.NodeList2) == 0 {
+		BspConfigInstance.BaseConfigParams.NodeList2 = []string{"node2"}
+	}
 }
 
 

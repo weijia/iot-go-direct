@@ -4,12 +4,11 @@ import (
 	"context"
 	"fmt"
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_module"
-	"iot_go/pkg/lora_rpc"
-	"iot_go/pkg/lora_shared"
+	"iot_go/pkg/controller"
 	"iot_go/pkg/mqtt_util"
 	"iot_go/pkg/msg"
 	"iot_go/pkg/node"
+	"iot_go/pkg/serial"
 	"iot_go/pkg/shared"
 	"iot_go/pkg/util"
 	"os/exec"
@@ -18,6 +17,7 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
+
 const (
 	NODE_STATE_CMD_COMPLETED = 2
 )
@@ -25,34 +25,27 @@ const (
 type MainMsgHandler struct {
 	MqttToServerCh   chan interface{}
 	MqttFromServerCh chan mqtt.Message
-	NodeMsgCh        chan lora_shared.LoraData
 	MqttEasyClient   *mqtt_util.MqttEasyClient
 	TimeoutNodeIdCh  chan string
 }
 
-func InfiniteAppLoop(ctx context.Context, loraServiceIp string) {
+// InfiniteAppLoop 持续运行主消息循环。port 为已打开的串口(真实或 mock)；
+// skipMqtt 为 true 时(例如离线 mock 测试)不连接 MQTT broker，仅跑控制板通信。
+func InfiniteAppLoop(ctx context.Context, port *serial.Port, skipMqtt bool) {
 	for {
 		h := MainMsgHandler{
 			MqttToServerCh:   make(chan interface{}, 10),
 			MqttFromServerCh: make(chan mqtt.Message, 10),
-			NodeMsgCh:        make(chan lora_shared.LoraData, 10),
 			TimeoutNodeIdCh:  make(chan string, 10),
 		}
-		h.TopLevelMsgLoop(ctx, loraServiceIp)
+		h.TopLevelMsgLoop(ctx, port, skipMqtt)
 		msg.IsMsgLoopRestartNeeded = false
 		msg.IsInitDone = false
-		ctx, cancel := context.WithTimeout(context.Background(), 10)
-		defer cancel()
-		err := lora_rpc.ReceivingServer.Shutdown(ctx)
-		if err != nil {
-			util.IotLogErrorStr("shutting down: " + err.Error())
-		} else {
-			util.IotLog("shutdown processed successfully")
-		}
+		util.IotLog("shutdown processed successfully")
 	}
 }
 
-func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraServiceIp string) {
+func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, port *serial.Port, skipMqtt bool) {
 	util.IotDebugPrintf("Starting main app version: %s", bsp.SwVersion)
 	runLedCh := make(chan int)
 
@@ -62,46 +55,45 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 		HeartbeatCh: &runLedCh,
 	}
 
-	// The application data structure can only be changed in this routine to
-	// avoid concurrent data change issue
+	// 应用数据只在主循环(及其派生的同步调用)里修改，避免并发数据竞争
 	bsp.InitConfig()
 
-	bsp.InitBoard(loraServiceIp)
-	// GetModule0Client etc will return nil before InitBoard
-	lora_module.Module0.LoraClient = bsp.GetModule0Client()
-	lora_module.Module1.LoraClient = bsp.GetModule1Client()
-	lora_module.Module2.LoraClient = bsp.GetModule2Client()
-
-	// Used to report node heartbeat timeout from heartbeat generator
-	lora_module.TimeoutNodeIdCh = &mainMsgHandler.TimeoutNodeIdCh
+	// 单串口控制板替代原 3 个 LoRa 模块 + RPC 服务
+	controller.Init(port)
+	go controller.Ctrl.MsgLoop(ctx)
+	// 读协程收到板子帧后，转发给 MsgLoop 里正在等待的发送者
+	go func() {
+		for f := range port.RecvCh() {
+			controller.Ctrl.RecvCh() <- f
+		}
+	}()
 
 	var topic = "device/" + bsp.BspConfigInstance.GatewayNodeId + "/in"
 	var wg sync.WaitGroup
-	mainMsgHandler.MqttEasyClient = &mqtt_util.MqttEasyClient{
-		MqttParams:                     mqtt_util.MqttParams(bsp.BspConfigInstance.MqttParams),
-		ReceivingChannel:               &mainMsgHandler.MqttFromServerCh,
-		Topic:                          topic,
-		MqttClientId:                   bsp.BspConfigInstance.GatewayNodeId,
-		IsMqttConnectionReadyWaitGroup: &wg,
+	var mqttClient *util.Mqtt
+
+	if !skipMqtt {
+		mainMsgHandler.MqttEasyClient = &mqtt_util.MqttEasyClient{
+			MqttParams:                     mqtt_util.MqttParams(bsp.BspConfigInstance.MqttParams),
+			ReceivingChannel:               &mainMsgHandler.MqttFromServerCh,
+			Topic:                          topic,
+			MqttClientId:                   bsp.BspConfigInstance.GatewayNodeId,
+			IsMqttConnectionReadyWaitGroup: &wg,
+		}
+		mainMsgHandler.MqttEasyClient.ConnectAndSubscribe()
+		mqttClient = util.NewMqtt(&mainMsgHandler.MqttEasyClient.Client,
+			bsp.BspConfigInstance.GatewayNodeId)
 	}
-
-	mainMsgHandler.MqttEasyClient.ConnectAndSubscribe()
-
-	mqttClient := util.NewMqtt(&mainMsgHandler.MqttEasyClient.Client,
-		bsp.BspConfigInstance.GatewayNodeId)
 
 	ctx, cancel := context.WithCancel(ctx)
 
 	go runLed.LedMsgLoop(ctx)
 
-	go lora_module.Module0.MsgLoop(ctx)
-	go lora_module.Module1.MsgLoop(ctx)
-	go lora_module.Module2.MsgLoop(ctx)
-	go lora_rpc.StartLoraReceiverRpc(&mainMsgHandler.NodeMsgCh, 8869)
-
 	// Wait for mqtt subscribe done
-	wg.Wait()
-	mainMsgHandler.MqttEasyClient.IsMqttConnectionReadyWaitGroup = nil // Do not need to set Wg again for reconnect
+	if !skipMqtt {
+		wg.Wait()
+		mainMsgHandler.MqttEasyClient.IsMqttConnectionReadyWaitGroup = nil // Do not need to set Wg again for reconnect
+	}
 
 	// 发布消息
 	var initMsg shared.Init
@@ -121,9 +113,12 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 		select {
 		case publishingMqttMsg := <-mainMsgHandler.MqttToServerCh:
 			util.IotDebug("MainLoop: Sending mqtt msg to server")
-			mqttClient.SendToServer(publishingMqttMsg)
+			if mqttClient != nil {
+				mqttClient.SendToServer(publishingMqttMsg)
+			} else {
+				util.IotLogInfo(fmt.Sprintf("MainLoop: skip publishing (mock/no mqtt): %v", publishingMqttMsg))
+			}
 			runLedCh <- 1
-			// util.IotLogInfo("Sent run led heartbeat")
 			// We put the restart here instead of after handling mqtt msg
 			// so we will only restart after msg published to server
 			if msg.IsRebootNeeded {
@@ -134,7 +129,9 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				}
 			}
 			if msg.IsMsgLoopRestartNeeded {
-				mainMsgHandler.MqttEasyClient.Client.Disconnect(1000)
+				if mainMsgHandler.MqttEasyClient != nil {
+					mainMsgHandler.MqttEasyClient.Client.Disconnect(1000)
+				}
 				cancel()
 			}
 		case mqttMsg := <-mainMsgHandler.MqttFromServerCh:
@@ -145,10 +142,6 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				util.SendMsgWithoutBlockingCommon(reply, mainMsgHandler.MqttToServerCh,
 					fmt.Sprintf("Sending to mqtt server ch failed: %v", reply))
 			}
-		case nodeMsg := <-mainMsgHandler.NodeMsgCh:
-			util.IotDebug("MainLoop: handle node msg")
-			msg.HandleNodeMsg(nodeMsg, mainMsgHandler.MqttToServerCh)
-			
 		case timeoutNodeId := <-mainMsgHandler.TimeoutNodeIdCh:
 			util.IotDebug("MainLoop: Handle node msg timeout")
 			nodeState := bsp.GetOrCreateNodeState(timeoutNodeId)
@@ -162,7 +155,6 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				continue
 			}
 			util.IotDebug("MainLoop: prepare heartbeat to server")
-			// currentTimestamp := time.Now().Unix()
 			l := []msg.HeartbeatStatus{}
 			resendCmd := false
 			for _, state := range bsp.BspConfigInstance.NodeStates {
@@ -170,7 +162,6 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 					util.IotDebugPrintf("Reporting state: %v", state)
 					color := msg.GetColorStrFromSlice(state.NodeReportedColor)
 					requestingColor := msg.GetColorStrFromSlice(state.NodeRequestingColor)
-					// util.IotLog("LastMsgTimestamp: %d", state.LastMsgTimestamp)
 					if state.IsOffline {
 						color = node.SetColorForNodeAsInvalid(color)
 					}
@@ -187,9 +178,8 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 						NodeRequestingColor: requestingColor,
 					}
 					l = append(l, s)
-					if // state.CompletionStatus == NODE_STATE_CMD_COMPLETED && 
-						!bsp.IsEqual(state.NodeReportedColor, state.NodeRequestingColor){
-							resendCmd = true
+					if !bsp.IsEqual(state.NodeReportedColor, state.NodeRequestingColor) {
+						resendCmd = true
 					}
 				}
 			}
@@ -197,7 +187,9 @@ func (mainMsgHandler MainMsgHandler) TopLevelMsgLoop(ctx context.Context, loraSe
 				msg.KeptGroupUpdateGlassColorRequest.Replay()
 			}
 			u.Status = l
-			mqttClient.SendToServer(u)
+			if mqttClient != nil {
+				mqttClient.SendToServer(u)
+			}
 			runLedCh <- 1
 		// Handle ctx cancel
 		case <-ctx.Done():

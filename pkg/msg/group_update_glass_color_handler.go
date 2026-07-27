@@ -2,8 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_module"
-	"iot_go/pkg/node"
+	"iot_go/pkg/controller"
 	"iot_go/pkg/util"
 )
 
@@ -25,42 +24,40 @@ func (request GroupUpdateGlassColorRequest) Replay() {
 	}
 }
 
-
 func (request GroupUpdateGlassColorRequest) handle() interface{} {
 	invalidNodeList := []string{}
-	finalNodeList1 := [][]byte{}
-	finalNodeList2 := [][]byte{}
-
 	group := request.Params
+
+	color := controller.ParseColorNibble(group.Color)
+	var zones [16]byte
+	for i := range zones {
+		zones[i] = controller.ParseColorNibble("f") // 默认保留(F)，仅覆盖列出的节点
+	}
 
 	for _, nodeId := range group.NodeList1 {
 		if bsp.IsInNodeList1(nodeId) {
 			bsp.SetRequestingColor(nodeId, group.Color)
-			finalNodeList1 = append(finalNodeList1, util.DecodeId(nodeId))
+			for i := 0; i < 8; i++ {
+				zones[i] = color
+			}
 		} else {
 			invalidNodeList = append(invalidNodeList, nodeId)
 		}
 	}
-	if len(finalNodeList1) > 0 {
-		groupMsg := node.GetGroupUpdateGlassColorMsg(
-			finalNodeList1, group.Color)
-		// bsp.GetModule1Client().Send(groupMsg)
-		lora_module.Module1.SendWithoutReply(groupMsg)
-	}
-
 	for _, nodeId := range group.NodeList2 {
 		if bsp.IsInNodeList2(nodeId) {
 			bsp.SetRequestingColor(nodeId, group.Color)
-			finalNodeList2 = append(finalNodeList2, util.DecodeId(nodeId))
+			for i := 8; i < 16; i++ {
+				zones[i] = color
+			}
 		} else {
 			invalidNodeList = append(invalidNodeList, nodeId)
 		}
 	}
-	if len(finalNodeList2) > 0 {
-		groupMsg := node.GetGroupUpdateGlassColorMsg(
-			finalNodeList2, group.Color)
-		// bsp.GetModule2Client().Send(groupMsg)
-		lora_module.Module2.SendWithoutReply(groupMsg)
+
+	controller.Ctrl.ChangeColorForZones(zones)
+	if frame, ok := controller.Ctrl.QueryStatus(); ok {
+		controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
 	}
 
 	var reply GroupUpdateGlassColorReply

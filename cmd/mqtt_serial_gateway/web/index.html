@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>玻璃控制 - MQTT 串口网关调试台</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+  :root { --bg:#0f1419; --card:#1b232e; --line:#2a3645; --accent:#3da9fc; --ok:#4caf50; --err:#e5484d; --txt:#e6edf3; --muted:#8b98a5; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  #connState { font-size:12px; padding:3px 10px; border-radius:12px; background:#333; color:var(--muted); }
+  #connState.on { background:rgba(76,175,80,.15); color:var(--ok); }
+  #connState.off { background:rgba(229,72,77,.15); color:var(--err); }
+  .wrap { display:grid; grid-template-columns: 360px 1fr; gap:16px; padding:16px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .card h2 { font-size:13px; margin:0 0 12px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
+  input, select, button { font-size:13px; width:100%; padding:8px 10px; border-radius:7px; border:1px solid var(--line); background:#0f1419; color:var(--txt); }
+  button { cursor:pointer; background:var(--accent); border:none; color:#06121f; font-weight:600; margin-top:8px; }
+  button.sec { background:#2a3645; color:var(--txt); }
+  button:hover { filter:brightness(1.08); }
+  .zones { display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; }
+  .zone { background:#0f1419; border:1px solid var(--line); border-radius:8px; padding:8px; }
+  .zone .zlabel { font-size:11px; color:var(--muted); }
+  .zone select { padding:5px 4px; margin-top:4px; }
+  .row { display:flex; gap:8px; }
+  .row > * { flex:1; }
+  .swatch { height:8px; border-radius:4px; margin-top:6px; }
+  .log { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size:12px; background:#0f1419; border:1px solid var(--line); border-radius:8px; padding:10px; height:300px; overflow:auto; white-space:pre-wrap; word-break:break-all; }
+  .pill { display:inline-block; padding:1px 7px; border-radius:10px; font-size:11px; margin-right:4px; }
+  .c0 { background:rgba(139,152,165,.2); color:var(--muted); }
+  .c2 { background:rgba(61,169,252,.2); color:var(--accent); }
+  .c4 { background:rgba(61,169,252,.4); color:#cfe7ff; }
+  .cF { background:rgba(229,72,77,.2); color:var(--err); }
+  .sA{color:var(--ok)} .sB{color:var(--accent)} .sC{color:#f0a500} .sF{color:var(--muted)}
+  .hint { font-size:11px; color:var(--muted); line-height:1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>玻璃控制 · MQTT→串口网关调试台</h1>
+  <span id="connState" class="off">未连接</span>
+</header>
+
+<div class="wrap">
+  <!-- 左侧：连接 + 控制 -->
+  <div>
+    <div class="card">
+      <h2>MQTT WebSocket 连接</h2>
+      <label>Broker WS 地址</label>
+      <input id="wsUrl" value="ws://broker.emqx.io:8083/mqtt" />
+      <label>用户名（公共 broker 已预填，换本地匿名 broker 可清空）</label>
+      <input id="user" value="l8juew73i2t17wavzthg" />
+      <label>密码（公共 broker 已预填，换本地匿名 broker 可清空）</label>
+      <input id="pass" type="password" value="i0eprmhypu3r16g3wuuc" />
+      <label>ClientID（建议唯一）</label>
+      <input id="clientId" value="web-glass-ctrl-1" />
+      <label>下发主题 (→串口)</label>
+      <input id="toTopic" value="gateway/serial/1/in" />
+      <label>上报主题 (串口→)</label>
+      <input id="fromTopic" value="gateway/serial/1/out" />
+      <button id="btnConnect">连接</button>
+      <button id="btnDisconnect" class="sec" disabled>断开</button>
+      <p class="hint">网关与网页需连<strong>同一 broker</strong>。当前默认用公共 broker <code>broker.emqx.io</code>（已预填账号，需认证，直接点连接即可）。网关侧对应配置在 <code>mqtt_serial_gateway-local.json</code>（mqtt_ip 同样指向 broker.emqx.io）。若改用本地匿名 broker（mosquitto / docker emqx），把本页地址改成 <code>ws://localhost:8083/mqtt</code> 并清空用户名/密码，同时把网关 JSON 的 mqtt_ip 也改成 <code>127.0.0.1</code> 并清空凭据。</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>下发指令</h2>
+      <button id="btnColor">发送改色指令 (cmd=1)</button>
+      <button id="btnStatus" class="sec">发送状态回报 (cmd=2)</button>
+      <div class="row" style="margin-top:8px">
+        <button id="btnAllClear" class="sec">全部透明</button>
+        <button id="btnAllDark" class="sec">全部深色</button>
+      </div>
+      <p class="hint">包结构（11 字节）：<code>5A | cmd(高4)+len(低4=8) | 8字节负载(每字节控2区) | 校验和</code>。校验 = 前10字节累加 & 0xFF。</p>
+    </div>
+  </div>
+
+  <!-- 右侧：分区 + 日志 -->
+  <div>
+    <div class="card">
+      <h2>16 分区颜色设置</h2>
+      <div class="zones" id="zones"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>最近下行包 (HEX)</h2>
+      <div class="log" id="sentLog" style="height:70px"></div>
+      <h2 style="margin-top:12px">上行应答 (解析)</h2>
+      <div id="respView" class="hint">尚未收到应答。收到后将按协议解析状态码与 16 分区状态。</div>
+      <div class="log" id="recvLog" style="height:160px; margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  {v:0, t:"透明", cls:"c0", sw:"#2b3640"},
+  {v:2, t:"浅色", cls:"c2", sw:"#9cc6ef"},
+  {v:4, t:"深色", cls:"c4", sw:"#2f6fb0"},
+  {v:15, t:"保留", cls:"cF", sw:"#e5484d"},
+];
+const STATES = {10:"已完成(A)",11:"执行中(B)",12:"上电中(C)",15:"保留(F)"};
+
+// 构造 16 个分区的选择框
+const zoneBox = document.getElementById('zones');
+const zoneSel = [];
+for (let i=0;i<16;i++){
+  const d=document.createElement('div'); d.className='zone';
+  d.innerHTML = `<div class="zlabel">分区 ${i+1}</div>`;
+  const s=document.createElement('select');
+  COLORS.forEach(c=>{ const o=document.createElement('option'); o.value=c.v; o.textContent=c.t; s.appendChild(o); });
+  s.value = 4; // 默认深色
+  s.onchange = ()=>drawSwatch(i);
+  d.appendChild(s);
+  const sw=document.createElement('div'); sw.className='swatch'; sw.id='sw'+i;
+  d.appendChild(sw);
+  zoneBox.appendChild(d);
+  zoneSel.push(s);
+}
+function drawSwatch(i){ document.getElementById('sw'+i).style.background = COLORS.find(c=>c.v==zoneSel[i].value).sw; }
+zoneSel.forEach((_,i)=>drawSwatch(i));
+
+// ---- MQTT ----
+let client = null;
+const connState = document.getElementById('connState');
+function setConn(on){ connState.textContent = on?'已连接':'未连接'; connState.className = on?'on':'off'; }
+
+const btnConnect = document.getElementById('btnConnect');
+const btnDisconnect = document.getElementById('btnDisconnect');
+
+document.getElementById('btnConnect').onclick = ()=>{
+  const opts = {
+    clientId: document.getElementById('clientId').value,
+    clean: true,
+  };
+  // 缺省不传用户名/密码；只有填写了才传
+  const u = document.getElementById('user').value.trim();
+  const p = document.getElementById('pass').value;
+  if (u) opts.username = u;
+  if (p) opts.password = p;
+
+  btnConnect.disabled = true;   // 连接期间禁用，避免重复点击
+  btnConnect.textContent = '连接中…';
+  client = mqtt.connect(document.getElementById('wsUrl').value, opts);
+  client.on('connect', ()=>{
+    setConn(true);
+    btnConnect.disabled = true;
+    btnConnect.textContent = '已连接';
+    btnDisconnect.disabled = false;
+    const from = document.getElementById('fromTopic').value;
+    client.subscribe(from, {qos:0}, (e)=>{ if(!e) logRecv('已订阅 '+from); });
+  });
+  client.on('error', e=> { logRecv('连接错误: '+e); resetConnBtns(); });
+  client.on('close', ()=> { setConn(false); resetConnBtns(); });
+  client.on('message', (topic, payload)=>{
+    const bytes = Array.from(payload instanceof Uint8Array ? payload : new Uint8Array(payload));
+    logRecv('RX ['+topic+'] '+toHex(bytes));
+    showResponse(bytes);
+  });
+};
+function resetConnBtns(){
+  btnConnect.disabled = false;
+  btnConnect.textContent = '连接';
+  btnDisconnect.disabled = true;
+}
+document.getElementById('btnDisconnect').onclick = ()=>{ if(client){ client.end(); } resetConnBtns(); };
+
+// ---- 协议构造 ----
+function buildPacket(cmd){
+  const pkt = new Uint8Array(11);
+  pkt[0] = 0x5A;
+  pkt[1] = ((cmd & 0x0F) << 4) | 0x08; // 长度低4位固定 8
+  for (let i=0;i<8;i++){
+    const hi = parseInt(zoneSel[2*i].value,10) & 0x0F;
+    const lo = parseInt(zoneSel[2*i+1].value,10) & 0x0F;
+    pkt[2+i] = (hi<<4) | lo;
+  }
+  let sum=0; for(let i=0;i<10;i++) sum+=pkt[i];
+  pkt[10] = sum & 0xFF;
+  return pkt;
+}
+function toHex(arr){ return arr.map(b=>b.toString(16).padStart(2,'0').toUpperCase()).join(' '); }
+
+function send(cmd){
+  if(!client || !client.connected){ alert('请先连接 MQTT'); return; }
+  const pkt = buildPacket(cmd);
+  const to = document.getElementById('toTopic').value;
+  client.publish(to, pkt, {qos:0}, ()=>{
+    const code = cmd===1?'改色(1)':'回报(2)';
+    document.getElementById('sentLog').textContent = code+' → '+toHex(Array.from(pkt));
+    logRecv('TX ['+to+'] '+code+' '+toHex(Array.from(pkt)));
+  });
+}
+document.getElementById('btnColor').onclick   = ()=>send(1);
+document.getElementById('btnStatus').onclick = ()=>send(2);
+document.getElementById('btnAllClear').onclick = ()=>{ zoneSel.forEach(s=>s.value=0); zoneSel.forEach((_,i)=>drawSwatch(i)); };
+document.getElementById('btnAllDark').onclick  = ()=>{ zoneSel.forEach(s=>s.value=4); zoneSel.forEach((_,i)=>drawSwatch(i)); };
+
+// ---- 应答解析 ----
+function showResponse(b){
+  const view = document.getElementById('respView');
+  if(b.length!==11){ view.innerHTML = '<span style="color:var(--err)">长度异常：'+b.length+' 字节（应为 11）</span>'; return; }
+  if(b[0]!==0x5A){ view.innerHTML = '<span style="color:var(--err)">帧头错误：0x'+b[0].toString(16).toUpperCase()+'（应为 5A）</span>'; return; }
+  let sum=0; for(let i=0;i<10;i++) sum+=b[i];
+  const ok = (sum & 0xFF) === b[10];
+  const code = (b[1]>>4)&0x0F;
+  const codeTxt = {0:'指令错误(负载全FF)',1:'改色正常响应',2:'回报正常响应'}[code] || ('未知'+code);
+  const zones=[];
+  for(let i=0;i<8;i++){ zones.push((b[2+i]>>4)&0x0F); zones.push(b[2+i]&0x0F); }
+  let html = `状态码: <b style="color:${code===0?'var(--err)':'var(--ok)'}">${codeTxt}</b> ·
+             校验: ${ok?'<span style="color:var(--ok)">通过</span>':'<span style="color:var(--err)">失败</span>'} ·
+             len=${(b[1]&0x0F)}<br>`;
+  html += '<div style="margin-top:6px">';
+  zones.forEach((z,i)=>{
+    const st = STATES[z] || ('0x'+z.toString(16).toUpperCase());
+    html += `<span class="pill ${z===10?'sA':z===11?'sB':z===12?'sC':'sF'}">区${i+1}:${st}</span>`;
+  });
+  html += '</div>';
+  view.innerHTML = html;
+}
+function logRecv(t){ const el=document.getElementById('recvLog'); el.textContent += t+'\n'; el.scrollTop=el.scrollHeight; }
+</script>
+</body>
+</html>

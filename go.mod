@@ -1,13 +1,12 @@
 module iot_go
 
-go 1.22.2
+go 1.25.0
 
 require (
 	// github.com/carlmjohnson/versioninfo v0.22.5 // not used anymore
 	github.com/coreos/go-systemd v0.0.0-20230601205942-d843340ab4bd
 	github.com/eclipse/paho.mqtt.golang v1.4.3
 	github.com/kraken-hpc/go-fork v0.1.1
-	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/sftp v1.13.6
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.16.0
@@ -19,6 +18,7 @@ require (
 require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
+	go.bug.st/serial v1.8.0
 )
 
 require (
@@ -74,11 +74,10 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.3.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

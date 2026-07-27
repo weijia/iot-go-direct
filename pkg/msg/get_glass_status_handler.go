@@ -2,7 +2,7 @@ package msg
 
 import (
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_module"
+	"iot_go/pkg/controller"
 	"iot_go/pkg/shared"
 )
 
@@ -15,19 +15,24 @@ type GlassStatusParams struct {
 }
 
 func (req GetGlassStatusRequest) handle(mqttToServer chan interface{}) interface{} {
-	if bsp.IsInNodeList1(req.Params.NodeId) {
-		go lora_module.Module1.InitiateGetGlassStatusReqWillBlock(req.Params.NodeId, mqttToServer)
-	} else if bsp.IsInNodeList2(req.Params.NodeId) {
-		go lora_module.Module2.InitiateGetGlassStatusReqWillBlock(req.Params.NodeId, mqttToServer)
+	var reply shared.GlassStatusUpdate
+	reply.MsgType = "glass_status_update"
+	reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
+
+	if bsp.IsInNodeList1(req.Params.NodeId) || bsp.IsInNodeList2(req.Params.NodeId) {
+		if frame, ok := controller.Ctrl.QueryStatus(); ok {
+			controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
+		}
+		nodeState := bsp.GetOrCreateNodeState(req.Params.NodeId)
+		reply.Status = append(reply.Status, shared.GlassStatus{
+			NodeId: req.Params.NodeId,
+			Color:  GetColorStrFromSlice(nodeState.NodeReportedColor),
+		})
 	} else {
-		var reply shared.GlassStatusUpdate
-		reply.MsgType = "glass_status_update"
-		reply.GatewayNodeId = bsp.BspConfigInstance.GatewayNodeId
-		reply.Status[0] = shared.GlassStatus{
+		reply.Status = append(reply.Status, shared.GlassStatus{
 			NodeId: req.Params.NodeId,
 			Color:  "1f2f3f4f5f6f7f8f",
-		}
-		return reply
+		})
 	}
-	return nil
+	return reply
 }

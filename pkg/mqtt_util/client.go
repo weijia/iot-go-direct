@@ -95,7 +95,9 @@ func (easyClient *MqttEasyClient) ConnectAndSubscribe() error {
 				log.Fatal("Can not connect to server after retry 100 times")
 			}
 		} else {
-			easyClient.IsMqttConnectionReadyWaitGroup.Add(1)
+			if easyClient.IsMqttConnectionReadyWaitGroup != nil {
+				easyClient.IsMqttConnectionReadyWaitGroup.Add(1)
+			}
 			return nil
 		}
 	}

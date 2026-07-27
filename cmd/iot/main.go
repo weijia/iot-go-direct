@@ -4,21 +4,21 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"strings"
-
+	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"time"
 
 	"iot_go/pkg/bsp"
-	"iot_go/pkg/lora_rpc"
+	"iot_go/pkg/controller"
 	"iot_go/pkg/main_msg_handler"
 	"iot_go/pkg/msg"
+	"iot_go/pkg/serial"
 	"iot_go/pkg/util"
-
-	"github.com/kraken-hpc/go-fork"
 )
 
 func init() {
@@ -61,40 +61,66 @@ func init() {
 	} else {
 		util.IotLogErrorWithFormatStr("Error reading app store folder: %s with err: %v", appStorePath, err)
 	}
-
-	fork.RegisterFunc("StartLoraService", lora_rpc.StartLoraServiceInBackground)
-	fork.RegisterFunc("StartLoraService1", lora_rpc.StartLoraServiceInBackground)
-	fork.RegisterFunc("StartLoraService2", lora_rpc.StartLoraServiceInBackground)
-	fork.Init()
 }
 
 func main() {
 	fmt.Printf("main() pid: %d\n", os.Getpid())
-	var loraHost string
-	var pushHost string
-	flag.StringVar(&loraHost, "s", "127.0.0.1", "Lora service server")
-	flag.StringVar(&pushHost, "p", "127.0.0.1", "Lora msg push host server")
-	loraServiceIp := loraHost
+	var mock bool
+	var portName string
+	var baud int
+	var broker string
+	var selftest bool
+	flag.BoolVar(&mock, "mock", false, "use in-memory mock serial transport (no device needed)")
+	flag.StringVar(&portName, "port", "COM1", "serial port, e.g. /dev/ttyS1 or COM1")
+	flag.IntVar(&baud, "baud", 9600, "baud rate")
+	flag.StringVar(&broker, "broker", "", "MQTT broker host:port, e.g. broker.emqx.io:1883 (overrides config; empty => bsp default)")
+	flag.BoolVar(&selftest, "selftest", false, "after start, internally query the (mock) board and print its reply; does not need MQTT broker")
 	flag.Parse()
-	// loraServiceIp := "192.168.1.20"
-	gatewayPushMsgIp := pushHost
-	// gatewayPushMsgIp := "192.168.1.18"
-	util.IotLog("lora service host: %s, push host: %s", loraHost, pushHost)
-
-	if err := fork.Fork("StartLoraService", "/dev/spidev1.0", 8866, gatewayPushMsgIp); err != nil {
-		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
-	}
-	if err := fork.Fork("StartLoraService1", "/dev/spidev2.0", 8867, gatewayPushMsgIp); err != nil {
-		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
-	}
-	if err := fork.Fork("StartLoraService2", "/dev/spidev3.0", 8868, gatewayPushMsgIp); err != nil {
-		util.IotLogErrorStr(fmt.Sprintf("failed to fork: %v", err))
-	}
 
 	util.ConfigLogFile("main-log.txt", bsp.BspConfigInstance.LogConfigParams)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	go main_msg_handler.InfiniteAppLoop(ctx, loraServiceIp)
+	var port *serial.Port
+	if mock {
+		util.IotLog("Running in MOCK serial mode (no device)")
+		port = serial.OpenMock(nil)
+	} else {
+		p, err := serial.Open(serial.Config{Port: portName, Baud: baud})
+		if err != nil {
+			util.IotLogErrorWithFormatStr("failed to open serial port: %v", err)
+			os.Exit(1)
+		}
+		port = p
+	}
+
+	// 显式指定 -broker 时连接 MQTT(即使 -mock 也连，用于无硬件端到端测试)
+	actualSkipMqtt := mock
+	if broker != "" {
+		bsp.MqttBrokerOverride = broker
+		actualSkipMqtt = false
+	}
+	go main_msg_handler.InfiniteAppLoop(ctx, port, actualSkipMqtt)
+
+	// -selftest: 不依赖 broker，直接在进程内对默认节点发串口查询，
+	// 打印 MockBoard(虚拟玻璃)的回包与节点状态回填，用来验证串口回复链路。
+	if selftest {
+		go func() {
+			time.Sleep(2 * time.Second)
+			for i := 0; i < 3; i++ {
+				frame, ok := controller.Ctrl.QueryStatus()
+				if ok {
+					zones := serial.ZonesFromPayload(frame.Payload)
+					log.Printf("[selftest] MockBoard replied: cmd=%d zones=%v", frame.Cmd, zones)
+					controller.Ctrl.UpdateNodeStatesFromSerialReply(frame)
+					ns := bsp.GetOrCreateNodeState("node1")
+					log.Printf("[selftest] node1 CompletionStatus=%d (0未知/1执行中/2完成)", ns.CompletionStatus)
+				} else {
+					log.Printf("[selftest] QueryStatus no reply (timeout)")
+				}
+				time.Sleep(3 * time.Second)
+			}
+		}()
+	}
 
 	// 捕捉退出信号，断开连接并退出程序
 	c := make(chan os.Signal, 1)

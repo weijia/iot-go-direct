@@ -1,0 +1,17 @@
+{
+  "mqtt_ip": "app.kosglass.com",
+  "mqtt_port": 1883,
+  "mqtt_user_name": "l8juew73i2t17wavzthg",
+  "mqtt_pwd": "i0eprmhypu3r16g3wuuc",
+  "client_id": "mqtt_serial_gateway_1",
+  "serial_backend": "real",
+  "serial_port": "COM3",
+  "baud_rate": 9600,
+  "parity": "N",
+  "data_bits": 8,
+  "stop_bits": 1,
+  "read_timeout_ms": 50,
+  "flush_ms": 50,
+  "to_serial_topic": "gateway/serial/1/in",
+  "from_serial_topic": "gateway/serial/1/out"
+}

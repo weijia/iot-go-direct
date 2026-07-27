@@ -1,0 +1,17 @@
+{
+  "mqtt_ip": "broker.emqx.io",
+  "mqtt_port": 1883,
+  "mqtt_user_name": "",
+  "mqtt_pwd": "",
+  "client_id": "mqtt_serial_gateway_1",
+  "serial_backend": "simulate",
+  "serial_port": "COM3",
+  "baud_rate": 9600,
+  "parity": "N",
+  "data_bits": 8,
+  "stop_bits": 1,
+  "read_timeout_ms": 50,
+  "flush_ms": 50,
+  "to_serial_topic": "gateway/serial/1/in",
+  "from_serial_topic": "gateway/serial/1/out"
+}

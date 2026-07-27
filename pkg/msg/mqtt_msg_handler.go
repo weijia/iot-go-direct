@@ -91,18 +91,18 @@ func HandleMqttMsg(ctx context.Context, mqttToServer chan interface{}, body []by
 			util.IotLogError(err)
 		}
 		return broadcastUpdateGlassColorRequest.handle()
-	case "config":
+	// case "config":
 
-		if !ValidateMsg(init_msg_schema, string(body)) {
-			return nil
-		}
+	// 	if !ValidateMsg(init_msg_schema, string(body)) {
+	// 		return nil
+	// 	}
 
-		var configRequest ConfigRequest
-		if err := json.Unmarshal(body, &configRequest); err != nil {
-			util.IotLogError(err)
-			return nil
-		}
-		return configRequest.handle(ctx)
+	// 	var configRequest ConfigRequest
+	// 	if err := json.Unmarshal(body, &configRequest); err != nil {
+	// 		util.IotLogError(err)
+	// 		return nil
+	// 	}
+	// 	return configRequest.handle(ctx)
 	case "gateway_upgrade_request":
 		var req GatewayUpgradeRequest
 		if err := json.Unmarshal(body, &req); err != nil {
